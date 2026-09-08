@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04608578b2f348059387972465e75a06, type: 3}
+  m_Name: Basic Barrage 02
+  m_EditorClassIdentifier: 
+  displayName: Laser Shot
+  steps:
+  - shape: 1
+    position: 0
+    delay: 0
+    offsetDegrees: {x: 0, y: 0}
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 1, y: 1}
+    dealsDamage: 0
+    opacity: 1
+    duration: 1
+    startSize: 0.1
+    peakSize: 2
+    endSize: 1
+    growTime: 1
+    shrinkTime: 0
+    flash: 0
+  - shape: 3
+    position: 0
+    delay: 1
+    offsetDegrees: {x: 0, y: 0}
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 20, y: 0.3}
+    dealsDamage: 1
+    opacity: 1
+    duration: 0.5
+    startSize: 1
+    peakSize: 1
+    endSize: 1
+    growTime: 0
+    shrinkTime: 0
+    flash: 1
+  icon: {fileID: 2291270967926626937, guid: 9988dd917fdf84b408edbb0b6dcf90f8, type: 3}
+  projectilePrefab: {fileID: 0}
+  cooldown: 1
+  projectileSpeed: 12
+  projectileLifetime: 3
+  projectileRadius: 0.13
+  color: {r: 0.4, g: 0.8, b: 1, a: 1}
+  range: 20
+  maxUpgradeLevel: 5
+  bonusPerLevel: 0.15

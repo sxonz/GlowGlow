@@ -13,6 +13,8 @@ public sealed class MatchController : MonoBehaviour
     [SerializeField] private PlayerCombatant playerOne;
     [SerializeField] private PlayerCombatant playerTwo;
     [SerializeField] private float matchDuration = 480f;
+    [SerializeField] private DeckCatalog deckCatalog;
+    public void ConfigureDeckRules(DeckCatalog catalog) => deckCatalog = catalog;
     private float elapsed;
 
     public PlayerCombatant PlayerOne => playerOne;
@@ -24,7 +26,13 @@ public sealed class MatchController : MonoBehaviour
         playerTwo = two;
     }
 
-    private void Start() => RestartMatch();
+    private void Start()
+    {
+        RuntimeShapes.AddArenaGlow(gameObject.scene);
+        playerOne.AttachMatch(this);
+        playerTwo.AttachMatch(this);
+        RestartMatch();
+    }
 
     private void Update()
     {
@@ -48,6 +56,13 @@ public sealed class MatchController : MonoBehaviour
 
     public void RestartMatch()
     {
+        if (deckCatalog == null || !deckCatalog.IsSavedDeckValid())
+        {
+            IsPlaying = false;
+            SceneManager.LoadScene("Title");
+            return;
+        }
+        ProjectileBase.DespawnAll();
         elapsed = 0f;
         Winner = null;
         playerOne.ResetCombatant(new Vector2(-5.8f, 0));

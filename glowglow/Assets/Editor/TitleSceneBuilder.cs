@@ -67,8 +67,12 @@ public static class TitleSceneBuilder
         layout.childControlHeight = true;
         layout.childForceExpandHeight = true;
 
-        var multiplayer = MenuButton(menuGo.transform, "MULTIPLAYER", "두 플레이어 · 온라인 매치", Pink, 1.25f);
-        var solo = MenuButton(menuGo.transform, "SOLO", "COMING LATER", Violet, 1f);
+        var multiplayer = MenuButton(menuGo.transform, "MULTIPLAYER", "모드 선택", Pink, 1.25f);
+        var solo = MenuButton(menuGo.transform, "SOLO", "봇 대전 · 캠페인", Violet, 1f);
+        var soloLabel = solo.transform.Find("Label").GetComponent<TMP_Text>();
+        soloLabel.text = "SINGLEPLAYER";
+        soloLabel.fontSize = 26;
+        soloLabel.rectTransform.anchorMax = new Vector2(.73f, .9f);
         var settings = MenuButton(menuGo.transform, "SETTINGS", "사운드 및 게임 설정", new Color(.55f, .36f, .85f, 1), 1f);
         var quit = MenuButton(menuGo.transform, "QUIT", "게임 종료", new Color(.28f, .2f, .42f, 1), .86f);
 
@@ -85,6 +89,7 @@ public static class TitleSceneBuilder
         SetRect(volumeLabel.rectTransform, new Vector2(.07f, .5f), new Vector2(.93f, .66f));
         var slider = Slider(settingsGo.transform);
         SetRect(slider.GetComponent<RectTransform>(), new Vector2(.07f, .36f), new Vector2(.93f, .49f));
+        TitleScreenController.ConfigureVolumeSlider(slider);
         var back = MenuButton(settingsGo.transform, "BACK", "메인 메뉴로", Pink, 1f);
         SetRect(back.GetComponent<RectTransform>(), new Vector2(.07f, .06f), new Vector2(.93f, .27f));
 
@@ -101,6 +106,7 @@ public static class TitleSceneBuilder
         SetObject(controller, "firstButton", multiplayer);
         SetObject(controller, "settingsBackButton", back);
         SetObject(controller, "masterVolume", slider);
+        SetObject(controller, "deckCatalog", AssetDatabase.LoadAssetAtPath<DeckCatalog>("Assets/Settings/Deck Catalog.asset"));
         UnityEventTools.AddPersistentListener(multiplayer.onClick, controller.PlayMultiplayer);
         UnityEventTools.AddPersistentListener(solo.onClick, controller.PlaySolo);
         UnityEventTools.AddPersistentListener(settings.onClick, controller.OpenSettings);
@@ -113,8 +119,11 @@ public static class TitleSceneBuilder
         settingsCanvas.interactable = false;
         settingsCanvas.blocksRaycasts = false;
 
+        controller.BakeSceneUI();
         EditorSceneManager.SaveScene(scene, ScenePath);
-        EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
+        var buildScenes = new System.Collections.Generic.List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
+        if (!buildScenes.Exists(entry => entry.path == ScenePath)) buildScenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
+        EditorBuildSettings.scenes = buildScenes.ToArray();
         AssetDatabase.SaveAssets();
         Debug.Log("GlowGlow title screen built successfully.");
     }

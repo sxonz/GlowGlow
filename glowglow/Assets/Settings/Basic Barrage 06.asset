@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04608578b2f348059387972465e75a06, type: 3}
+  m_Name: Basic Barrage 06
+  m_EditorClassIdentifier: 
+  displayName: Overdrive
+  steps:
+  - shape: 5
+    position: 2
+    delay: 0
+    offsetDegrees: {x: 0, y: 0}
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 1, y: 1}
+    dealsDamage: 1
+    opacity: 1
+    duration: 5
+    startSize: 1
+    peakSize: 1
+    endSize: 1
+    growTime: 0
+    shrinkTime: 0
+    flash: 0
+    rotationDegrees: 0
+    knockbackDistance: 0
+    slowMultiplier: 1
+    slowDuration: 0
+  icon: {fileID: 3252410277113614999, guid: c719fa7fc244b6e42be49c21db314d9a, type: 3}
+  projectilePrefab: {fileID: 0}
+  cooldown: 10
+  projectileSpeed: 12
+  projectileLifetime: 3
+  projectileRadius: 0.13
+  color: {r: 0.7, g: 1, b: 0.25, a: 1}
+  range: 12
+  maxUpgradeLevel: 5
+  bonusPerLevel: 0.15

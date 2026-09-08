@@ -31,8 +31,8 @@ public sealed class ArenaHud : MonoBehaviour
 
     private void Refresh()
     {
-        playerOneLives.text = "P1  " + Hearts(match.PlayerOne.HitsRemaining);
-        playerTwoLives.text = Hearts(match.PlayerTwo.HitsRemaining) + "  P2";
+        playerOneLives.text = "P1  " + Hearts(match.PlayerOne.HitsRemaining) + Shield(match.PlayerOne);
+        playerTwoLives.text = Shield(match.PlayerTwo) + Hearts(match.PlayerTwo.HitsRemaining) + "  P2";
         int seconds = Mathf.CeilToInt(match.RemainingTime);
         timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
         if (match.IsPlaying) result.text = string.Empty;
@@ -40,4 +40,6 @@ public sealed class ArenaHud : MonoBehaviour
     }
 
     private static string Hearts(int count) => count <= 0 ? "× × ×" : string.Join(" ", new string('◆', count).ToCharArray());
+    private static string Shield(PlayerCombatant player) => player.ShieldRemaining > 0
+        ? $"  <color=#75E8FF><size=65%>+{player.ShieldRemaining}</size></color>  " : "";
 }

@@ -129,6 +129,7 @@ public static class ArenaSceneBuilder
 
         var hud = canvasGo.AddComponent<ArenaHud>();
         hud.Configure(match, p1, p2, timer, result);
+        ArenaWeaponBarBuilder.Bake(canvas, match);
     }
 
     private static Image Image(string name, Transform parent, Color color)
