@@ -52,8 +52,9 @@ public static class ArenaSceneBuilder
     {
         var go = new GameObject(name, typeof(SpriteRenderer), typeof(CircleCollider2D), typeof(LocalPlayerInput), typeof(PlayerCombatant));
         go.transform.position = position;
-        go.transform.localScale = Vector3.one * .72f;
+        go.transform.localScale = Vector3.one * .66f;
         var renderer = go.GetComponent<SpriteRenderer>();
+        renderer.sprite = RuntimeShapes.Circle;
         renderer.color = color;
         renderer.sortingOrder = 5;
         var collider = go.GetComponent<CircleCollider2D>();
@@ -63,6 +64,7 @@ public static class ArenaSceneBuilder
         ring.transform.SetParent(go.transform, false);
         ring.transform.localScale = Vector3.one * 1.35f;
         var ringRenderer = ring.GetComponent<SpriteRenderer>();
+        ringRenderer.sprite = RuntimeShapes.Circle;
         ringRenderer.color = new Color(color.r, color.g, color.b, .18f);
         ringRenderer.sortingOrder = 4;
         return go.GetComponent<PlayerCombatant>();

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive }
+public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive, Bouncer, OrbitOrb }
 public enum BarragePosition { Gun, Cursor, Player }
 
 /// <summary>One event on a firing timeline. Values are copied when firing.</summary>
@@ -10,6 +10,10 @@ public sealed class BarrageStep
 {
     public BarrageShape shape;
     public BarragePosition position;
+    [Tooltip("Follow the live muzzle and limit its turning to 30 degrees/second for this attack.")]
+    public bool followMuzzle;
+    [Tooltip("Sample muzzle position and direction for each emission, then apply offsetDegrees. No following after launch or aim limits.")]
+    public bool fireFromCurrentMuzzle;
     [Min(0)] public float delay;
     public Vector2 offsetDegrees;
     public Vector2 speedMultiplier = Vector2.one;
@@ -29,6 +33,9 @@ public sealed class BarrageStep
     [Min(0)] public float knockbackDistance;
     [Range(0, 1)] public float slowMultiplier = 1;
     [Min(0)] public float slowDuration;
+    [NonSerialized] public bool interceptsBullet;
+    [NonSerialized] public bool overridePosition;
+    [NonSerialized] public Vector2 worldPosition;
 
     public BarrageStep Snapshot() => (BarrageStep)MemberwiseClone();
 

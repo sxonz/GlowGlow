@@ -1,6 +1,6 @@
 using UnityEngine;
 
-/// <summary>A stationary beam that hits each target once during its lifetime.</summary>
+/// <summary>A muzzle-following beam that hits each target once during its lifetime.</summary>
 [RequireComponent(typeof(SpriteRenderer), typeof(BoxCollider2D), typeof(Rigidbody2D))]
 public class Laser : ProjectileBase
 {
@@ -9,8 +9,10 @@ public class Laser : ProjectileBase
 
     protected override void OnSpawn()
     {
+        Owner.BeginLaserAim(Stats.Lifetime);
+        Owner.ApplyLaserRecoil();
         if (beamSprite == null)
-            beamSprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f, 1f);
+            beamSprite = RuntimeShapes.Square;
         var renderer = GetComponent<SpriteRenderer>();
         renderer.sprite = beamSprite;
         renderer.color = Stats.Color;
@@ -25,9 +27,22 @@ public class Laser : ProjectileBase
         body.bodyType = RigidbodyType2D.Kinematic;
         body.gravityScale = 0f;
         body.useFullKinematicContacts = true;
+        FollowMuzzle();
     }
 
-    protected override void Tick(float deltaTime) { }
+    protected override void Tick(float deltaTime) => FollowMuzzle();
+    protected override void LateUpdate()
+    {
+        FollowMuzzle();
+        base.LateUpdate();
+    }
+    private void FollowMuzzle()
+    {
+        if (Owner == null) return;
+        Vector2 direction = Owner.AimDirection;
+        transform.SetPositionAndRotation(Owner.MuzzlePosition + direction * Stats.Range * .5f,
+            Quaternion.Euler(0, 0, Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg));
+    }
     protected virtual void OnTriggerEnter2D(Collider2D other) => TryHit(other);
     protected virtual void OnTriggerStay2D(Collider2D other) => TryHit(other);
 }

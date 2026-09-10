@@ -6,6 +6,10 @@ public sealed class OverdriveProjectile : ProjectileBase
 {
     public int ShieldRemaining { get; private set; }
     public bool IsRunning => ShieldRemaining > 0 && Time.time < expiresAt;
+    public int MaxShield => Effects.Has(WeaponEffects.OverdriveShield) ? 6 : 3;
+    public float TopSpeedMultiplier => Effects.Has(WeaponEffects.OverdriveAcceleration) ? 2.6f : 1.8f;
+    public float AccelerationTime => Effects.Has(WeaponEffects.OverdriveAcceleration) ? .7f : 1.4f;
+    public float InertiaMultiplier => Effects.Has(WeaponEffects.OverdriveHandling) ? .35f : 1f;
     private float expiresAt;
     private float startedAt;
     private float bodyRadius;
@@ -18,7 +22,7 @@ public sealed class OverdriveProjectile : ProjectileBase
 
     protected override void OnSpawn()
     {
-        ShieldRemaining = 3;
+        ShieldRemaining = MaxShield;
         startedAt = Time.time;
         expiresAt = Time.time + Mathf.Min(5, Stats.Lifetime);
         transform.SetParent(Owner.transform, true);
@@ -52,16 +56,7 @@ public sealed class OverdriveProjectile : ProjectileBase
 
     private void BuildSpikes()
     {
-        if (spikeSprite == null)
-        {
-            const int size = 32;
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-                texture.SetPixel(x, y, Mathf.Abs((y + .5f) / size - .5f) <= .5f * (1 - (x + .5f) / size) ? Color.white : Color.clear);
-            texture.Apply();
-            spikeSprite = Sprite.Create(texture, new Rect(0, 0, size, size), Vector2.one * .5f, size);
-        }
+        if (spikeSprite == null) spikeSprite = RuntimeShapes.Spike;
         spikes = new Transform[6];
         for (int i = 0; i < spikes.Length; i++)
         {
@@ -84,7 +79,7 @@ public sealed class OverdriveProjectile : ProjectileBase
         transform.rotation = Quaternion.Euler(0, 0, (Time.time - startedAt) * 240);
         for (int i = 0; i < shield.positionCount; i++)
         {
-            float angle = i / 64f * Mathf.PI * 2 * ShieldRemaining / 3f;
+            float angle = i / 64f * Mathf.PI * 2 * ShieldRemaining / MaxShield;
             shield.SetPosition(i, new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0) * (bodyRadius + .01f));
         }
     }

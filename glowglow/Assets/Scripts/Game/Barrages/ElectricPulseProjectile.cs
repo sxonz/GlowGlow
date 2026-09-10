@@ -8,6 +8,9 @@ public sealed class ElectricPulseProjectile : ProjectileBase
     private BarrageStep step;
     private float startedAt;
     private static Material material;
+    private float pulseRange;
+    private bool pull;
+    private bool empowered;
     protected override bool DespawnOnHit => false;
 
     protected override void OnSpawn()
@@ -32,8 +35,11 @@ public sealed class ElectricPulseProjectile : ProjectileBase
     public void Configure(BarrageStep value)
     {
         step = value;
-        // Control effects still need collision detection when damage is disabled.
-        hitArea.enabled = value.dealsDamage || value.knockbackDistance > 0 || value.slowDuration > 0;
+        pull = Effects.Has(WeaponEffects.PulsePull);
+        empowered = Effects.Has(WeaponEffects.PulseDash) && Owner.IsPostDashWindow;
+        pulseRange = Stats.Range * (empowered ? .5f : 1f);
+        hitArea.enabled = true;
+        hitArea.radius = pulseRange;
         Tick(0);
     }
 
@@ -41,8 +47,8 @@ public sealed class ElectricPulseProjectile : ProjectileBase
     {
         if (step == null) return;
         float age = Time.time - startedAt;
-        float radius = Mathf.Lerp(.1f, Stats.Range, Mathf.Clamp01(age / .25f));
-        hitArea.radius = radius;
+        float progress = Mathf.Clamp01(age / .25f);
+        float radius = pull ? Mathf.Lerp(pulseRange, .1f, progress) : Mathf.Lerp(.1f, pulseRange, progress);
         Color color = Stats.Color;
         color.a = Mathf.Clamp01((step.duration - age) / .15f);
         ring.startColor = ring.endColor = color;
@@ -59,7 +65,14 @@ public sealed class ElectricPulseProjectile : ProjectileBase
     private void OnTriggerStay2D(Collider2D other) => Hit(other);
     private void Hit(Collider2D other)
     {
-        if (step != null) TryHit(other, step.knockbackDistance, step.slowMultiplier, step.slowDuration, step.dealsDamage);
+        if (step == null) return;
+        var candidate = other.GetComponent<PlayerCombatant>();
+        if (candidate == null || Vector2.Distance(candidate.transform.position, transform.position) > pulseRange) return;
+        if (!TryRegisterHit(other, out var target)) return;
+        // Range is measured from the target center, not from its collider's nearest edge.
+        target.ApplyPulseImpulse(Owner, transform.position, pulseRange, pull, empowered);
+        target.ApplyImpact(Vector2.zero, 0, step.slowMultiplier, step.slowDuration);
+        if (step.dealsDamage) target.ReceiveHit(Owner);
     }
     protected override void OnDespawn() { step = null; hitArea.enabled = false; }
 }

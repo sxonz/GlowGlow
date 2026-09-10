@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Basic Barrage 03
   m_EditorClassIdentifier: 
   displayName: Spread Shot
+  rarity: 0
   steps:
   - shape: 0
     position: 0
+    fireFromCurrentMuzzle: 1
     delay: 0
     offsetDegrees: {x: 0, y: 0}
     speedMultiplier: {x: 1, y: 1}
@@ -31,6 +33,7 @@ MonoBehaviour:
     flash: 0
   - shape: 0
     position: 0
+    fireFromCurrentMuzzle: 1
     delay: 0.1
     offsetDegrees: {x: 10, y: 10}
     speedMultiplier: {x: 1, y: 1}
@@ -46,6 +49,7 @@ MonoBehaviour:
     flash: 0
   - shape: 0
     position: 0
+    fireFromCurrentMuzzle: 1
     delay: 0.1
     offsetDegrees: {x: -10, y: -10}
     speedMultiplier: {x: 1, y: 1}
@@ -61,6 +65,7 @@ MonoBehaviour:
     flash: 0
   - shape: 0
     position: 0
+    fireFromCurrentMuzzle: 1
     delay: 0.2
     offsetDegrees: {x: 20, y: 20}
     speedMultiplier: {x: 1, y: 1}
@@ -76,6 +81,7 @@ MonoBehaviour:
     flash: 0
   - shape: 0
     position: 0
+    fireFromCurrentMuzzle: 1
     delay: 0.2
     offsetDegrees: {x: -20, y: -20}
     speedMultiplier: {x: 1, y: 1}

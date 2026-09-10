@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: Basic Barrage 02
   m_EditorClassIdentifier: 
   displayName: Laser Shot
+  rarity: 0
   steps:
   - shape: 1
     position: 0
+    followMuzzle: 1
     delay: 0
     offsetDegrees: {x: 0, y: 0}
     speedMultiplier: {x: 1, y: 1}
@@ -31,6 +33,7 @@ MonoBehaviour:
     flash: 0
   - shape: 3
     position: 0
+    followMuzzle: 1
     delay: 1
     offsetDegrees: {x: 0, y: 0}
     speedMultiplier: {x: 1, y: 1}
@@ -46,7 +49,7 @@ MonoBehaviour:
     flash: 1
   icon: {fileID: 2291270967926626937, guid: 9988dd917fdf84b408edbb0b6dcf90f8, type: 3}
   projectilePrefab: {fileID: 0}
-  cooldown: 1
+  cooldown: 1.5
   projectileSpeed: 12
   projectileLifetime: 3
   projectileRadius: 0.13

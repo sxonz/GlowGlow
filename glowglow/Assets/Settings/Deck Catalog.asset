@@ -19,9 +19,7 @@ MonoBehaviour:
       \uAE30\uBCF8 \uD0C4\uC18D 11, \uBC1C\uC0AC \uAC04\uACA9 0.26\uCD08."
   - id: basic-barrage-02
     weapon: {fileID: 11400000, guid: 1ca4afb87a554be2870c173d6bfe85dc, type: 2}
-    description: "1\uCD08\uAC04 \uC608\uACE0\uC120\uC744 \uD45C\uC2DC\uD55C \uB4A4
-      \uAE38\uC774 20, \uB450\uAED8 0.3\uC758 \uB808\uC774\uC800\uB97C 0.5\uCD08\uAC04
-      \uBC1C\uC0AC\uD569\uB2C8\uB2E4. \uCFE8\uD0C0\uC784 1\uCD08."
+    description: "총구를 따라가는 예고선 1초 후 레이저를 0.5초간 발사하며 뒤로 반동을 받습니다. 예고와 발사 중 감속하고 초당 최대 30도로 조준합니다. 종료 후 커서로 빠르게 회전합니다. 쿨타임 1.5초."
   - id: basic-barrage-03
     weapon: {fileID: 11400000, guid: 3bf8005000c04658bf13bd9b2c00737a, type: 2}
     description: "\uC815\uBA74 1\uBC1C\uACFC \xB110\uB3C4\xB7\xB120\uB3C4\uC758 \uC791\uC740
@@ -34,25 +32,13 @@ MonoBehaviour:
       \uC0DD\uC131\uD569\uB2C8\uB2E4. \uCFE8\uD0C0\uC784 3\uCD08."
   - id: basic-barrage-05
     weapon: {fileID: 11400000, guid: fce757dca8014d9d9a7c53783055e252, type: 2}
-    description: "\uD53C\uD574 \uC5C6\uC774 \uC8FC\uBCC0\uC73C\uB85C \uC804\uAE30
-      \uD384\uC2A4\uB97C \uBC29\uCD9C\uD569\uB2C8\uB2E4. \uC801\uC744 \uC870\uAE08
-      \uBC00\uC5B4\uB0B4\uACE0 0.3\uCD08 \uB3D9\uC548 \uC774\uB3D9 \uC18D\uB3C4\uB97C
-      75%\uB85C \uB0AE\uCDA5\uB2C8\uB2E4. \uBC94\uC704 3, \uCFE8\uD0C0\uC784 2\uCD08."
+    description: "주변 적을 펄스 범위 끝까지 밀어내며 밀려난 거리에 따른 관성을 적용합니다. 기본 피해는 없으며 0.3초 동안 이동 속도를 75%로 낮춥니다. 범위 3, 쿨타임 2초."
   - id: basic-barrage-06
     weapon: {fileID: 11400000, guid: e7a01bda95444dcb8b10e1ba0e435226, type: 2}
-    description: "\uCD5C\uB300 5\uCD08\uAC04 \uC774\uB3D9 \uC18D\uB3C4 150%\uC640
-      \uAD00\uC131, \uBCF4\uD638\uB9C9 3\uC744 \uC5BB\uC2B5\uB2C8\uB2E4. \uCD1D\uAD6C
-      \uB300\uC2E0 \uBAB8\uC5D0 \uBD99\uC740 \uD68C\uC804 \uAC00\uC2DC\uB85C \uACF5\uACA9\uD569\uB2C8\uB2E4.
-      \uBCF4\uD638\uB9C9 \uC18C\uC9C4 \uB610\uB294 \uC2DC\uAC04 \uC885\uB8CC \uC2DC
-      \uC6D0\uB798 \uC0C1\uD0DC\uB85C \uB3CC\uC544\uC635\uB2C8\uB2E4. \uCFE8\uD0C0\uC784
-      10\uCD08."
+    description: "최대 5초간 직선 이동을 유지할수록 가속하고 관성이 커집니다. 보호막 3과 회전 가시를 얻으며 보호막 소진 또는 시간 종료 시 해제됩니다. 쿨타임 10초."
   - id: basic-barrage-07
     weapon: {fileID: 11400000, guid: 8cc1524f12eb4f9d866688222a076809, type: 2}
-    description: "\uAE30\uBCF8 \uC81C\uACF5 \uD0C4\uB9C9 07. \uD604\uC7AC\uB294 \uAE30\uBCF8
-      \uC9C1\uC120 \uBC1C\uC0AC\uD615\uC774\uBA70 \uC138\uBD80 \uD328\uD134\uC740
-      \uCD94\uD6C4 \uBCC0\uACBD\uB429\uB2C8\uB2E4."
+    description: "벽에서 반사되는 탄환입니다. 탄속 15에서 12.75까지 서서히 감속하며 3초간 유지됩니다. 마지막 0.4초 동안 페이드아웃합니다. 쿨타임 1.2초. 적에게 명중하면 사라집니다."
   - id: basic-barrage-08
     weapon: {fileID: 11400000, guid: 9ebdcc554267445f9d495b61e97b908f, type: 2}
-    description: "\uAE30\uBCF8 \uC81C\uACF5 \uD0C4\uB9C9 08. \uD604\uC7AC\uB294 \uAE30\uBCF8
-      \uC9C1\uC120 \uBC1C\uC0AC\uD615\uC774\uBA70 \uC138\uBD80 \uD328\uD134\uC740
-      \uCD94\uD6C4 \uBCC0\uACBD\uB429\uB2C8\uB2E4."
+    description: "잔상을 남기는 오브 1개가 플레이어 주변을 5초간 공전하며 접촉한 적을 공격합니다. 쿨타임 10초."

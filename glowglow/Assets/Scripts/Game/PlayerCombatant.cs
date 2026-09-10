@@ -11,7 +11,8 @@ public sealed class PlayerCombatant : MonoBehaviour
     public int HitsRemaining => Mathf.Max(0, 3 - HitsTaken);
     public bool CanBeHit => CanSelectWeapon && Time.time >= invulnerableUntil;
     public bool IsPreview { get; private set; }
-    public float MovementMultiplier => (Time.time < slowedUntil ? slowMultiplier : 1f) * (IsOverdriving ? 1.5f : 1f);
+    public float MovementMultiplier => (Time.time < slowedUntil ? slowMultiplier : 1f) *
+        (Time.time < laserSlowUntil ? .65f : 1f) * PulseControlMultiplier;
     public OverdriveProjectile Overdrive { get; private set; }
     public bool IsOverdriving => Overdrive != null && Overdrive.IsRunning;
     public int ShieldRemaining => IsOverdriving ? Overdrive.ShieldRemaining : 0;
@@ -19,8 +20,19 @@ public sealed class PlayerCombatant : MonoBehaviour
     private float slowedUntil;
     private float slowMultiplier = 1f;
     private Vector2 knockbackRemaining;
+    private float straightCharge;
+    private Vector2 previousDriveDirection;
+    private float lastDashEndedAt = float.NegativeInfinity;
+    public bool IsPostDashWindow => !dashing && Time.time - lastDashEndedAt <= .35f;
+    public Vector2 ArenaHalfSize => arenaExtents;
+    public float BodyRadius => GetComponent<CircleCollider2D>().radius * Mathf.Abs(transform.lossyScale.x);
+    private PlayerCombatant pulseSource;
+    private Vector2 pulseDirection;
+    private float pulseRemaining, pulseTotal, pulseDecay;
+    private bool pulsePull, pulseCollisionDamage;
+    private float PulseControlMultiplier => pulseRemaining > .001f ? Mathf.Lerp(.25f, 1f, 1f - pulseRemaining / Mathf.Max(.001f, pulseTotal)) : 1f;
 
-    [SerializeField] private float moveSpeed = 5.2f;
+    [SerializeField] private float moveSpeed = 5.8f;
     [SerializeField] private int playerIndex;
     [SerializeField] private float dashSpeed = 15f;
     [SerializeField] private float dashDuration = .16f;
@@ -41,11 +53,115 @@ public sealed class PlayerCombatant : MonoBehaviour
     private const float MuzzleOffset = BarrelCenter + .4f;
     private Vector2 aim = Vector2.right;
     private Vector2 aimPosition;
+    private float laserAimUntil;
+    private float laserSlowUntil;
+    private float laserRecoveryUntil;
+    private float laserAngularVelocity;
+    public Vector2 AimDirection => aim;
+    public Vector2 MuzzlePosition
+    {
+        get { UpdateBarrel(); return barrelPivot.TransformPoint(Vector3.right * MuzzleOffset); }
+    }
+
+    public void BeginLaserAim(float duration, bool applySlow = true)
+    {
+        // Telegraph/body transitions and overlapping shots preserve the current turn momentum.
+        if (Time.time >= laserAimUntil) laserAngularVelocity = 0f;
+        laserAimUntil = Mathf.Max(laserAimUntil, Time.time + duration);
+        if (applySlow) laserSlowUntil = Mathf.Max(laserSlowUntil, Time.time + duration);
+        laserRecoveryUntil = Mathf.Max(laserRecoveryUntil, laserAimUntil + .18f);
+    }
+
+    public void ApplyLaserRecoil() => ApplyImpact(-aim, .45f, 1f, 0f);
+
+    public Vector2 RandomArenaPosition() => new Vector2(
+        UnityEngine.Random.Range(-arenaExtents.x + .5f, arenaExtents.x - .5f),
+        UnityEngine.Random.Range(-arenaExtents.y + .5f, arenaExtents.y - .5f));
+
+    public Vector2 ClampToArena(Vector2 position) => new Vector2(
+        Mathf.Clamp(position.x, -arenaExtents.x, arenaExtents.x), Mathf.Clamp(position.y, -arenaExtents.y, arenaExtents.y));
+
+    public void ApplyPulseImpulse(PlayerCombatant source, Vector2 center, float range, bool pull, bool empowered)
+    {
+        Vector2 away = (Vector2)transform.position - center;
+        float distance = away.magnitude;
+        pulseDirection = distance > .0001f ? away / distance : source.AimDirection;
+        pulseSource = source;
+        pulsePull = pull;
+        pulseCollisionDamage = empowered;
+        pulseRemaining = pull ? Mathf.Max(0f, distance - BodyRadius - source.BodyRadius) : Mathf.Max(0f, range - distance);
+        if (empowered && !pull) pulseRemaining *= 3f;
+        pulseTotal = pulseRemaining;
+        pulseDecay = (.12f + Mathf.Min(.28f, pulseTotal * .045f)) / (empowered ? 3f : 1f);
+        if (pull && empowered && distance <= BodyRadius + source.BodyRadius + .001f) ReceiveHit(source);
+    }
+
+    private void UpdatePulseImpulse(float deltaTime)
+    {
+        if (pulseRemaining <= .001f) return;
+        if (pulseSource == null || !pulseSource.CanSelectWeapon) { pulseRemaining = 0; return; }
+        float distance = pulseRemaining * (1f - Mathf.Exp(-deltaTime / Mathf.Max(.02f, pulseDecay)));
+        if (pulseRemaining < .01f) distance = pulseRemaining;
+        Vector2 direction = pulseDirection;
+        float gap = float.PositiveInfinity;
+        if (pulsePull)
+        {
+            Vector2 toward = pulseSource.transform.position - transform.position;
+            gap = Mathf.Max(0, toward.magnitude - BodyRadius - pulseSource.BodyRadius);
+            direction = toward.sqrMagnitude > .0001f ? toward.normalized : Vector2.zero;
+            distance = Mathf.Min(distance, gap);
+        }
+        Vector2 before = transform.position;
+        Vector2 requested = before + direction * distance;
+        Vector2 after = ClampToArena(requested);
+        transform.position = after;
+        bool wall = (requested - after).sqrMagnitude > .0000001f;
+        bool reachedSource = pulsePull && gap <= distance + .001f;
+        pulseRemaining = Mathf.Max(0, pulseRemaining - distance);
+        if (wall || reachedSource)
+        {
+            if (pulseCollisionDamage && (pulsePull ? reachedSource : wall)) ReceiveHit(pulseSource);
+            pulseRemaining = 0;
+            pulseCollisionDamage = false;
+        }
+    }
+
+    internal static Vector2 TurnAim(Vector2 current, Vector2 target, ref float angularVelocity, float deltaTime)
+    {
+        if (deltaTime <= 0f) return current;
+        float angle = Mathf.SmoothDampAngle(Mathf.Atan2(current.y, current.x) * Mathf.Rad2Deg,
+            Mathf.Atan2(target.y, target.x) * Mathf.Rad2Deg, ref angularVelocity, .18f, 30f, deltaTime);
+        return new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+    }
+
+    internal static Vector2 RecoverAim(Vector2 current, Vector2 target, ref float angularVelocity, float deltaTime)
+    {
+        if (deltaTime <= 0) return current;
+        float angle = Mathf.SmoothDampAngle(Mathf.Atan2(current.y, current.x) * Mathf.Rad2Deg,
+            Mathf.Atan2(target.y, target.x) * Mathf.Rad2Deg, ref angularVelocity, .035f, 1440f, deltaTime);
+        return new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+    }
     private float nextDashAt;
     private float invulnerableUntil;
     private bool dashing;
+    private Vector2 dashDirection;
+    private float dashVisual;
+    private const int AfterimageCount = 10;
+    private const float AfterimageSpacing = .28f;
+    private const float AfterimageLifetime = .16f;
+    private Transform afterimageRoot;
+    private readonly SpriteRenderer[] afterimages = new SpriteRenderer[AfterimageCount];
+    private readonly float[] afterimageTimes = new float[AfterimageCount];
+    private readonly float[] afterimageAlphas = new float[AfterimageCount];
+    private int nextAfterimage;
+    private float afterimageDistance;
     public WeaponRuntime CurrentWeapon { get; private set; }
     public WeaponHand Hand { get; private set; }
+    public void EquipDraft(OpeningDraft draft, int deckCount)
+    {
+        Hand = WeaponHand.FromDraft(draft, deckCount);
+        CurrentWeapon = Hand.Selected;
+    }
     public bool CanSelectWeapon => IsPreview || match != null && match.IsPlaying;
 
     public void ConfigurePreview(WeaponDefinition definition)
@@ -64,6 +180,8 @@ public sealed class PlayerCombatant : MonoBehaviour
         if (Overdrive != null && Overdrive != effect) Overdrive.Cancel();
         Overdrive = effect;
         inertiaVelocity = Vector2.zero;
+        straightCharge = 0f;
+        previousDriveDirection = Vector2.zero;
         UpdateBarrel();
     }
 
@@ -72,6 +190,7 @@ public sealed class PlayerCombatant : MonoBehaviour
         if (Overdrive != effect) return;
         Overdrive = null;
         inertiaVelocity = Vector2.zero;
+        straightCharge = 0f;
         UpdateBarrel();
     }
 
@@ -136,13 +255,99 @@ public sealed class PlayerCombatant : MonoBehaviour
         barrelVisuals.transform.SetParent(barrelPivot, false);
         barrelVisuals.transform.localPosition = Vector3.right * BarrelCenter;
         barrelVisuals.sprite = RuntimeShapes.Barrel;
+        PrepareAfterimages();
         UpdateBarrel();
     }
 
     private void LateUpdate()
     {
+        UpdateAfterimages();
         UpdateBarrel();
         RuntimeShapes.SyncGlow(visuals, bodyGlow, .55f, 1.1f);
+        // Stretch only the prepared glow sprite, never the body or its hitbox.
+        float target = dashing ? 1f : 0f;
+        dashVisual = Mathf.MoveTowards(dashVisual, target, Time.deltaTime / (dashing ? .025f : .09f));
+        if (!bodyGlow.enabled) return;
+        bodyGlow.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(dashDirection.y, dashDirection.x) * Mathf.Rad2Deg);
+        var glowScale = bodyGlow.transform.localScale;
+        // Offset by half the added length so the leading edge stays at its resting position.
+        Vector3 backwardOffset = bodyGlow.transform.TransformVector(
+            Vector3.right * (bodyGlow.sprite.bounds.extents.x * .2f * dashVisual));
+        bodyGlow.transform.localScale = new Vector3(glowScale.x * (1 + .2f * dashVisual),
+            glowScale.y * (1 - .08f * dashVisual), 1);
+        bodyGlow.transform.position -= backwardOffset;
+    }
+
+    private void PrepareAfterimages()
+    {
+        // Separate world-space renderers reuse the prepared body sprite; no barrel or collider is copied.
+        afterimageRoot = new GameObject(name + " Body Afterimages").transform;
+        UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(afterimageRoot.gameObject, gameObject.scene);
+        for (int i = 0; i < AfterimageCount; i++)
+        {
+            var ghost = new GameObject("Body Afterimage " + i, typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
+            ghost.transform.SetParent(afterimageRoot, false);
+            ghost.enabled = false;
+            afterimages[i] = ghost;
+        }
+    }
+
+    private void LeaveAfterimages(Vector3 from, Vector3 to)
+    {
+        float distance = Vector3.Distance(from, to);
+        if (distance < .00001f) return;
+        // Sample distance along the actual, clamped path so low frame rates and arena walls leave no gaps or piles.
+        for (float offset = AfterimageSpacing - afterimageDistance; offset <= distance; offset += AfterimageSpacing)
+        {
+            if (!visuals.enabled) break;
+            var ghost = afterimages[nextAfterimage];
+            ghost.sprite = visuals.sprite;
+            ghost.sharedMaterial = visuals.sharedMaterial;
+            ghost.flipX = visuals.flipX;
+            ghost.flipY = visuals.flipY;
+            ghost.sortingLayerID = visuals.sortingLayerID;
+            ghost.sortingOrder = visuals.sortingOrder - 2;
+            ghost.transform.SetPositionAndRotation(Vector3.Lerp(from, to, offset / distance), visuals.transform.rotation);
+            ghost.transform.localScale = visuals.transform.lossyScale;
+            var color = visuals.color;
+            color.a *= .26f;
+            ghost.color = color;
+            ghost.enabled = true;
+            afterimageAlphas[nextAfterimage] = color.a;
+            afterimageTimes[nextAfterimage] = Time.time;
+            nextAfterimage = (nextAfterimage + 1) % AfterimageCount;
+        }
+        afterimageDistance = (afterimageDistance + distance) % AfterimageSpacing;
+    }
+
+    private void UpdateAfterimages()
+    {
+        if (!CanSelectWeapon) { ClearAfterimages(); return; }
+        for (int i = 0; i < AfterimageCount; i++)
+        {
+            var ghost = afterimages[i];
+            if (ghost == null || !ghost.enabled) continue;
+            float fade = Mathf.Clamp01(1 - (Time.time - afterimageTimes[i]) / AfterimageLifetime);
+            var color = ghost.color;
+            color.a = afterimageAlphas[i] * fade * fade;
+            ghost.color = color;
+            ghost.enabled = fade > 0;
+        }
+    }
+
+    private void ClearAfterimages()
+    {
+        foreach (var ghost in afterimages)
+            if (ghost != null) ghost.enabled = false;
+        nextAfterimage = 0;
+        afterimageDistance = 0;
+    }
+
+    private void OnDisable() => ClearAfterimages();
+
+    private void OnDestroy()
+    {
+        if (afterimageRoot != null) Destroy(afterimageRoot.gameObject);
     }
 
     private void UpdateBarrel()
@@ -158,8 +363,10 @@ public sealed class PlayerCombatant : MonoBehaviour
         if (!CanSelectWeapon)
         {
             if (Overdrive != null) Overdrive.Cancel();
+            pulseRemaining = 0;
             return;
         }
+        UpdatePulseImpulse(Time.deltaTime);
         if (knockbackRemaining.sqrMagnitude > .000001f)
         {
             Vector2 displacement = Vector2.ClampMagnitude(knockbackRemaining, Time.deltaTime * 6f);
@@ -167,15 +374,24 @@ public sealed class PlayerCombatant : MonoBehaviour
             knockbackRemaining -= displacement;
         }
         if (IsPreview) return;
-        if (match == null || !match.IsPlaying || dashing) return;
+        if (match == null || !match.IsPlaying) return;
         PlayerCommand command = input.ReadCommand(transform.position);
         aimPosition = new Vector2(Mathf.Clamp(command.AimPosition.x, -arenaExtents.x, arenaExtents.x),
             Mathf.Clamp(command.AimPosition.y, -arenaExtents.y, arenaExtents.y));
         if (command.SelectedSlot >= 0) SelectWeaponSlot(command.SelectedSlot);
-        if (command.Aim.sqrMagnitude > .01f) aim = command.Aim.normalized;
-        if (command.DashPressed && command.Move.sqrMagnitude > .01f && Time.time >= nextDashAt)
-            StartCoroutine(Dash(command.Move.normalized));
+        Vector2 targetAim = command.Aim.sqrMagnitude > .01f ? command.Aim.normalized : aim;
+        if (Time.time < laserAimUntil)
+            aim = TurnAim(aim, targetAim, ref laserAngularVelocity, Time.deltaTime);
+        else if (Time.time < laserRecoveryUntil && Time.deltaTime > 0)
+            aim = RecoverAim(aim, targetAim, ref laserAngularVelocity, Time.deltaTime);
         else
+        {
+            laserAngularVelocity = 0f;
+            aim = targetAim;
+        }
+        if (!dashing && command.DashPressed && command.Move.sqrMagnitude > .01f && Time.time >= nextDashAt)
+            StartCoroutine(Dash(command.Move.normalized));
+        else if (!dashing)
             MoveControlled(command.Move, moveSpeed * MovementMultiplier, Time.deltaTime);
 
         if (command.Fire) Fire();
@@ -197,12 +413,21 @@ public sealed class PlayerCombatant : MonoBehaviour
             Move(direction, speed * deltaTime);
             return;
         }
-        // Exponential response gives the same acceleration/coasting at any frame rate.
-        float blend = 1f - Mathf.Exp(-deltaTime / .22f);
-        inertiaVelocity = Vector2.Lerp(inertiaVelocity, Vector2.ClampMagnitude(direction, 1) * speed, blend);
+        bool hasInput = direction.sqrMagnitude > .01f;
+        bool straight = hasInput && previousDriveDirection.sqrMagnitude > .01f && Vector2.Dot(direction.normalized, previousDriveDirection) > .985f;
+        straightCharge = Mathf.MoveTowards(straightCharge, straight ? 1f : 0f,
+            deltaTime * (straight ? 1f / Overdrive.AccelerationTime : 3f));
+        if (hasInput) previousDriveDirection = direction.normalized;
+        float ramp = Mathf.Lerp(1f, Overdrive.TopSpeedMultiplier, straightCharge);
+        // Faster straight travel retains more momentum when releasing/reversing input.
+        float speedCharge = Mathf.InverseLerp(speed, speed * Overdrive.TopSpeedMultiplier, inertiaVelocity.magnitude);
+        float inertiaTime = Mathf.Lerp(.16f, .38f, Mathf.Max(straightCharge, speedCharge)) * Overdrive.InertiaMultiplier;
+        float blend = 1f - Mathf.Exp(-deltaTime / Mathf.Max(.02f, inertiaTime));
+        inertiaVelocity = Vector2.Lerp(inertiaVelocity, Vector2.ClampMagnitude(direction, 1) * speed * ramp, blend);
         Vector2 before = transform.position;
         Move(inertiaVelocity.normalized, inertiaVelocity.magnitude * deltaTime);
         Vector2 after = transform.position;
+        if (hasInput && (after - before).sqrMagnitude < .0000001f) straightCharge = 0;
         if (Mathf.Abs(after.x) >= arenaExtents.x && Mathf.Abs(after.x - before.x) < .0001f) inertiaVelocity.x = 0;
         if (Mathf.Abs(after.y) >= arenaExtents.y && Mathf.Abs(after.y - before.y) < .0001f) inertiaVelocity.y = 0;
     }
@@ -210,15 +435,28 @@ public sealed class PlayerCombatant : MonoBehaviour
     private IEnumerator Dash(Vector2 direction)
     {
         dashing = true;
+        dashDirection = direction;
+        afterimageDistance = AfterimageSpacing;
+        inertiaVelocity = Vector2.zero;
         nextDashAt = Time.time + dashCooldown;
-        invulnerableUntil = Time.time + dashDuration;
-        float end = Time.time + dashDuration;
-        while (Time.time < end)
+        invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + dashDuration);
+        float duration = Mathf.Max(.01f, dashDuration);
+        float elapsed = 0;
+        while (elapsed < duration && CanSelectWeapon)
         {
-            Move(direction, dashSpeed * MovementMultiplier * Time.deltaTime);
+            float previous = elapsed / duration;
+            elapsed = Mathf.Min(duration, elapsed + Time.deltaTime);
+            float current = elapsed / duration;
+            // Integrate a 1.65 -> 0.35 speed ramp: sharp launch, soft landing,
+            // with the same total dash distance at every frame rate.
+            float distance = (current - previous) * (1.65f - .65f * (current + previous));
+            Vector3 before = transform.position;
+            Move(direction, dashSpeed * duration * distance * MovementMultiplier);
+            LeaveAfterimages(before, transform.position);
             yield return null;
         }
         dashing = false;
+        lastDashEndedAt = Time.time;
     }
 
     private void Fire()
@@ -247,22 +485,31 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public void ResetCombatant(Vector2 position)
     {
+        laserAimUntil = 0;
+        laserSlowUntil = laserRecoveryUntil = 0;
+        laserAngularVelocity = 0;
         if (Overdrive != null) Overdrive.Cancel();
         inertiaVelocity = Vector2.zero;
+        straightCharge = 0;
+        previousDriveDirection = Vector2.zero;
+        lastDashEndedAt = float.NegativeInfinity;
+        pulseRemaining = pulseTotal = 0;
+        pulseSource = null;
+        pulseCollisionDamage = false;
         EquipWeapon(weapon);
         if (useDeckHand)
         {
-            Hand = new WeaponHand(deckCatalog != null ? deckCatalog.LoadSelectedWeapons() : null, new System.Random());
-            // Drawing is optional until a valid deck exists; keep the original basic shot playable.
-            // The basic shot is not inserted into G and does not change the subset rule.
-            if (Hand.Selected != null) CurrentWeapon = Hand.Selected;
+            Hand = null;
         }
         StopAllCoroutines();
+        ClearAfterimages();
         transform.position = position;
         HitsTaken = 0;
         invulnerableUntil = Time.time + .5f;
         nextDashAt = 0f;
         dashing = false;
+        dashVisual = 0;
+        dashDirection = Vector2.zero;
         slowedUntil = 0;
         slowMultiplier = 1;
         knockbackRemaining = Vector2.zero;

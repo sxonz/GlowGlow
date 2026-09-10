@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 06
   m_EditorClassIdentifier: 
   displayName: Overdrive
+  rarity: 0
   steps:
   - shape: 5
     position: 2

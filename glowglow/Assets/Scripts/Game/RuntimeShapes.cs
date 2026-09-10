@@ -1,31 +1,23 @@
 using UnityEngine;
 
+// All sprite artwork is imported from Assets/Resources/GameplaySprites.
+// Runtime code only loads and reuses those assets; it never builds textures or sprites.
 public static class RuntimeShapes
 {
-    private static Sprite softGlow;
-    public static Sprite SoftGlow
+    private static Sprite circle, barrel, softGlow, square, spike;
+    public static Sprite Circle => Load(ref circle, "Circle");
+    public static Sprite Barrel => Load(ref barrel, "Barrel");
+    public static Sprite SoftGlow => Load(ref softGlow, "SoftGlow");
+    public static Sprite Square => Load(ref square, "Square");
+    public static Sprite Spike => Load(ref spike, "Spike");
+
+    private static Sprite Load(ref Sprite cached, string name)
     {
-        get
-        {
-            if (softGlow != null) return softGlow;
-            const int size = 96;
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
-            {
-                name = "Soft Glow", filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp
-            };
-            var pixels = new Color[size * size];
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float radius = new Vector2((x + .5f) / size * 2 - 1, (y + .5f) / size * 2 - 1).magnitude;
-                float fade = Mathf.Clamp01(1 - radius);
-                pixels[y * size + x] = new Color(1, 1, 1, fade * fade);
-            }
-            texture.SetPixels(pixels);
-            texture.Apply(false, true);
-            softGlow = Sprite.Create(texture, new Rect(0, 0, size, size), Vector2.one * .5f, size);
-            return softGlow;
-        }
+        if (cached != null) return cached;
+        cached = Resources.Load<Sprite>("GameplaySprites/" + name);
+        if (cached == null)
+            throw new System.InvalidOperationException("Missing prepared gameplay sprite: " + name);
+        return cached;
     }
 
     public static SpriteRenderer CreateGlow(SpriteRenderer source)
@@ -82,55 +74,4 @@ public static class RuntimeShapes
         }
     }
 
-    private static Sprite barrel;
-    public static Sprite Barrel
-    {
-        get
-        {
-            if (barrel != null) return barrel;
-            const int width = 80, height = 38, border = 4;
-            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
-            {
-                name = "Runtime Tank Barrel",
-                filterMode = FilterMode.Bilinear,
-                wrapMode = TextureWrapMode.Clamp
-            };
-            var pixels = new Color32[width * height];
-            var outline = new Color32(65, 70, 78, 255);
-            var fill = new Color32(157, 164, 174, 255);
-            for (int y = 0; y < height; y++)
-            for (int x = 0; x < width; x++)
-                pixels[y * width + x] = x < border || x >= width - border || y < border || y >= height - border
-                    ? outline : fill;
-            texture.SetPixels32(pixels);
-            texture.Apply();
-            barrel = Sprite.Create(texture, new Rect(0, 0, width, height), Vector2.one * .5f, 100);
-            return barrel;
-        }
-    }
-
-    private static Sprite circle;
-    public static Sprite Circle
-    {
-        get
-        {
-            if (circle != null) return circle;
-            const int size = 64;
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { name = "Runtime Circle" };
-            var pixels = new Color32[size * size];
-            Vector2 center = Vector2.one * (size - 1) * .5f;
-            float radius = size * .48f;
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
-            {
-                float edge = radius - Vector2.Distance(new Vector2(x, y), center);
-                byte alpha = (byte)(Mathf.Clamp01(edge + .5f) * 255);
-                pixels[y * size + x] = new Color32(255, 255, 255, alpha);
-            }
-            texture.SetPixels32(pixels);
-            texture.Apply();
-            circle = Sprite.Create(texture, new Rect(0, 0, size, size), Vector2.one * .5f, size);
-            return circle;
-        }
-    }
 }

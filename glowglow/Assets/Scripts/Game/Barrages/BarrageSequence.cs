@@ -10,23 +10,39 @@ public sealed class BarrageSequence : ProjectileBase
     private float startedAt;
 
     public static ProjectileBase Fire(PlayerCombatant owner, Vector2 gun, Vector2 direction,
-        Vector2 cursor, WeaponStats stats, BarrageStep[] source)
+        Vector2 cursor, WeaponStats stats, BarrageStep[] source, WeaponEffects effects = WeaponEffects.None)
     {
         var timelineStats = new WeaponStats(stats.Cooldown, stats.Speed, float.PositiveInfinity, stats.Radius, stats.Range, stats.Color);
-        var sequence = SpawnBuiltin<BarrageSequence>(owner, gun, direction, timelineStats);
+        var sequence = SpawnBuiltin<BarrageSequence>(owner, gun, direction, timelineStats, effects);
+        Vector2 chainPosition = effects.Has(WeaponEffects.BombChain) ? owner.RandomArenaPosition() : cursor;
+        source = WeaponPatternCompiler.Build(source, effects, effects.Has(WeaponEffects.BombChain) ? Random.value : 1f, chainPosition);
         sequence.cursor = cursor;
         sequence.playerPosition = owner.transform.position;
         sequence.steps = new BarrageStep[source.Length];
         sequence.emitted = new bool[source.Length];
-        for (int i = 0; i < source.Length; i++) sequence.steps[i] = source[i]?.Snapshot();
+        for (int i = 0; i < source.Length; i++)
+        {
+            var step = sequence.steps[i] = source[i]?.Snapshot();
+            if (step != null && step.followMuzzle)
+                owner.BeginLaserAim(step.delay + step.duration, !effects.Has(WeaponEffects.LaserFreeWarning));
+        }
         // Emit zero-delay steps immediately; the remaining events use scaled game time.
-        sequence.Tick(0);
+        sequence.EmitDueSteps();
         return sequence;
     }
 
     protected override void OnSpawn() { startedAt = Time.time; steps = null; emitted = null; }
 
-    protected override void Tick(float deltaTime)
+    protected override void Tick(float deltaTime) { }
+
+    protected override void LateUpdate()
+    {
+        // Delayed shots sample the muzzle after movement and dash coroutines for this frame.
+        EmitDueSteps();
+        base.LateUpdate();
+    }
+
+    private void EmitDueSteps()
     {
         if (steps == null) return;
         bool pending = false;
@@ -46,20 +62,35 @@ public sealed class BarrageSequence : ProjectileBase
         if (step.position == BarragePosition.Player) origin = playerPosition;
         float offset = Random.Range(step.offsetDegrees.x, step.offsetDegrees.y);
         Vector2 direction = Quaternion.Euler(0, 0, offset) * Direction;
+        if (step.followMuzzle || step.fireFromCurrentMuzzle)
+        {
+            origin = Owner.MuzzlePosition;
+            direction = Quaternion.Euler(0, 0, offset) * Owner.AimDirection;
+        }
+        if (step.overridePosition) origin = step.worldPosition;
         float speed = Stats.Speed * Random.Range(step.speedMultiplier.x, step.speedMultiplier.y);
         float lifetime = step.duration > 0 ? step.duration : float.PositiveInfinity;
         var stats = new WeaponStats(Stats.Cooldown, speed, lifetime,
-            Stats.Radius * (step.shape == BarrageShape.Bullet ? step.startSize : 1), Stats.Range, Stats.Color);
-        if (step.shape == BarrageShape.Overdrive)
-            SpawnBuiltin<OverdriveProjectile>(Owner, origin, direction, stats);
+            Stats.Radius * (step.shape == BarrageShape.Bullet || step.shape == BarrageShape.Bouncer ? step.startSize : 1), Stats.Range, Stats.Color);
+        if (step.shape == BarrageShape.OrbitOrb)
+        {
+            SpawnBuiltin<OrbitOrb>(Owner, origin, direction, stats, Effects);
+            if (Effects.Has(WeaponEffects.OrbDouble))
+                SpawnBuiltin<OrbitOrb>(Owner, origin, -direction,
+                    new WeaponStats(stats.Cooldown, stats.Speed, stats.Lifetime, stats.Radius * .5f, stats.Range, stats.Color), Effects);
+        }
+        else if (step.shape == BarrageShape.Overdrive)
+            SpawnBuiltin<OverdriveProjectile>(Owner, origin, direction, stats, Effects);
         else if (step.shape == BarrageShape.ElectricPulse)
-            SpawnBuiltin<ElectricPulseProjectile>(Owner, origin, direction, stats).Configure(step);
+            SpawnBuiltin<ElectricPulseProjectile>(Owner, origin, direction, stats, Effects).Configure(step);
+        else if (step.shape == BarrageShape.Bouncer)
+            SpawnBuiltin<Bouncer>(Owner, origin, direction, stats, Effects);
         else if (step.shape == BarrageShape.Bullet)
-            SpawnBuiltin<BulletProjectile>(Owner, origin, direction, stats);
+            SpawnBuiltin<BulletProjectile>(Owner, origin, direction, stats, Effects).SetInterception(step.interceptsBullet ? 1 : 0);
         else
         {
-            var shape = SpawnBuiltin<BarrageShapeProjectile>(Owner, origin, direction, stats);
-            shape.Configure(step);
+            var shape = SpawnBuiltin<BarrageShapeProjectile>(Owner, origin, direction, stats, Effects);
+            shape.Configure(step, offset);
         }
     }
 

@@ -15,6 +15,11 @@ public abstract class ProjectileBase : MonoBehaviour
     private SpriteRenderer glow;
     public PlayerCombatant Owner { get; private set; }
     public WeaponStats Stats { get; private set; }
+    public WeaponEffects Effects { get; private set; }
+    public float RemainingLifetime => Mathf.Max(0, despawnAt - Time.time);
+    protected void ExtendLifetime(float seconds) => despawnAt += Mathf.Max(0, seconds);
+    public bool IsSpawned => spawned;
+    internal void RemoveProjectile() => Despawn();
     protected Vector2 Direction { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -25,17 +30,17 @@ public abstract class ProjectileBase : MonoBehaviour
     }
 
     public static ProjectileBase Spawn(ProjectileBase prefab, PlayerCombatant owner,
-        Vector2 position, Vector2 direction, WeaponStats stats)
+        Vector2 position, Vector2 direction, WeaponStats stats, WeaponEffects effects = WeaponEffects.None)
         => SpawnInternal(prefab != null ? (object)prefab.GetInstanceID() : typeof(BulletProjectile),
             () => prefab != null ? Instantiate(prefab) : new GameObject("Pooled Bullet").AddComponent<BulletProjectile>(),
-            owner, position, direction, stats);
+            owner, position, direction, stats, effects);
 
-    public static T SpawnBuiltin<T>(PlayerCombatant owner, Vector2 position, Vector2 direction, WeaponStats stats)
+    public static T SpawnBuiltin<T>(PlayerCombatant owner, Vector2 position, Vector2 direction, WeaponStats stats, WeaponEffects effects = WeaponEffects.None)
         where T : ProjectileBase
-        => (T)SpawnInternal(typeof(T), () => new GameObject(typeof(T).Name).AddComponent<T>(), owner, position, direction, stats);
+        => (T)SpawnInternal(typeof(T), () => new GameObject(typeof(T).Name).AddComponent<T>(), owner, position, direction, stats, effects);
 
     private static ProjectileBase SpawnInternal(object key, System.Func<ProjectileBase> create,
-        PlayerCombatant owner, Vector2 position, Vector2 direction, WeaponStats stats)
+        PlayerCombatant owner, Vector2 position, Vector2 direction, WeaponStats stats, WeaponEffects effects)
     {
         if (!Pools.TryGetValue(key, out var pool)) Pools.Add(key, pool = new Queue<ProjectileBase>());
         ProjectileBase projectile = null;
@@ -46,6 +51,7 @@ public abstract class ProjectileBase : MonoBehaviour
         projectile.poolKey = key;
         projectile.Owner = owner;
         projectile.Stats = stats;
+        projectile.Effects = effects;
         projectile.Direction = direction.sqrMagnitude > .0001f ? direction.normalized : Vector2.right;
         projectile.transform.SetPositionAndRotation(position, Quaternion.identity);
         projectile.transform.localScale = Vector3.one;
@@ -86,7 +92,7 @@ public abstract class ProjectileBase : MonoBehaviour
 
     protected abstract void OnSpawn();
     protected virtual bool GlowEnabled => true;
-    private void LateUpdate()
+    protected virtual void LateUpdate()
     {
         if (glow == null) return;
         if (!GlowEnabled) { glow.enabled = false; return; }
@@ -100,9 +106,7 @@ public abstract class ProjectileBase : MonoBehaviour
 
     protected void TryHit(Collider2D other, float knockback = 0, float speedMultiplier = 1, float slowDuration = 0, bool dealsDamage = true)
     {
-        if (!spawned) return;
-        var target = other.GetComponent<PlayerCombatant>();
-        if (target == null || target == Owner || !target.CanBeHit || (!AllowRepeatedHits && !hitTargets.Add(target))) return;
+        if (!TryRegisterHit(other, out var target)) return;
         Vector2 away = (Vector2)(target.transform.position - transform.position);
         target.ApplyImpact(away.sqrMagnitude > .0001f ? away : Direction, knockback, speedMultiplier, slowDuration);
         if (dealsDamage) target.ReceiveHit(Owner);
@@ -118,6 +122,13 @@ public abstract class ProjectileBase : MonoBehaviour
         Owner = null;
         gameObject.SetActive(false);
         Pools[poolKey].Enqueue(this);
+    }
+
+    protected bool TryRegisterHit(Collider2D other, out PlayerCombatant target)
+    {
+        target = other.GetComponent<PlayerCombatant>();
+        return spawned && target != null && target != Owner && target.CanBeHit &&
+            (AllowRepeatedHits || hitTargets.Add(target));
     }
 
     protected virtual void OnDestroy() => Active.Remove(this);

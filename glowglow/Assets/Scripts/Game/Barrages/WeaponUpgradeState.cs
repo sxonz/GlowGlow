@@ -1,39 +1,58 @@
 using System;
-using UnityEngine;
+using System.Collections.Generic;
 
-public enum WeaponUpgrade { FireRate, Speed, Lifetime, Size, Range }
-
-/// <summary>Progress owned by one player, never by a shared asset.</summary>
-[Serializable]
+/// <summary>Per-weapon session progress. Effects run in first-acquired order.</summary>
 public sealed class WeaponUpgradeState
 {
-    [SerializeField, Min(0)] private int fireRateLevel;
-    [SerializeField, Min(0)] private int speedLevel;
-    [SerializeField, Min(0)] private int lifetimeLevel;
-    [SerializeField, Min(0)] private int sizeLevel;
-    [SerializeField, Min(0)] private int rangeLevel;
-
-    public int GetLevel(WeaponUpgrade upgrade) => upgrade switch
+    private readonly Dictionary<WeaponUpgradeDefinition, int> levels = new();
+    private readonly List<WeaponUpgradeDefinition> order = new();
+    public event Action Changed;
+    public int Count => order.Count;
+    public WeaponEffects Effects
     {
-        WeaponUpgrade.FireRate => fireRateLevel,
-        WeaponUpgrade.Speed => speedLevel,
-        WeaponUpgrade.Lifetime => lifetimeLevel,
-        WeaponUpgrade.Size => sizeLevel,
-        WeaponUpgrade.Range => rangeLevel,
-        _ => throw new ArgumentOutOfRangeException(nameof(upgrade))
-    };
-
-    public bool TryUpgrade(WeaponUpgrade upgrade, int maxLevel)
-    {
-        if (GetLevel(upgrade) >= Mathf.Max(0, maxLevel)) return false;
-        switch (upgrade)
+        get
         {
-            case WeaponUpgrade.FireRate: fireRateLevel++; break;
-            case WeaponUpgrade.Speed: speedLevel++; break;
-            case WeaponUpgrade.Lifetime: lifetimeLevel++; break;
-            case WeaponUpgrade.Size: sizeLevel++; break;
-            case WeaponUpgrade.Range: rangeLevel++; break;
+            WeaponEffects effects = WeaponEffects.None;
+            foreach (var upgrade in order) if (upgrade != null) effects |= upgrade.Effects;
+            return effects;
         }
+    }
+
+    public int GetLevel(WeaponUpgradeDefinition upgrade)
+        => upgrade != null && levels.TryGetValue(upgrade, out int level) ? level : 0;
+
+    internal bool TryUpgrade(WeaponUpgradeDefinition upgrade, WeaponDefinition weapon)
+    {
+        if (upgrade == null || !upgrade.CanApplyTo(weapon)) return false;
+        int level = GetLevel(upgrade);
+        if (level >= upgrade.maxLevel) return false;
+        if (level == 0) order.Add(upgrade);
+        levels[upgrade] = level + 1;
+        Changed?.Invoke();
         return true;
+    }
+
+    public bool Remove(WeaponUpgradeDefinition upgrade)
+    {
+        if (upgrade == null || !levels.Remove(upgrade)) return false;
+        order.Remove(upgrade);
+        Changed?.Invoke();
+        return true;
+    }
+
+    public void Clear()
+    {
+        if (order.Count == 0) return;
+        levels.Clear();
+        order.Clear();
+        Changed?.Invoke();
+    }
+
+    public WeaponStats Apply(WeaponStats baseStats)
+    {
+        var stats = baseStats;
+        foreach (var upgrade in order)
+            if (upgrade != null) stats = upgrade.ModifyStats(stats, levels[upgrade]);
+        return stats;
     }
 }

@@ -18,6 +18,7 @@ public sealed class BarragePreview : MonoBehaviour
     private float firedAt;
     private float simulateAccumulator;
     private bool overdrivePreview;
+    private bool bouncerPreview;
     private float demoStart;
     private float nextDemoShot;
     private const int PreviewLayer = 31;
@@ -80,16 +81,18 @@ public sealed class BarragePreview : MonoBehaviour
         ProjectileBase.DespawnOwnedBy(shooter);
         ProjectileBase.DespawnOwnedBy(target);
         bool pulse = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.ElectricPulse);
+        bool orb = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OrbitOrb);
         overdrivePreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Overdrive);
+        bouncerPreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Bouncer);
         shooter.ConfigurePreview(weapon);
         // Keep ranged attacks well separated; the radial pulse demonstrates its outer reach.
-        shooter.ResetCombatant(new Vector2(pulse ? -1.4f : -4, 0));
-        target.ResetCombatant(new Vector2(pulse ? 1.4f : 4, 0));
+        shooter.ResetCombatant(new Vector2(orb ? -.7f : pulse ? -1.4f : -4, 0));
+        target.ResetCombatant(new Vector2(orb ? .7f : pulse ? 1.4f : 4, 0));
         // Give reset invulnerability time to expire before firing the demonstration.
         firedAt = Time.time + .6f;
         demoStart = firedAt;
         nextDemoShot = firedAt + .8f;
-        float length = overdrivePreview ? 5 : Mathf.Max(1.8f, weapon.cooldown);
+        float length = overdrivePreview || orb ? 5 : Mathf.Max(1.8f, weapon.cooldown);
         foreach (var step in weapon.steps ?? System.Array.Empty<BarrageStep>())
             if (step != null) length = Mathf.Max(length, step.delay + step.duration);
         restartAt = firedAt + length + .7f;
@@ -102,7 +105,9 @@ public sealed class BarragePreview : MonoBehaviour
         if (Time.time >= restartAt) { Restart(); return; }
         if (Time.time >= firedAt)
         {
-            shooter.CurrentWeapon.Fire(shooter, (Vector2)shooter.transform.position + Vector2.right * .56f, Vector2.right, target.transform.position);
+            // Fire diagonally so Bouncer demonstrates reflection before hitting the target.
+            Vector2 direction = bouncerPreview ? new Vector2(1, .65f).normalized : Vector2.right;
+            shooter.CurrentWeapon.Fire(shooter, (Vector2)shooter.transform.position + direction * .56f, direction, target.transform.position);
             firedAt = float.PositiveInfinity;
         }
         // A moving target makes the short slow visible.

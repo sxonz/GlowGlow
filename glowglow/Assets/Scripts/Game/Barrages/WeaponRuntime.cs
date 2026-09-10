@@ -17,7 +17,7 @@ public sealed class WeaponRuntime
         Definition = definition;
     }
 
-    public bool TryUpgrade(WeaponUpgrade upgrade) => Upgrades.TryUpgrade(upgrade, Definition.maxUpgradeLevel);
+    public bool TryUpgrade(WeaponUpgradeDefinition upgrade) => Upgrades.TryUpgrade(upgrade, Definition);
     public ProjectileBase Fire(PlayerCombatant owner, Vector2 position, Vector2 direction)
         => Fire(owner, position, direction, position + direction.normalized * Stats.Range);
 
@@ -25,9 +25,10 @@ public sealed class WeaponRuntime
     {
         if (CooldownRemaining > 0 || owner != null && owner.IsOverdriving) return null;
         var stats = Stats;
+        var effects = Upgrades.Effects;
         var projectile = Definition.steps != null && Definition.steps.Length > 0
-            ? BarrageSequence.Fire(owner, position, direction, aimPosition, stats, Definition.steps)
-            : ProjectileBase.Spawn(Definition.projectilePrefab, owner, position, direction, stats);
+            ? BarrageSequence.Fire(owner, position, direction, aimPosition, stats, Definition.steps, effects)
+            : ProjectileBase.Spawn(Definition.projectilePrefab, owner, position, direction, stats, effects);
         CooldownDuration = stats.Cooldown;
         readyAt = Time.time + CooldownDuration;
         return projectile;

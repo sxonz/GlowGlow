@@ -12,13 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04608578b2f348059387972465e75a06, type: 3}
   m_Name: Basic Barrage 08
   m_EditorClassIdentifier: 
-  displayName: 기본 탄막 08
+  displayName: Orbit Orb
+  rarity: 0
+  steps:
+  - shape: 7
+    position: 2
+    delay: 0
+    offsetDegrees: {x: 0, y: 0}
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 1, y: 1}
+    dealsDamage: 1
+    opacity: 1
+    duration: 5
+    startSize: 1
+    peakSize: 1
+    endSize: 1
+    growTime: 0
+    shrinkTime: 0
+    flash: 0
   icon: {fileID: 21300000, guid: 5af0c84625a7b0e44878274afb9d5863, type: 3}
   projectilePrefab: {fileID: 0}
-  cooldown: 0.22
+  cooldown: 10
   projectileSpeed: 12
-  projectileLifetime: 3
-  projectileRadius: 0.13
+  projectileLifetime: 5
+  projectileRadius: 0.2
   color: {r: 1, g: 0.95, b: 0.5, a: 1}
   range: 12
   maxUpgradeLevel: 5

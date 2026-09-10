@@ -81,8 +81,6 @@ public sealed class LocalPlayerInput : MonoBehaviour, IPlayerInputSource
         if (keyboard.digit1Key.wasPressedThisFrame) return 0;
         if (keyboard.digit2Key.wasPressedThisFrame) return 1;
         if (keyboard.digit3Key.wasPressedThisFrame) return 2;
-        if (keyboard.digit4Key.wasPressedThisFrame) return 3;
-        if (keyboard.digit5Key.wasPressedThisFrame) return 4;
         return -1;
     }
 }

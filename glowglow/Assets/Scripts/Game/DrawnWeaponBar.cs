@@ -35,6 +35,14 @@ public sealed class DrawnWeaponBar : MonoBehaviour
     {
         for (int i = 0; i < slots.Length; i++)
         {
+            if (i < WeaponHand.SlotCount)
+            {
+                var rect = slots[i].button.GetComponent<RectTransform>();
+                float width = .95f / WeaponHand.SlotCount;
+                rect.anchorMin = new Vector2(.025f + i * width, .07f);
+                rect.anchorMax = new Vector2(.025f + (i + 1) * width - .015f, .78f);
+                rect.offsetMin = rect.offsetMax = Vector2.zero;
+            }
             var glow = new GameObject("Selection Glow", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image)).GetComponent<Image>();
             glow.transform.SetParent(slots[i].button.transform, false);
             glow.transform.SetAsFirstSibling();
@@ -58,11 +66,12 @@ public sealed class DrawnWeaponBar : MonoBehaviour
         var hand = player != null ? player.Hand : null;
         int count = hand?.Drawn.Count ?? 0;
         var basic = count == 0 && player != null ? player.CurrentWeapon : null;
-        status.text = count > 0 ? $"P1  ·  뽑은 탄막 {count}/5   |   숫자 1–5 / 클릭으로 선택" :
-            "P1  ·  기본 탄막   |   숫자 1–5 / 클릭으로 선택";
+        status.text = count > 0 ? $"P1  ·  장착 탄막 {count}/3   |   숫자 1–3 / 클릭으로 선택" :
+            "P1  ·  시작 탄막 선택 대기";
         for (int i = 0; i < slots.Length; i++)
         {
             var slot = slots[i];
+            slot.button.gameObject.SetActive(i < WeaponHand.SlotCount);
             var weapon = i < count ? hand.Drawn[i] : i == 0 ? basic : null;
             bool selected = weapon != null && (basic != null || hand.SelectedIndex == i);
             if (slot.glow != null) slot.glow.color = new Color(1, .3f, .8f, selected ? .22f : 0);
@@ -71,8 +80,8 @@ public sealed class DrawnWeaponBar : MonoBehaviour
             slot.selection.effectDistance = selected ? new Vector2(3, -3) : new Vector2(1, -1);
             slot.icon.sprite = weapon?.Definition.icon != null ? weapon.Definition.icon : fallbackIcon;
             slot.icon.color = weapon != null ? weapon.Definition.color : new Color(.55f, .45f, .65f, .25f);
-            slot.name.text = weapon != null ? weapon.Definition.displayName : "뽑기 대기";
-            slot.name.color = weapon != null ? Color.white : new Color(.6f, .53f, .68f);
+            slot.name.text = weapon != null ? weapon.Definition.displayName : "빈 슬롯";
+            slot.name.color = weapon != null ? weapon.Definition.RarityColor : new Color(.6f, .53f, .68f);
             slot.cooldownClock.fillAmount = weapon?.CooldownFraction ?? 0;
             float remaining = weapon?.CooldownRemaining ?? 0;
             slot.remaining.text = weapon == null ? "—" : remaining > .01f ? $"{remaining:0.0}s" : "READY";

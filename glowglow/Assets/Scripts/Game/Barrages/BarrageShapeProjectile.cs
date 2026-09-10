@@ -13,6 +13,7 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     private Vector2 baseDimensions;
     private float startedAt;
     private Quaternion initialRotation;
+    private float muzzleOffsetDegrees;
     protected override bool DespawnOnHit => false;
     protected override bool GlowEnabled => step != null && step.shape != BarrageShape.Line;
 
@@ -30,7 +31,7 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         body.bodyType = RigidbodyType2D.Kinematic;
         body.gravityScale = 0;
         body.useFullKinematicContacts = true;
-        if (square == null) square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1), Vector2.one * .5f, 1);
+        if (square == null) square = RuntimeShapes.Square;
         if (flashVisual == null)
         {
             flashVisual = new GameObject("Flash outside hitbox").AddComponent<SpriteRenderer>();
@@ -42,9 +43,15 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         startedAt = Time.time;
     }
 
-    public void Configure(BarrageStep value)
+    public void Configure(BarrageStep value, float offsetDegrees = 0)
     {
         step = value;
+        muzzleOffsetDegrees = offsetDegrees;
+        if (step.followMuzzle)
+        {
+            Owner.BeginLaserAim(Stats.Lifetime, step.dealsDamage || !Effects.Has(WeaponEffects.LaserFreeWarning));
+            if (step.dealsDamage) Owner.ApplyLaserRecoil();
+        }
         bool round = step.shape == BarrageShape.Circle;
         visual.sprite = round ? RuntimeShapes.Circle : square;
         visual.sortingOrder = step.dealsDamage ? 4 : 2;
@@ -65,7 +72,13 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         circle.enabled = step.dealsDamage && round;
         box.enabled = step.dealsDamage && !round;
         flashVisual.sprite = visual.sprite;
-        flashVisual.transform.localScale = Vector3.one * 1.15f;
+        bool laser = step.shape == BarrageShape.Box && step.position == BarragePosition.Gun;
+        const float flashScale = 1.15f;
+        flashVisual.transform.localScale = Vector3.one * flashScale;
+        // Keep the enlarged flash's rear edge at the muzzle instead of extending behind it.
+        flashVisual.transform.localPosition = laser
+            ? Vector3.right * (visual.sprite.bounds.min.x * (1f - flashScale))
+            : Vector3.zero;
         initialRotation = transform.rotation;
         Tick(0);
     }
@@ -81,15 +94,32 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         transform.localScale = step.shape == BarrageShape.Line
             ? new Vector3(baseDimensions.x, baseDimensions.y * size, 1)
             : new Vector3(baseDimensions.x * size, baseDimensions.y * size, 1);
+        FollowMuzzle();
         visual.color = new Color(Stats.Color.r, Stats.Color.g, Stats.Color.b, step.opacity);
-        flashVisual.enabled = step.flash && age < .12f;
-        // Keep the impact readable without an opaque white flash over the playfield.
-        Color flashColor = Color.Lerp(Stats.Color, Color.white, .25f);
-        flashColor.a = .32f * Mathf.Clamp01(1 - age / .12f);
+        bool laser = step.shape == BarrageShape.Box && step.position == BarragePosition.Gun;
+        float flashDuration = laser ? .22f : .12f;
+        flashVisual.enabled = step.flash && age < flashDuration;
+        Color flashColor = Color.Lerp(Stats.Color, Color.white, laser ? .85f : .25f);
+        flashColor.a = (laser ? .8f : .32f) * Mathf.Clamp01(1 - age / flashDuration);
         flashVisual.color = flashColor;
     }
 
     private void OnTriggerEnter2D(Collider2D other) => Hit(other);
+    protected override void LateUpdate()
+    {
+        // Run after player movement/dash coroutines; the collider and artwork share this transform.
+        FollowMuzzle();
+        base.LateUpdate();
+    }
+
+    private void FollowMuzzle()
+    {
+        if (step == null || !step.followMuzzle || Owner == null) return;
+        float angle = Mathf.Atan2(Owner.AimDirection.y, Owner.AimDirection.x) * Mathf.Rad2Deg + muzzleOffsetDegrees;
+        Quaternion rotation = Quaternion.Euler(0, 0, angle);
+        Vector3 direction = rotation * Vector3.right;
+        transform.SetPositionAndRotation((Vector3)Owner.MuzzlePosition + direction * transform.localScale.x * .5f, rotation);
+    }
     private void OnTriggerStay2D(Collider2D other) => Hit(other);
     private void Hit(Collider2D other)
     {

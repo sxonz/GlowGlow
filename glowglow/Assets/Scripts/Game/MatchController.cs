@@ -7,6 +7,8 @@ public sealed class MatchController : MonoBehaviour
 {
     public event Action StateChanged;
     public bool IsPlaying { get; private set; }
+    public bool IsDrafting { get; private set; }
+    private OpeningDraftScreen draftScreen;
     public float RemainingTime => Mathf.Max(0, matchDuration - elapsed);
     public PlayerCombatant Winner { get; private set; }
 
@@ -40,7 +42,7 @@ public sealed class MatchController : MonoBehaviour
         if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame) SceneManager.LoadScene("Title");
         if (!IsPlaying)
         {
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame) RestartMatch();
+            if (!IsDrafting && keyboard != null && keyboard.rKey.wasPressedThisFrame) RestartMatch();
             return;
         }
         elapsed += Time.deltaTime;
@@ -56,6 +58,7 @@ public sealed class MatchController : MonoBehaviour
 
     public void RestartMatch()
     {
+        IsPlaying = false;
         if (deckCatalog == null || !deckCatalog.IsSavedDeckValid())
         {
             IsPlaying = false;
@@ -67,6 +70,18 @@ public sealed class MatchController : MonoBehaviour
         Winner = null;
         playerOne.ResetCombatant(new Vector2(-5.8f, 0));
         playerTwo.ResetCombatant(new Vector2(5.8f, 0));
+        IsDrafting = true;
+        if (draftScreen == null) draftScreen = gameObject.AddComponent<OpeningDraftScreen>();
+        draftScreen.Show(new OpeningDraft(deckCatalog.LoadSelectedWeapons(), new System.Random(),
+            Resources.LoadAll<WeaponUpgradeDefinition>("WeaponUpgrades")), StartCombat);
+        StateChanged?.Invoke();
+    }
+
+    private void StartCombat(OpeningDraft draft)
+    {
+        if (!IsDrafting || !draft.IsComplete) return;
+        playerOne.EquipDraft(draft, DeckCatalog.RequiredDeckSize);
+        IsDrafting = false;
         IsPlaying = true;
         StateChanged?.Invoke();
     }

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Pulse Shot
   m_EditorClassIdentifier: 
   displayName: Basic Shot
+  rarity: 0
   steps:
   - shape: 0
     position: 0

@@ -126,8 +126,8 @@ public sealed class DeckScreen : MonoBehaviour
         if (card == null) return;
         var weapon = card.weapon;
         var stats = weapon.ResolveStats(null);
-        details.text = $"<color=#FF80DD><size=120%>{weapon.displayName}</size></color>\n" +
-            $"{card.description}\n\n쿨타임 {stats.Cooldown:0.##}초  ·  최대 강화 +{weapon.maxUpgradeLevel}";
+        details.text = $"<color=#{ColorUtility.ToHtmlStringRGB(weapon.RarityColor)}><size=120%>{weapon.displayName}</size></color> · {weapon.RarityTag}\n" +
+            $"{card.description}\n\n쿨타임 {stats.Cooldown:0.##}초";
         bool included = saved.cards.Contains(card.id);
         toggle.interactable = included || saved.cards.Count < DeckCatalog.RequiredDeckSize;
         actionLabel.text = included ? "덱에서 제거" : saved.cards.Count >= DeckCatalog.RequiredDeckSize ? "덱이 가득 찼습니다 (8/8)" : "덱에 추가";
@@ -178,7 +178,9 @@ public sealed class DeckScreen : MonoBehaviour
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() => SelectCard(card));
             button.transform.Find("Card Name").GetComponent<TMP_Text>().text = card.weapon.displayName;
-            button.transform.Find("Card Status").GetComponent<TMP_Text>().text = saved.cards.Contains(card.id) ? "덱에 포함됨" : "무기 · 상세 보기";
+            button.transform.Find("Card Name").GetComponent<TMP_Text>().color = card.weapon.RarityColor;
+            button.transform.Find("Card Status").GetComponent<TMP_Text>().text = card.weapon.RarityTag +
+                (saved.cards.Contains(card.id) ? " · 덱에 포함됨" : " · 상세 보기");
             foreach (var image in button.transform.Find("Bullet Preview").GetComponentsInChildren<Image>())
             {
                 image.color = card.weapon.color;
@@ -203,6 +205,7 @@ public sealed class DeckScreen : MonoBehaviour
             if (i >= saved.cards.Count) continue;
             var card = cards.Find(candidate => candidate.id == saved.cards[i]);
             row.GetComponentInChildren<TMP_Text>().text = $"{i + 1:00}  {card.weapon.displayName}";
+            row.GetComponentInChildren<TMP_Text>().color = card.weapon.RarityColor;
             row.onClick.RemoveAllListeners();
             row.onClick.AddListener(() => SelectCard(card));
         }

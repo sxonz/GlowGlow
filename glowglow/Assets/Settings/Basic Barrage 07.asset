@@ -12,11 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04608578b2f348059387972465e75a06, type: 3}
   m_Name: Basic Barrage 07
   m_EditorClassIdentifier: 
-  displayName: 기본 탄막 07
+  displayName: Bouncer
+  rarity: 0
+  steps:
+  - shape: 6
+    position: 0
+    delay: 0
+    offsetDegrees: {x: 0, y: 0}
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 1, y: 1}
+    dealsDamage: 1
+    opacity: 1
+    duration: 3
+    startSize: 1
+    peakSize: 1
+    endSize: 1
+    growTime: 0
+    shrinkTime: 0
+    flash: 0
   icon: {fileID: 21300000, guid: 5af0c84625a7b0e44878274afb9d5863, type: 3}
   projectilePrefab: {fileID: 0}
-  cooldown: 0.22
-  projectileSpeed: 12
+  cooldown: 1.2
+  projectileSpeed: 15
   projectileLifetime: 3
   projectileRadius: 0.13
   color: {r: 0.2, g: 1, b: 0.85, a: 1}

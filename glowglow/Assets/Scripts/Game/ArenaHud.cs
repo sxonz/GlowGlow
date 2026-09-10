@@ -35,7 +35,7 @@ public sealed class ArenaHud : MonoBehaviour
         playerTwoLives.text = Shield(match.PlayerTwo) + Hearts(match.PlayerTwo.HitsRemaining) + "  P2";
         int seconds = Mathf.CeilToInt(match.RemainingTime);
         timer.text = $"{seconds / 60:00}:{seconds % 60:00}";
-        if (match.IsPlaying) result.text = string.Empty;
+        if (match.IsPlaying || match.IsDrafting) result.text = string.Empty;
         else result.text = match.Winner == null ? "DRAW\nR  재시작" : $"PLAYER {match.Winner.PlayerIndex} WINS\nR  재시작";
     }
 

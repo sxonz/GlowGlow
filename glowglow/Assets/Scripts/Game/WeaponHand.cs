@@ -1,15 +1,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>D is the unique deck; G is a draw without replacement and always smaller than D.</summary>
+/// <summary>Three equipped weapons, ordered by the opening draft selection.</summary>
 public sealed class WeaponHand
 {
-    public const int SlotCount = 5;
+    public const int SlotCount = 3;
     private readonly List<WeaponRuntime> drawn = new List<WeaponRuntime>();
     public IReadOnlyList<WeaponRuntime> Drawn => drawn;
     public int DeckCount { get; }
     public int SelectedIndex { get; private set; } = -1;
     public WeaponRuntime Selected => SelectedIndex >= 0 ? drawn[SelectedIndex] : null;
+
+    private WeaponHand(IReadOnlyList<WeaponRuntime> selected, int deckCount)
+    {
+        DeckCount = deckCount;
+        foreach (var runtime in selected) drawn.Add(runtime);
+        if (drawn.Count > 0) SelectedIndex = 0;
+    }
+
+    public static WeaponHand FromDraft(OpeningDraft draft, int deckCount)
+        => new WeaponHand(draft.Complete(), deckCount);
 
     public WeaponHand(IEnumerable<WeaponDefinition> deck, System.Random random)
     {
