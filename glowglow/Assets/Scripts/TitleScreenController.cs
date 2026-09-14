@@ -29,6 +29,31 @@ public sealed class TitleScreenController : MonoBehaviour
 
     private void Start()
     {
+        var training = CreateModeButton(soloPanel, "훈련장", "TRAINING · 모든 탄막 / 업그레이드 자유 테스트");
+        training.transform.SetSiblingIndex(1);
+        training.onClick.AddListener(() => { MatchController.RequestTraining(); SceneManager.LoadScene("Arena"); });
+        foreach (var existing in soloPanel.GetComponentsInChildren<Button>(true))
+            foreach (var label in existing.GetComponentsInChildren<TMP_Text>(true))
+                if (label.text == "봇 대전")
+                {
+                    existing.gameObject.SetActive(false);
+                    Destroy(existing.gameObject);
+                    break;
+                }
+        var botButton = CreateModeButton(soloPanel, "봇 대전", "BOT MATCH · 레이팅을 정하고 대전");
+        botButton.transform.SetSiblingIndex(2);
+        botButton.onClick.AddListener(() =>
+        {
+            soloPanel.interactable = soloPanel.blocksRaycasts = false;
+            BotMatchSetup.Show(mainMenu.transform.parent,
+            firstButton.GetComponentInChildren<TMP_Text>(true).font, rating =>
+            {
+                if (!RequireCompleteDeck(soloPanel)) return;
+                MatchController.RequestBotMatch(rating);
+                SceneManager.LoadScene("Arena");
+            }, () => { soloPanel.interactable = soloPanel.blocksRaycasts = true; Select(botButton); });
+        });
+        SetLabels(soloButton, "SINGLEPLAYER", "훈련장 · 봇 대전 · 캠페인");
         deckButton.onClick.AddListener(OpenDeck);
         soloBackButton.onClick.AddListener(() => CloseModes(soloPanel, soloButton));
         multiplayerBackButton.onClick.AddListener(() => CloseModes(multiplayerPanel, firstButton));
@@ -115,9 +140,8 @@ public sealed class TitleScreenController : MonoBehaviour
 
     public void PlaySolo()
     {
-        if (!RequireCompleteDeck(mainMenu)) return;
-        SetStatus("SINGLEPLAYER  ·  신규 모드 준비 중");
-        BeginTransition(mainMenu, soloPanel, soloBackButton);
+        SetStatus("SINGLEPLAYER  ·  훈련장 / 모드 선택");
+        BeginTransition(mainMenu, soloPanel, soloPanel.transform.Find("Content/훈련장").GetComponent<Button>());
     }
 
     public void OpenDeck()
@@ -154,8 +178,8 @@ public sealed class TitleScreenController : MonoBehaviour
     private void PlayClassic()
     {
         if (!RequireCompleteDeck(multiplayerPanel)) return;
-        SetStatus("CLASSIC  ·  LOADING");
-        SceneManager.LoadScene("Arena");
+        SetStatus("CLASSIC  ·  친구와 대전");
+        GlowGlow.Online.OnlineSession.Open(deckCatalog);
     }
 
     private bool RequireCompleteDeck(CanvasGroup from)
@@ -370,8 +394,9 @@ public sealed class TitleScreenController : MonoBehaviour
 
     private static void SetLabels(Button button, string label, string subtitle)
     {
-        button.transform.Find("Label").GetComponent<TMP_Text>().text = label;
-        button.transform.Find("Sub Label").GetComponent<TMP_Text>().text = subtitle;
+        var root = button.transform.Find("Hover Visual") ?? button.transform;
+        root.Find("Label").GetComponent<TMP_Text>().text = label;
+        root.Find("Sub Label").GetComponent<TMP_Text>().text = subtitle;
     }
 
     private static void Select(Selectable selection)

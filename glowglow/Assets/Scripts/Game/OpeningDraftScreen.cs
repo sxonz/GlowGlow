@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -22,6 +23,11 @@ public sealed class OpeningDraftScreen : MonoBehaviour
     private TMP_Text selectionLabel;
     private Button confirm;
     private Image timerFill;
+    private GameObject botSummary;
+    private TMP_Text botSummaryTitle;
+    private readonly CanvasGroup[] botPicks = new CanvasGroup[OpeningDraft.RoundCount];
+    private float botShownAt;
+    private int summaryRating;
     private readonly RectTransform[] cards = new RectTransform[OpeningDraft.OfferCount];
     private readonly Button[] buttons = new Button[OpeningDraft.OfferCount];
     private readonly Image[] backgrounds = new Image[OpeningDraft.OfferCount];
@@ -30,13 +36,22 @@ public sealed class OpeningDraftScreen : MonoBehaviour
     private readonly TMP_Text[] badges = new TMP_Text[OpeningDraft.OfferCount];
     private readonly UpgradeShardDisplay[] upgradeDisplays = new UpgradeShardDisplay[OpeningDraft.OfferCount];
 
-    public void Show(OpeningDraft value, Action<OpeningDraft> complete)
+    public void Show(OpeningDraft value, Action<OpeningDraft> complete,
+        IReadOnlyList<OpeningDraft.Offer> botChoices = null, int botRating = 0)
     {
         draft = value;
         onComplete = complete;
         if (overlay == null) Build();
         overlay.SetActive(true);
+        ShowBotChoices(botChoices, botRating);
         ShowRound();
+    }
+
+    public void Hide()
+    {
+        draft = null;
+        onComplete = null;
+        if (overlay != null) overlay.SetActive(false);
     }
 
     private void ShowRound()
@@ -44,7 +59,9 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         overlay.transform.Find("Title").GetComponent<TMP_Text>().text = $"시작 선택 {draft.RoundNumber} / 3  ·  하나를 선택하세요";
         overlay.transform.Find("Subtitle").GetComponent<TMP_Text>().text = draft.RoundNumber == 1
             ? "첫 번째 선택은 신규 탄막입니다" : "신규 탄막을 획득하거나 보유 탄막을 강화하세요";
-        confirm.GetComponentInChildren<TMP_Text>().text = draft.RoundNumber == 3 ? "선택 확정 · 전투 시작" : "선택 확정 · 다음 라운드";
+        confirm.GetComponentInChildren<TMP_Text>().text = draft.RoundNumber == 3
+            ? (GlowGlow.Online.OnlineSession.Current?.InArena == true ? "선택 확정 · 준비 완료" : "선택 확정 · 전투 시작")
+            : "선택 확정 · 다음 라운드";
         shownAt = Time.unscaledTime;
         deadline = shownAt + FlipSeconds + DealInterval * (cards.Length - 1) + SelectionSeconds;
         for (int i = 0; i < cards.Length; i++)
@@ -61,7 +78,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             var icon = face.Find("Icon").GetComponent<Image>();
             icon.gameObject.SetActive(!offer.IsUpgrade);
             upgradeDisplays[i].gameObject.SetActive(offer.IsUpgrade);
-            upgradeDisplays[i].Show(offer.Target, draft.UpgradeDefinitions);
+            upgradeDisplays[i].Show(offer.Target, draft.UpgradeDefinitions, offer.IsUpgrade ? offer.Upgrade : null);
             icon.sprite = offer.IsUpgrade && offer.Upgrade.icon != null ? offer.Upgrade.icon :
                 weapon.icon != null ? weapon.icon : RuntimeShapes.Circle;
             icon.color = weapon.color;
@@ -74,6 +91,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
     {
         if (draft == null || overlay == null || !overlay.activeSelf) return;
         float now = Time.unscaledTime;
+        UpdateBotSummary(now);
         bool ready = now >= deadline - SelectionSeconds;
         for (int i = 0; i < cards.Length; i++)
         {
@@ -185,7 +203,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             var icon = Rect(face, "Icon", new Vector2(0, 112), new Vector2(90, 90)).gameObject.AddComponent<Image>();
             icon.preserveAspect = true;
             icon.raycastTarget = false;
-            var shardRoot = Rect(face, "Upgrade Shards", new Vector2(0, 112), new Vector2(128, 128));
+            var shardRoot = Rect(face, "Upgrade Shards", new Vector2(0, 104), new Vector2(128, 128));
             upgradeDisplays[i] = shardRoot.gameObject.AddComponent<UpgradeShardDisplay>();
             Text(face, "Name", "", new Vector2(0, 20), new Vector2(260, 44), 26);
             Text(face, "Stats", "", new Vector2(0, -75), new Vector2(260, 132), 20);
@@ -201,6 +219,65 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         confirm.onClick.AddListener(() => FinishRound());
         Text(confirmRect, "Label", "선택 확정 · 전투 시작", Vector2.zero, new Vector2(420, 60), 27);
         Text(overlay.transform, "Hint", "숫자 1–3 / 클릭으로 선택 · ENTER로 확정 · 매 라운드 8초, 미선택 시 자동 선택", new Vector2(0, -390), new Vector2(1600, 50), 22);
+    }
+
+    private void ShowBotChoices(IReadOnlyList<OpeningDraft.Offer> choices, int rating)
+    {
+        if (choices == null || choices.Count == 0)
+        {
+            if (botSummary != null) botSummary.SetActive(false);
+            return;
+        }
+        if (botSummary == null)
+        {
+            botSummary = Rect(overlay.transform, "Bot Selection Summary", new Vector2(0, -475), new Vector2(1470, 104)).gameObject;
+            botSummaryTitle = Text(botSummary.transform, "Title", "", new Vector2(0, 39), new Vector2(1470, 28), 18);
+            botSummaryTitle.color = new Color(.65f, .8f, 1);
+            for (int i = 0; i < botPicks.Length; i++)
+            {
+                var tile = Rect(botSummary.transform, "Bot Pick " + (i + 1), new Vector2((i - 1) * 490, -9), new Vector2(474, 62));
+                var background = tile.gameObject.AddComponent<Image>();
+                background.color = new Color(.075f, .055f, .13f);
+                background.raycastTarget = false;
+                botPicks[i] = tile.gameObject.AddComponent<CanvasGroup>();
+                botPicks[i].interactable = botPicks[i].blocksRaycasts = false;
+                var icon = Rect(tile, "Icon", new Vector2(-197, 0), new Vector2(42, 42)).gameObject.AddComponent<Image>();
+                icon.preserveAspect = true; icon.raycastTarget = false;
+                Text(tile, "Name", "", new Vector2(27, 12), new Vector2(360, 27), 21).alignment = TextAlignmentOptions.MidlineLeft;
+                Text(tile, "Detail", "", new Vector2(27, -15), new Vector2(360, 23), 17).alignment = TextAlignmentOptions.MidlineLeft;
+            }
+        }
+        botSummary.SetActive(true);
+        botShownAt = Time.unscaledTime;
+        summaryRating = rating;
+        for (int i = 0; i < botPicks.Length; i++)
+        {
+            var tile = botPicks[i];
+            tile.gameObject.SetActive(i < choices.Count);
+            tile.alpha = 0;
+            if (i >= choices.Count) continue;
+            var pick = choices[i];
+            var icon = tile.transform.Find("Icon").GetComponent<Image>();
+            icon.sprite = pick.IsUpgrade && pick.Upgrade.icon != null ? pick.Upgrade.icon : pick.Weapon.icon;
+            if (icon.sprite == null) icon.sprite = RuntimeShapes.Circle;
+            icon.color = pick.Weapon.color;
+            tile.transform.Find("Name").GetComponent<TMP_Text>().text = pick.IsUpgrade ? pick.Upgrade.displayName : pick.Weapon.displayName;
+            var detail = tile.transform.Find("Detail").GetComponent<TMP_Text>();
+            detail.text = pick.IsUpgrade ? $"{i + 1:00}  강화 · {pick.Weapon.displayName}" : $"{i + 1:00}  신규 탄막";
+            detail.color = new Color(.67f, .65f, .78f);
+        }
+    }
+
+    private void UpdateBotSummary(float now)
+    {
+        if (botSummary == null || !botSummary.activeSelf) return;
+        int revealed = 0;
+        foreach (var tile in botPicks)
+        {
+            tile.alpha = Mathf.Clamp01((now - botShownAt - revealed * .22f) / .16f);
+            revealed++;
+        }
+        botSummaryTitle.text = $"BOT {summaryRating}  ·  " + (now - botShownAt < .6f ? "선택 중…" : "선택 완료") + "  /  선택 요약";
     }
 
     private static RectTransform Rect(Transform parent, string name, Vector2 position, Vector2 size)

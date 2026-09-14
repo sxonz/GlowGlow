@@ -1,0 +1,5 @@
+{
+  "name": "FishySteamworks",
+  "references": ["FishNet.Runtime", "com.rlabrecque.steamworks.net"],
+  "autoReferenced": true
+}

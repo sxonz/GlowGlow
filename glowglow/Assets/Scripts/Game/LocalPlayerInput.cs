@@ -38,9 +38,15 @@ public sealed class LocalPlayerInput : MonoBehaviour, IPlayerInputSource
                 command.AimPosition = worldCamera.ScreenToWorldPoint(mouse);
                 command.Aim = (command.AimPosition - worldPosition).normalized;
                 command.Fire = Mouse.current.leftButton.isPressed && !PointerOverUI();
+                command.FirePressed = command.Fire && Mouse.current.leftButton.wasPressedThisFrame;
             }
             command.DashPressed = keyboard.spaceKey.wasPressedThisFrame;
             command.SelectedSlot = ReadSlot(keyboard);
+            if (Mouse.current != null && !PointerOverUI())
+            {
+                float scroll = Mouse.current.scroll.ReadValue().y;
+                command.WeaponCycle = scroll > 0f ? -1 : scroll < 0f ? 1 : 0;
+            }
         }
         else
         {
@@ -48,6 +54,7 @@ public sealed class LocalPlayerInput : MonoBehaviour, IPlayerInputSource
             command.Aim = aimTarget == null ? Vector2.left : ((Vector2)aimTarget.position - worldPosition).normalized;
             command.AimPosition = aimTarget == null ? worldPosition + Vector2.left * 5f : (Vector2)aimTarget.position;
             command.Fire = keyboard.rightCtrlKey.isPressed || keyboard.numpad0Key.isPressed;
+            command.FirePressed = keyboard.rightCtrlKey.wasPressedThisFrame || keyboard.numpad0Key.wasPressedThisFrame;
             command.DashPressed = keyboard.rightShiftKey.wasPressedThisFrame;
         }
 

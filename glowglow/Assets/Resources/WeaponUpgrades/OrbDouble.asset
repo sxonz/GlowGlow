@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OrbDouble
   m_EditorClassIdentifier:
   displayName: 2-Axis
-  description: 반대편에 두 번째 오브 추가 · 크기 50%
+  description: 첫 번째 오브를 중심으로 두 번째 오브가 공전 · 크기 50%
   icon: {fileID: 0}
   displaySlot: 0
   maxLevel: 1

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04608578b2f348059387972465e75a06, type: 3}
+  m_Name: Octo Shot
+  m_EditorClassIdentifier:
+  displayName: Octo Shot
+  rarity: 0
+  steps:
+  - shape: 9
+    position: 2
+    duration: 0.8
+    speedMultiplier: {x: 1, y: 1}
+    dimensions: {x: 1, y: 1}
+    startSize: 1
+    peakSize: 1
+    endSize: 1
+    dealsDamage: 1
+    opacity: 1
+  icon: {fileID: 21300000, guid: 7cbb03d774b148f8b4bad055aad364ed, type: 3}
+  projectilePrefab: {fileID: 0}
+  cooldown: 1.4
+  projectileSpeed: 6
+  projectileLifetime: 0.8
+  projectileRadius: 0.13
+  color: {r: 0.85, g: 0.35, b: 1, a: 1}
+  range: 4.8

@@ -60,11 +60,13 @@ public sealed class DeckCatalog : ScriptableObject
         PlayerPrefs.Save();
     }
 
-    public List<WeaponDefinition> LoadSelectedWeapons()
+    public List<WeaponDefinition> LoadSelectedWeapons() => LoadWeapons(PlayerPrefs.GetString(SaveKey, "{}"));
+
+    public List<WeaponDefinition> LoadWeapons(string json)
     {
         var weapons = new List<WeaponDefinition>();
         SavedDeck saved;
-        try { saved = JsonUtility.FromJson<SavedDeck>(PlayerPrefs.GetString(SaveKey, "{}")); }
+        try { saved = JsonUtility.FromJson<SavedDeck>(json); }
         catch (ArgumentException) { return weapons; }
         if (saved?.cards == null || cards == null) return weapons;
         foreach (string id in saved.cards)

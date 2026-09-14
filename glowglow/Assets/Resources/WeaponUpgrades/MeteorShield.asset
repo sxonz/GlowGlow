@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
+  m_Name: MeteorShield
+  m_EditorClassIdentifier:
+  displayName: 낙하 보호막
+  description: 낙하 시작 시 보호막 1 획득 · 착지 후에도 유지 · 최대 1
+  icon: {fileID: 0}
+  displaySlot: 2
+  maxLevel: 1
+  targetWeapon: {fileID: 11400000, guid: 89a15340c27a436e9bc29670acbd9a0e, type: 2}
+  effect: 67108864

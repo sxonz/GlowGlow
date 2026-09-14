@@ -19,7 +19,7 @@ MonoBehaviour:
       \uAE30\uBCF8 \uD0C4\uC18D 11, \uBC1C\uC0AC \uAC04\uACA9 0.26\uCD08."
   - id: basic-barrage-02
     weapon: {fileID: 11400000, guid: 1ca4afb87a554be2870c173d6bfe85dc, type: 2}
-    description: "총구를 따라가는 예고선 1초 후 레이저를 0.5초간 발사하며 뒤로 반동을 받습니다. 예고와 발사 중 감속하고 초당 최대 30도로 조준합니다. 종료 후 커서로 빠르게 회전합니다. 쿨타임 1.5초."
+    description: "총구를 따라가는 예고선 1초 후 레이저를 0.5초간 발사하며 뒤로 반동을 받습니다. 예고와 발사 중 감속하고 초당 최대 30도로 조준합니다. 종료 후 커서로 빠르게 회전합니다. 쿨타임 2초."
   - id: basic-barrage-03
     weapon: {fileID: 11400000, guid: 3bf8005000c04658bf13bd9b2c00737a, type: 2}
     description: "\uC815\uBA74 1\uBC1C\uACFC \xB110\uB3C4\xB7\xB120\uB3C4\uC758 \uC791\uC740
@@ -42,3 +42,15 @@ MonoBehaviour:
   - id: basic-barrage-08
     weapon: {fileID: 11400000, guid: 9ebdcc554267445f9d495b61e97b908f, type: 2}
     description: "잔상을 남기는 오브 1개가 플레이어 주변을 5초간 공전하며 접촉한 적을 공격합니다. 쿨타임 10초."
+  - id: meteor-dive
+    weapon: {fileID: 11400000, guid: 89a15340c27a436e9bc29670acbd9a0e, type: 2}
+    description: "2초간 사라져 세로 예고선을 커서 방향으로 가로 이동시킵니다. 추적 속도는 기본 이속의 90%입니다. 다시 클릭하면 즉시 낙하합니다. 위에서 바닥까지 내리꽂으며 경로의 적을 공격하고, 착지 폭발과 중력 파편도 피해를 줍니다. 쿨타임 10초."
+  - id: octo-shot
+    weapon: {fileID: 11400000, guid: e16de90357044eb3956205144ac80a53, type: 2}
+    description: "주변 8방향으로 탄속 6의 탄환을 동시에 발사합니다. 수명 0.8초, 쿨타임 1.4초."
+  - id: boomerang
+    weapon: {fileID: 11400000, guid: 0cbb3444a42c4e7c8771227f8e48d25c, type: 2}
+    description: "발사 방향으로 빠르게 날아가며 점차 감속하고, 거의 멈추면 그 순간의 플레이어 위치를 향해 빠르게 돌아오는 부메랑입니다. 적을 관통하며, 회수 시 남은 쿨타임이 2초 감소합니다. 받지 못하면 그대로 지나갑니다. 쿨타임 8초."
+  - id: prism-shot
+    weapon: {fileID: 11400000, guid: 8f1b991bf16b4e8d9076c533e6588f0a, type: 2}
+    description: "7발을 1·7, 3·4·5, 2·6 순서로 발사합니다. 직선·이중나선·공전 탄환이 0.8초 후 거리 5에서 부채꼴을 형성한 뒤에도 각 궤적을 유지하며 퍼집니다. 수명 제한 없이 이동하며 적이나 벽에 닿으면 소멸합니다. 쿨타임 5초."

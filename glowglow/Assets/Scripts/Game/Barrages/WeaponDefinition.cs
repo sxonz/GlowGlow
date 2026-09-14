@@ -16,13 +16,14 @@ public sealed class WeaponDefinition : ScriptableObject
     [Min(.05f)] public float cooldown = .22f;
     [Min(1f)] public float projectileSpeed = 12f;
     [Min(.1f)] public float projectileLifetime = 3f;
+    public bool unlimitedLifetime;
     [Min(.02f)] public float projectileRadius = .13f;
     public Color color = new Color(1f, .15f, .8f, 1f);
     [Min(.1f)] public float range = 12f;
 
     public WeaponStats ResolveStats(WeaponUpgradeState upgrades)
     {
-        var stats = new WeaponStats(cooldown, projectileSpeed, projectileLifetime, projectileRadius, range, color);
+        var stats = new WeaponStats(cooldown, projectileSpeed, unlimitedLifetime ? float.PositiveInfinity : projectileLifetime, projectileRadius, range, color);
         return upgrades != null ? upgrades.Apply(stats) : stats;
     }
 }

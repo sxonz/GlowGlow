@@ -8,12 +8,14 @@ public sealed class BarrageSequence : ProjectileBase
     private Vector2 cursor;
     private Vector2 playerPosition;
     private float startedAt;
+    private WeaponRuntime firingRuntime;
 
     public static ProjectileBase Fire(PlayerCombatant owner, Vector2 gun, Vector2 direction,
-        Vector2 cursor, WeaponStats stats, BarrageStep[] source, WeaponEffects effects = WeaponEffects.None)
+        Vector2 cursor, WeaponStats stats, BarrageStep[] source, WeaponEffects effects = WeaponEffects.None, WeaponRuntime firingRuntime = null)
     {
         var timelineStats = new WeaponStats(stats.Cooldown, stats.Speed, float.PositiveInfinity, stats.Radius, stats.Range, stats.Color);
         var sequence = SpawnBuiltin<BarrageSequence>(owner, gun, direction, timelineStats, effects);
+        sequence.firingRuntime = firingRuntime;
         Vector2 chainPosition = effects.Has(WeaponEffects.BombChain) ? owner.RandomArenaPosition() : cursor;
         source = WeaponPatternCompiler.Build(source, effects, effects.Has(WeaponEffects.BombChain) ? Random.value : 1f, chainPosition);
         sequence.cursor = cursor;
@@ -74,11 +76,25 @@ public sealed class BarrageSequence : ProjectileBase
             Stats.Radius * (step.shape == BarrageShape.Bullet || step.shape == BarrageShape.Bouncer ? step.startSize : 1), Stats.Range, Stats.Color);
         if (step.shape == BarrageShape.OrbitOrb)
         {
-            SpawnBuiltin<OrbitOrb>(Owner, origin, direction, stats, Effects);
+            var primary = SpawnBuiltin<OrbitOrb>(Owner, origin, direction, stats, Effects);
             if (Effects.Has(WeaponEffects.OrbDouble))
-                SpawnBuiltin<OrbitOrb>(Owner, origin, -direction,
-                    new WeaponStats(stats.Cooldown, stats.Speed, stats.Lifetime, stats.Radius * .5f, stats.Range, stats.Color), Effects);
+                SpawnBuiltin<OrbitOrb>(Owner, origin, direction,
+                    new WeaponStats(stats.Cooldown, stats.Speed, stats.Lifetime, stats.Radius * .5f, stats.Range, stats.Color), Effects).OrbitAround(primary);
         }
+        else if (step.shape == BarrageShape.PrismShot)
+            SpawnBuiltin<PrismShot>(Owner,origin,direction,stats,Effects);
+        else if (step.shape == BarrageShape.Boomerang)
+        {
+            var returningStats = new WeaponStats(stats.Cooldown,stats.Speed,float.PositiveInfinity,stats.Radius,stats.Range,stats.Color);
+            SpawnBuiltin<Boomerang>(Owner,origin,direction,returningStats,Effects).BindWeapon(firingRuntime);
+        }
+        else if (step.shape == BarrageShape.OctoShot)
+        {
+            for(int i=0;i<8;i++)
+                SpawnBuiltin<OctoShot>(Owner,origin,Quaternion.Euler(0,0,i*45f)*direction,stats,Effects);
+        }
+        else if (step.shape == BarrageShape.MeteorDive)
+            SpawnBuiltin<MeteorDive>(Owner, origin, direction, stats, Effects).SetTarget(cursor);
         else if (step.shape == BarrageShape.Overdrive)
             SpawnBuiltin<OverdriveProjectile>(Owner, origin, direction, stats, Effects);
         else if (step.shape == BarrageShape.ElectricPulse)
@@ -94,5 +110,5 @@ public sealed class BarrageSequence : ProjectileBase
         }
     }
 
-    protected override void OnDespawn() { steps = null; emitted = null; }
+    protected override void OnDespawn() { steps = null; emitted = null; firingRuntime = null; }
 }

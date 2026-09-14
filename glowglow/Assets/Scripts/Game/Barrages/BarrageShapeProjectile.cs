@@ -14,12 +14,37 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     private float startedAt;
     private Quaternion initialRotation;
     private float muzzleOffsetDegrees;
+    private static Material arenaClipMaterial;
+    private Material unclippedMaterial;
+    private bool clipped;
+    public bool IsTelegraph => step != null && !step.dealsDamage;
+    public bool IsBeam => step != null && (step.shape == BarrageShape.Line || step.followMuzzle);
+
+    // Signed clearance from the visible attack's dangerous area, including body radius.
+    // Bomb warnings cover a rotating square; use its corner radius rather than only
+    // the decorative warning circle so a bot does not stop inside the explosion.
+    public float DangerClearance(Vector2 position, float bodyRadius)
+    {
+        if (step == null) return float.PositiveInfinity;
+        if (IsBeam)
+        {
+            Vector2 axis = transform.right;
+            float halfLength = transform.localScale.x * .5f;
+            Vector2 center = transform.position;
+            float along = Mathf.Clamp(Vector2.Dot(position - center, axis), -halfLength, halfLength);
+            float halfWidth = Mathf.Max(.15f, transform.localScale.y * .5f);
+            return Vector2.Distance(position, center + axis * along) - halfWidth - bodyRadius;
+        }
+        float radius = baseDimensions.magnitude * .5f * Mathf.Max(1.2f, step.peakSize);
+        return Vector2.Distance(position, transform.position) - radius - bodyRadius;
+    }
     protected override bool DespawnOnHit => false;
     protected override bool GlowEnabled => step != null && step.shape != BarrageShape.Line;
 
     protected override void OnSpawn()
     {
         visual = GetComponent<SpriteRenderer>();
+        if(unclippedMaterial==null) unclippedMaterial=visual.sharedMaterial;
         box = GetComponent<BoxCollider2D>();
         circle = GetComponent<CircleCollider2D>();
         box.enabled = circle.enabled = false;
@@ -105,6 +130,19 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     }
 
     private void OnTriggerEnter2D(Collider2D other) => Hit(other);
+    public void ClipToArena(Rect bounds)
+    {
+        if(arenaClipMaterial==null)
+            arenaClipMaterial=new Material(Resources.Load<Shader>("ArenaClippedSprite"));
+        var properties=new MaterialPropertyBlock();
+        properties.SetVector("_ClipRect",new Vector4(bounds.xMin,bounds.yMin,bounds.xMax,bounds.yMax));
+        foreach(var renderer in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            renderer.sharedMaterial=arenaClipMaterial;
+            renderer.SetPropertyBlock(properties);
+        }
+        clipped=true;
+    }
     protected override void LateUpdate()
     {
         // Run after player movement/dash coroutines; the collider and artwork share this transform.
@@ -125,5 +163,15 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     {
         if (step?.dealsDamage == true) TryHit(other, step.knockbackDistance, step.slowMultiplier, step.slowDuration);
     }
-    protected override void OnDespawn() { step = null; box.enabled = circle.enabled = false; flashVisual.enabled = false; }
+    protected override void OnDespawn()
+    {
+        step = null; box.enabled = circle.enabled = false; flashVisual.enabled = false;
+        if(!clipped) return;
+        foreach(var renderer in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            renderer.sharedMaterial=unclippedMaterial;
+            renderer.SetPropertyBlock(null);
+        }
+        clipped=false;
+    }
 }

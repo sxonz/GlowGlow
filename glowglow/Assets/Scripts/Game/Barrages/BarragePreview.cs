@@ -82,12 +82,14 @@ public sealed class BarragePreview : MonoBehaviour
         ProjectileBase.DespawnOwnedBy(target);
         bool pulse = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.ElectricPulse);
         bool orb = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OrbitOrb);
+        bool octo = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OctoShot);
+        cameraView.orthographicSize = octo ? 5.2f : 3.7f;
         overdrivePreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Overdrive);
         bouncerPreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Bouncer);
         shooter.ConfigurePreview(weapon);
         // Keep ranged attacks well separated; the radial pulse demonstrates its outer reach.
-        shooter.ResetCombatant(new Vector2(orb ? -.7f : pulse ? -1.4f : -4, 0));
-        target.ResetCombatant(new Vector2(orb ? .7f : pulse ? 1.4f : 4, 0));
+        shooter.ResetCombatant(new Vector2(octo ? 0 : orb ? -.7f : pulse ? -1.4f : -4, 0));
+        target.ResetCombatant(new Vector2(octo ? 2.5f : orb ? .7f : pulse ? 1.4f : 4, 0));
         // Give reset invulnerability time to expire before firing the demonstration.
         firedAt = Time.time + .6f;
         demoStart = firedAt;

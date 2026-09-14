@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive, Bouncer, OrbitOrb }
+public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive, Bouncer, OrbitOrb, MeteorDive, OctoShot, Boomerang, PrismShot }
 public enum BarragePosition { Gun, Cursor, Player }
 
 /// <summary>One event on a firing timeline. Values are copied when firing.</summary>

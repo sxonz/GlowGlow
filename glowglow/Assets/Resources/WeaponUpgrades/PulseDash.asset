@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PulseDash
   m_EditorClassIdentifier:
   displayName: 돌진 충격
-  description: 돌진 직후 범위 50% 감소 · 밀치는 힘 200% 증가 · 벽 충돌 피해. 끌어당기기와 조합하면 시전자 접촉 피해.
+  description: 돌진 종료 0.25초 전부터 종료 후 0.35초까지 범위 50% 감소 · 밀치는 힘 200% 증가 · 벽 충돌 피해. 끌어당기기와 조합하면 시전자 접촉 피해.
   icon: {fileID: 0}
   displaySlot: 0
   maxLevel: 1

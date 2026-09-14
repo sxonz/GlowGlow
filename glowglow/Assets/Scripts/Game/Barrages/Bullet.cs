@@ -4,6 +4,7 @@ using UnityEngine;
 public class Bullet : ProjectileBase
 {
     private int interceptions;
+    public virtual Vector2 LinearVelocity => Direction * Stats.Speed;
     public virtual bool IsSmallBullet => Stats.Radius <= .16f;
     public void SetInterception(int count) => interceptions = Mathf.Max(0, count);
     protected override void OnSpawn()

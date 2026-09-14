@@ -49,7 +49,7 @@ MonoBehaviour:
     flash: 1
   icon: {fileID: 2291270967926626937, guid: 9988dd917fdf84b408edbb0b6dcf90f8, type: 3}
   projectilePrefab: {fileID: 0}
-  cooldown: 1.5
+  cooldown: 2
   projectileSpeed: 12
   projectileLifetime: 3
   projectileRadius: 0.13

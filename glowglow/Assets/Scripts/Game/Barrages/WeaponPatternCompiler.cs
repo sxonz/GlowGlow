@@ -59,12 +59,16 @@ public static class WeaponPatternCompiler
             var explosion = steps.Find(s => s.shape == BarrageShape.Box && s.dealsDamage);
             if (explosion != null)
             {
-                // Only one extra explosion is inserted; it never recursively compiles another chain.
-                var extra = explosion.Snapshot();
-                extra.delay += .35f;
-                extra.overridePosition = true;
-                extra.worldPosition = chainPosition;
-                steps.Add(extra);
+                // Repeat the upgraded warning, explosion and fragments once at the same
+                // new position. Snapshot before appending so the chain cannot recurse.
+                foreach (var step in steps.ToArray())
+                {
+                    var extra = step.Snapshot();
+                    extra.delay += .35f;
+                    extra.overridePosition = true;
+                    extra.worldPosition = chainPosition;
+                    steps.Add(extra);
+                }
             }
         }
         if (effects.Has(WeaponEffects.OrbLifetime))

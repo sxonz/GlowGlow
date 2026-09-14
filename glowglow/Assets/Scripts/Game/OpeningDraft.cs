@@ -21,9 +21,14 @@ public sealed class OpeningDraft
     private readonly List<WeaponUpgradeDefinition> upgrades = new();
     private readonly List<WeaponRuntime> acquired = new();
     private readonly List<Offer> offers = new();
+    private readonly List<Offer> choices = new();
+    private readonly List<int> selectedIndices = new();
+    public IReadOnlyList<int> SelectedIndices => selectedIndices;
     private readonly Random random;
+    private readonly bool stableTimeoutChoices;
     private int completedRounds;
     public IReadOnlyList<Offer> Offers => offers;
+    public IReadOnlyList<Offer> Choices => choices;
     public IReadOnlyList<WeaponRuntime> Acquired => acquired;
     public IReadOnlyList<WeaponUpgradeDefinition> UpgradeDefinitions => upgrades;
     public int RoundNumber => Math.Min(completedRounds + 1, RoundCount);
@@ -31,10 +36,11 @@ public sealed class OpeningDraft
     public bool IsComplete => completedRounds == RoundCount;
 
     public OpeningDraft(IEnumerable<WeaponDefinition> source, Random random,
-        IEnumerable<WeaponUpgradeDefinition> upgradeDefinitions)
+        IEnumerable<WeaponUpgradeDefinition> upgradeDefinitions, bool stableTimeoutChoices = false)
     {
         if (source == null) throw new ArgumentNullException(nameof(source));
         this.random = random ?? throw new ArgumentNullException(nameof(random));
+        this.stableTimeoutChoices = stableTimeoutChoices;
         foreach (var weapon in source)
             if (weapon != null && !deck.Contains(weapon)) deck.Add(weapon);
         if (deck.Count < OfferCount + RoundCount - 1)
@@ -58,7 +64,9 @@ public sealed class OpeningDraft
         if (SelectedIndex < 0)
         {
             if (!autoPick) return false;
-            SelectedIndex = random.Next(offers.Count);
+            // Keep the offer RNG independent of timeout selection, so a network peer
+            // can reconstruct a draft using its seed and the three chosen indices.
+            SelectedIndex = stableTimeoutChoices ? 0 : random.Next(offers.Count);
         }
         var offer = offers[SelectedIndex];
         if (offer.IsUpgrade)
@@ -66,6 +74,8 @@ public sealed class OpeningDraft
             if (!offer.Target.TryUpgrade(offer.Upgrade)) return false;
         }
         else acquired.Add(new WeaponRuntime(offer.Weapon));
+        choices.Add(offer);
+        selectedIndices.Add(SelectedIndex);
         completedRounds++;
         SelectedIndex = -1;
         offers.Clear();

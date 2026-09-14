@@ -55,6 +55,8 @@ public sealed class DeckScreen : MonoBehaviour
     public void Initialize(DeckCatalog catalog, Action close)
     {
         LoadCards(catalog, true);
+        foreach (var label in GetComponentsInChildren<TMP_Text>(true))
+            if (label.text.StartsWith("무기 도감")) label.text = $"무기 도감  ·  {cards.Count}종";
         previous.onClick.AddListener(() => { page--; RefreshCollection(); });
         next.onClick.AddListener(() => { page++; RefreshCollection(); });
         toggle.onClick.AddListener(ToggleSelected);

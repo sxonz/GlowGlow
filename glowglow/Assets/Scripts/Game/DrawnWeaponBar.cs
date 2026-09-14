@@ -63,11 +63,14 @@ public sealed class DrawnWeaponBar : MonoBehaviour
 
     public void Refresh()
     {
+        var online = GlowGlow.Online.OnlineSession.Current;
+        if (online != null && online.Match != null) player = online.LocalPlayer;
         var hand = player != null ? player.Hand : null;
         int count = hand?.Drawn.Count ?? 0;
         var basic = count == 0 && player != null ? player.CurrentWeapon : null;
-        status.text = count > 0 ? $"P1  ·  장착 탄막 {count}/3   |   숫자 1–3 / 클릭으로 선택" :
-            "P1  ·  시작 탄막 선택 대기";
+        string ownerLabel = $"P{(player != null ? player.PlayerIndex : 1)}";
+        status.text = count > 0 ? $"{ownerLabel}  ·  장착 탄막 {count}/3   |   숫자 1–3 / 휠 / 클릭으로 선택" :
+            ownerLabel + "  ·  시작 탄막 선택 대기";
         for (int i = 0; i < slots.Length; i++)
         {
             var slot = slots[i];

@@ -3,28 +3,75 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(CircleCollider2D), typeof(SpriteRenderer), typeof(LocalPlayerInput))]
-public sealed class PlayerCombatant : MonoBehaviour
+public sealed partial class PlayerCombatant : MonoBehaviour
 {
     public event Action<PlayerCombatant> Hit;
     public int PlayerIndex => playerIndex;
     public int HitsTaken { get; private set; }
     public int HitsRemaining => Mathf.Max(0, 3 - HitsTaken);
-    public bool CanBeHit => CanSelectWeapon && Time.time >= invulnerableUntil;
+    public bool CanBeHit => CanSelectWeapon && !IsMeteorDiving && Time.time >= invulnerableUntil;
+    public MeteorDive MeteorDive { get; private set; }
+    public bool IsMeteorDiving => MeteorDive != null;
+    public Vector2 AimPosition => aimPosition;
+    private SpriteRenderer[] diveRenderers;
+    private bool[] diveRendererStates;
+    private bool diveColliderEnabled;
+    private bool diveVisible;
     public bool IsPreview { get; private set; }
     public float MovementMultiplier => (Time.time < slowedUntil ? slowMultiplier : 1f) *
         (Time.time < laserSlowUntil ? .65f : 1f) * PulseControlMultiplier;
     public OverdriveProjectile Overdrive { get; private set; }
     public bool IsOverdriving => Overdrive != null && Overdrive.IsRunning;
-    public int ShieldRemaining => IsOverdriving ? Overdrive.ShieldRemaining : 0;
+    public int ShieldRemaining => NetworkReplica ? networkShield : landingShield + (IsOverdriving ? Overdrive.ShieldRemaining : 0);
+    private int landingShield;
+    private LineRenderer landingShieldVisual;
+    private static Material landingShieldMaterial;
+
+    public void GrantLandingShield()
+    {
+        landingShield = 1; // Replenish one charge; repeated dives cannot accumulate shields.
+        if (landingShieldVisual == null)
+        {
+            landingShieldVisual = new GameObject("Landing Shield",typeof(LineRenderer)).GetComponent<LineRenderer>();
+            landingShieldVisual.transform.SetParent(transform,false);
+            landingShieldVisual.gameObject.layer = gameObject.layer;
+            if (landingShieldMaterial == null) landingShieldMaterial = new Material(Shader.Find("Sprites/Default"));
+            landingShieldVisual.sharedMaterial = landingShieldMaterial;
+            landingShieldVisual.useWorldSpace = false;
+            landingShieldVisual.loop = true;
+            landingShieldVisual.positionCount = 64;
+            landingShieldVisual.startWidth = landingShieldVisual.endWidth = .05f;
+            landingShieldVisual.startColor = landingShieldVisual.endColor = new Color(.45f,.9f,1f);
+            landingShieldVisual.sortingOrder = 7;
+            float radius = GetComponent<CircleCollider2D>().radius + .12f;
+            for(int i=0;i<64;i++)
+            {
+                float angle = i*Mathf.PI*2/64;
+                landingShieldVisual.SetPosition(i,new Vector3(Mathf.Cos(angle),Mathf.Sin(angle))*radius);
+            }
+        }
+        UpdateLandingShield();
+    }
+
+    private void UpdateLandingShield()
+    {
+        if (landingShieldVisual != null)
+            landingShieldVisual.enabled = landingShield > 0 && (!IsMeteorDiving || diveVisible);
+    }
     private Vector2 inertiaVelocity;
     private float slowedUntil;
     private float slowMultiplier = 1f;
     private Vector2 knockbackRemaining;
+    private Vector2 laserRecoilRemaining;
     private float straightCharge;
     private Vector2 previousDriveDirection;
     private float lastDashEndedAt = float.NegativeInfinity;
-    public bool IsPostDashWindow => !dashing && Time.time - lastDashEndedAt <= .35f;
+    private float dashEndsAt = float.PositiveInfinity;
+    public bool IsPostDashWindow => dashing
+        ? dashEndsAt - Time.time <= .25f
+        : Time.time - lastDashEndedAt <= .35f;
     public Vector2 ArenaHalfSize => arenaExtents;
+    public float BaseMoveSpeed => moveSpeed;
     public float BodyRadius => GetComponent<CircleCollider2D>().radius * Mathf.Abs(transform.lossyScale.x);
     private PlayerCombatant pulseSource;
     private Vector2 pulseDirection;
@@ -44,6 +91,8 @@ public sealed class PlayerCombatant : MonoBehaviour
     [SerializeField] private Vector2 arenaExtents = new(8.2f, 4.35f);
 
     private LocalPlayerInput input;
+    private IPlayerInputSource inputOverride;
+    public void SetInputSource(IPlayerInputSource source) => inputOverride = source;
     private MatchController match;
     private SpriteRenderer visuals;
     private SpriteRenderer bodyGlow;
@@ -57,6 +106,27 @@ public sealed class PlayerCombatant : MonoBehaviour
     private float laserSlowUntil;
     private float laserRecoveryUntil;
     private float laserAngularVelocity;
+    private int prismAimLocks;
+    private bool prismAimRecovering;
+    public bool IsPrismAimLocked => prismAimLocks > 0;
+    public void BeginPrismAim(Vector2 direction)
+    {
+        prismAimLocks++;
+        prismAimRecovering=false;
+        aim=direction.normalized;
+    }
+    public void EndPrismAim()
+    {
+        prismAimLocks=Mathf.Max(0,prismAimLocks-1);
+        if(prismAimLocks==0) prismAimRecovering=true;
+    }
+    internal Vector2 UpdatePrismAim(Vector2 target,float deltaTime)
+    {
+        if(IsPrismAimLocked) return aim;
+        var next=(Vector2)Vector3.RotateTowards(aim,target,720*Mathf.Deg2Rad*deltaTime,0);
+        if(Vector2.Angle(next,target)<.01f) prismAimRecovering=false;
+        return next;
+    }
     public Vector2 AimDirection => aim;
     public Vector2 MuzzlePosition
     {
@@ -72,7 +142,7 @@ public sealed class PlayerCombatant : MonoBehaviour
         laserRecoveryUntil = Mathf.Max(laserRecoveryUntil, laserAimUntil + .18f);
     }
 
-    public void ApplyLaserRecoil() => ApplyImpact(-aim, .45f, 1f, 0f);
+    public void ApplyLaserRecoil() => laserRecoilRemaining -= aim * .9f;
 
     public Vector2 RandomArenaPosition() => new Vector2(
         UnityEngine.Random.Range(-arenaExtents.x + .5f, arenaExtents.x - .5f),
@@ -80,6 +150,58 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public Vector2 ClampToArena(Vector2 position) => new Vector2(
         Mathf.Clamp(position.x, -arenaExtents.x, arenaExtents.x), Mathf.Clamp(position.y, -arenaExtents.y, arenaExtents.y));
+
+    public void BeginMeteorDive(MeteorDive effect)
+    {
+        if (MeteorDive != null) MeteorDive.Cancel();
+        if (Overdrive != null) Overdrive.Cancel();
+        StopAllCoroutines();
+        dashing = false;
+        lastDashEndedAt = float.NegativeInfinity;
+        dashEndsAt = float.PositiveInfinity;
+        dashVisual = 0;
+        inertiaVelocity = knockbackRemaining = laserRecoilRemaining = Vector2.zero;
+        pulseRemaining = 0;
+        ClearAfterimages();
+        // Cancel a hit-flash before capturing the normal visible body state.
+        visuals.enabled = true;
+        MeteorDive = effect;
+        diveVisible = false;
+        diveRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        diveRendererStates = new bool[diveRenderers.Length];
+        for (int i = 0; i < diveRenderers.Length; i++) diveRendererStates[i] = diveRenderers[i].enabled;
+        var body = GetComponent<CircleCollider2D>();
+        diveColliderEnabled = body.enabled;
+        body.enabled = false;
+        UpdateDiveVisuals();
+    }
+
+    public void MoveMeteorDive(Vector2 position)
+    {
+        transform.position = position;
+        diveVisible = true;
+        UpdateDiveVisuals();
+    }
+
+    public void EndMeteorDive(MeteorDive effect, Vector2 position)
+    {
+        if (MeteorDive != effect) return;
+        transform.position = ClampToArena(position);
+        MeteorDive = null;
+        for (int i = 0; i < diveRenderers.Length; i++)
+            if (diveRenderers[i] != null) diveRenderers[i].enabled = diveRendererStates[i];
+        GetComponent<CircleCollider2D>().enabled = diveColliderEnabled;
+        diveRenderers = null;
+        diveRendererStates = null;
+        UpdateBarrel();
+    }
+
+    private void UpdateDiveVisuals()
+    {
+        foreach (var renderer in diveRenderers)
+            if (renderer != null) renderer.enabled = diveVisible && renderer == visuals;
+        if (diveVisible) RuntimeShapes.SyncGlow(visuals, bodyGlow, .8f, .7f);
+    }
 
     public void ApplyPulseImpulse(PlayerCombatant source, Vector2 center, float range, bool pull, bool empowered)
     {
@@ -172,7 +294,7 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public void MovePreview(Vector2 direction, float distance)
     {
-        if (IsPreview && Time.deltaTime > 0) MoveControlled(direction, distance * MovementMultiplier / Time.deltaTime, Time.deltaTime);
+        if (IsPreview && !IsMeteorDiving && Time.deltaTime > 0) MoveControlled(direction, distance * MovementMultiplier / Time.deltaTime, Time.deltaTime);
     }
 
     public void BeginOverdrive(OverdriveProjectile effect)
@@ -211,6 +333,8 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public bool SelectWeaponSlot(int index)
     {
+        if (NetworkReplica && GlowGlow.Online.OnlineSession.Current != null)
+            return GlowGlow.Online.OnlineSession.Current.SelectSlot(this, index);
         if (!CanSelectWeapon) return false;
         if (Hand == null || Hand.Drawn.Count == 0) return index == 0 && CurrentWeapon != null;
         if (!Hand.Select(index)) return false;
@@ -222,6 +346,13 @@ public sealed class PlayerCombatant : MonoBehaviour
     {
         weapon = definition;
         CurrentWeapon = definition != null ? new WeaponRuntime(definition) : null;
+    }
+
+    public void EquipTrainingWeapon(WeaponRuntime runtime)
+    {
+        if (match == null || !match.IsTraining) return;
+        Hand = null;
+        CurrentWeapon = runtime;
     }
 
     public void Configure(int index, MatchController controller, WeaponDefinition definition, LocalPlayerInput.ControlScheme scheme, Camera camera, Transform target)
@@ -261,6 +392,9 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (NetworkReplica) return;
+        UpdateLandingShield();
+        if (IsMeteorDiving) { UpdateDiveVisuals(); return; }
         UpdateAfterimages();
         UpdateBarrel();
         RuntimeShapes.SyncGlow(visuals, bodyGlow, .55f, 1.1f);
@@ -343,7 +477,11 @@ public sealed class PlayerCombatant : MonoBehaviour
         afterimageDistance = 0;
     }
 
-    private void OnDisable() => ClearAfterimages();
+    private void OnDisable()
+    {
+        if (MeteorDive != null) MeteorDive.Cancel();
+        ClearAfterimages();
+    }
 
     private void OnDestroy()
     {
@@ -355,32 +493,50 @@ public sealed class PlayerCombatant : MonoBehaviour
         barrelPivot.right = aim;
         barrelVisuals.sortingLayerID = visuals.sortingLayerID;
         barrelVisuals.sortingOrder = visuals.sortingOrder - 1;
-        barrelVisuals.enabled = visuals.enabled && !IsOverdriving;
+        barrelVisuals.enabled = visuals.enabled && !IsOverdriving && !IsMeteorDiving;
     }
 
     private void Update()
     {
+        if (NetworkReplica) return;
         if (!CanSelectWeapon)
         {
+            if (MeteorDive != null) MeteorDive.Cancel();
             if (Overdrive != null) Overdrive.Cancel();
             pulseRemaining = 0;
             return;
         }
-        UpdatePulseImpulse(Time.deltaTime);
-        if (knockbackRemaining.sqrMagnitude > .000001f)
+        if (IsMeteorDiving)
         {
-            Vector2 displacement = Vector2.ClampMagnitude(knockbackRemaining, Time.deltaTime * 6f);
-            Move(displacement.normalized, displacement.magnitude);
-            knockbackRemaining -= displacement;
+            if (!IsPreview)
+            {
+                var diveCommand = (inputOverride ?? input).ReadCommand(transform.position);
+                aimPosition = ClampToArena(diveCommand.AimPosition);
+                if (diveCommand.FirePressed) MeteorDive.RequestDive();
+            }
+            return;
         }
+        UpdatePulseImpulse(Time.deltaTime);
+        UpdateImpacts(Time.deltaTime);
         if (IsPreview) return;
         if (match == null || !match.IsPlaying) return;
-        PlayerCommand command = input.ReadCommand(transform.position);
+        PlayerCommand command = match.IsTraining && playerIndex == match.PlayerTwo.PlayerIndex
+            ? new PlayerCommand { SelectedSlot = -1, Aim = Vector2.left }
+            : (inputOverride ?? input).ReadCommand(transform.position);
         aimPosition = new Vector2(Mathf.Clamp(command.AimPosition.x, -arenaExtents.x, arenaExtents.x),
             Mathf.Clamp(command.AimPosition.y, -arenaExtents.y, arenaExtents.y));
         if (command.SelectedSlot >= 0) SelectWeaponSlot(command.SelectedSlot);
+        else if (command.WeaponCycle != 0)
+        {
+            if (match.IsTraining)
+                match.GetComponent<TrainingGround>().CycleWeapon(command.WeaponCycle);
+            else if (Hand != null && Hand.Drawn.Count > 0)
+                SelectWeaponSlot((Hand.SelectedIndex + command.WeaponCycle + Hand.Drawn.Count) % Hand.Drawn.Count);
+        }
         Vector2 targetAim = command.Aim.sqrMagnitude > .01f ? command.Aim.normalized : aim;
-        if (Time.time < laserAimUntil)
+        if (IsPrismAimLocked || prismAimRecovering)
+            aim = UpdatePrismAim(targetAim,Time.deltaTime);
+        else if (Time.time < laserAimUntil)
             aim = TurnAim(aim, targetAim, ref laserAngularVelocity, Time.deltaTime);
         else if (Time.time < laserRecoveryUntil && Time.deltaTime > 0)
             aim = RecoverAim(aim, targetAim, ref laserAngularVelocity, Time.deltaTime);
@@ -403,6 +559,21 @@ public sealed class PlayerCombatant : MonoBehaviour
         next.x = Mathf.Clamp(next.x, -arenaExtents.x, arenaExtents.x);
         next.y = Mathf.Clamp(next.y, -arenaExtents.y, arenaExtents.y);
         transform.position = next;
+    }
+
+    private void UpdateImpacts(float deltaTime)
+    {
+        ConsumeImpact(ref knockbackRemaining, 6f, deltaTime);
+        // A short, fast recoil impulse still pushes backward against forward movement.
+        ConsumeImpact(ref laserRecoilRemaining, 12f, deltaTime);
+    }
+
+    private void ConsumeImpact(ref Vector2 remaining, float speed, float deltaTime)
+    {
+        if (remaining.sqrMagnitude <= .000001f) return;
+        Vector2 displacement = Vector2.ClampMagnitude(remaining, deltaTime * speed);
+        Move(displacement.normalized, displacement.magnitude);
+        remaining -= displacement;
     }
 
     private void MoveControlled(Vector2 direction, float speed, float deltaTime)
@@ -441,6 +612,7 @@ public sealed class PlayerCombatant : MonoBehaviour
         nextDashAt = Time.time + dashCooldown;
         invulnerableUntil = Mathf.Max(invulnerableUntil, Time.time + dashDuration);
         float duration = Mathf.Max(.01f, dashDuration);
+        dashEndsAt = Time.time + duration;
         float elapsed = 0;
         while (elapsed < duration && CanSelectWeapon)
         {
@@ -461,7 +633,7 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     private void Fire()
     {
-        if (CurrentWeapon == null || IsOverdriving) return;
+        if (CurrentWeapon == null || IsOverdriving || IsMeteorDiving) return;
         UpdateBarrel();
         Vector2 origin = barrelPivot.TransformPoint(Vector3.right * MuzzleOffset);
         CurrentWeapon.Fire(this, origin, aim, aimPosition);
@@ -469,7 +641,16 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public void ReceiveHit(PlayerCombatant attacker)
     {
+        if (NetworkReplica) return;
         if (!CanBeHit) return;
+        if (landingShield > 0)
+        {
+            landingShield = 0;
+            UpdateLandingShield();
+            invulnerableUntil = Time.time + hitInvulnerability;
+            Hit?.Invoke(this);
+            return;
+        }
         if (IsOverdriving && Overdrive.AbsorbHit())
         {
             invulnerableUntil = Time.time + hitInvulnerability;
@@ -485,7 +666,12 @@ public sealed class PlayerCombatant : MonoBehaviour
 
     public void ResetCombatant(Vector2 position)
     {
+        landingShield = 0;
+        UpdateLandingShield();
+        if (MeteorDive != null) MeteorDive.Cancel();
         laserAimUntil = 0;
+        prismAimLocks=0;
+        prismAimRecovering=false;
         laserSlowUntil = laserRecoveryUntil = 0;
         laserAngularVelocity = 0;
         if (Overdrive != null) Overdrive.Cancel();
@@ -493,6 +679,7 @@ public sealed class PlayerCombatant : MonoBehaviour
         straightCharge = 0;
         previousDriveDirection = Vector2.zero;
         lastDashEndedAt = float.NegativeInfinity;
+        dashEndsAt = float.PositiveInfinity;
         pulseRemaining = pulseTotal = 0;
         pulseSource = null;
         pulseCollisionDamage = false;
@@ -513,6 +700,7 @@ public sealed class PlayerCombatant : MonoBehaviour
         slowedUntil = 0;
         slowMultiplier = 1;
         knockbackRemaining = Vector2.zero;
+        laserRecoilRemaining = Vector2.zero;
         aim = position.x > 0f ? Vector2.left : Vector2.right;
         if (visuals != null) visuals.enabled = true;
         UpdateBarrel();

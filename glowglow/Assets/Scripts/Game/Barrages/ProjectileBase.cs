@@ -7,6 +7,7 @@ public abstract class ProjectileBase : MonoBehaviour
 {
     private static readonly Dictionary<object, Queue<ProjectileBase>> Pools = new();
     private static readonly HashSet<ProjectileBase> Active = new();
+    public static IEnumerable<ProjectileBase> ActiveProjectiles => Active;
     private readonly HashSet<PlayerCombatant> hitTargets = new();
     private object poolKey;
     private float despawnAt;
@@ -86,7 +87,8 @@ public abstract class ProjectileBase : MonoBehaviour
     protected virtual void Update()
     {
         if (!spawned) return;
-        if (Owner == null || !Owner.CanSelectWeapon || Time.time >= despawnAt) { Despawn(); return; }
+        if (Owner == null || !Owner.CanSelectWeapon) { Despawn(); return; }
+        if (Time.time >= despawnAt) { OnLifetimeExpired(); Despawn(); return; }
         Tick(Time.deltaTime);
     }
 
@@ -100,6 +102,7 @@ public abstract class ProjectileBase : MonoBehaviour
     }
 
     protected abstract void Tick(float deltaTime);
+    protected virtual void OnLifetimeExpired() { }
     protected virtual bool DespawnOnHit => true;
     protected virtual bool AllowRepeatedHits => false;
     protected virtual void OnDespawn() { }

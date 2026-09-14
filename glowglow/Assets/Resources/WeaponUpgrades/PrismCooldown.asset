@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
+  m_Name: PrismCooldown
+  m_EditorClassIdentifier:
+  displayName: 빠른 재장전
+  description: Prism Shot 쿨타임 15% 감소
+  icon: {fileID: 0}
+  displaySlot: 0
+  maxLevel: 1
+  targetWeapon: {fileID: 11400000, guid: 8f1b991bf16b4e8d9076c533e6588f0a, type: 2}
+  effectLow: 0
+  effectHigh: 2
