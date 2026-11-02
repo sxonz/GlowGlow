@@ -1,0 +1,126 @@
+const IDENTITY = 'glowglow-ranked';
+const actions = new Set(['queue', 'cancel', 'profile', 'lobby', 'start', 'report', 'status']);
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const steamId = /^[0-9]{17}$/;
+const encoder = new TextEncoder();
+const encode = bytes => btoa(String.fromCharCode(...bytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+const decode = value => Uint8Array.from(atob(value.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+const json = (body, status = 200) => new Response(JSON.stringify(body), {
+  status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
+});
+
+export function createHandler(env, fetchImpl = fetch, now = () => Math.floor(Date.now() / 1000)) {
+  // Explicit development endpoint: claimed Steam IDs are not proof of identity.
+  // Keep its tokens, queue, matches and ratings separate from verified ranked play.
+  const testing = env.RANKED_TEST_MODE === 'true';
+  const audience = testing ? `${IDENTITY}-test-480` : IDENTITY;
+  const rpcName = testing ? 'ranked_test_action' : 'ranked_action';
+  let keyPromise;
+  const key = () => keyPromise ??= crypto.subtle.importKey('raw', encoder.encode(env.RANKED_SIGNING_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+  async function tokenFor(id) {
+    const header = encode(encoder.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
+    const body = encode(encoder.encode(JSON.stringify({ sub: id, aud: audience, exp: now() + 7200 })));
+    const signed = `${header}.${body}`;
+    return `${signed}.${encode(new Uint8Array(await crypto.subtle.sign('HMAC', await key(), encoder.encode(signed))))}`;
+  }
+  async function authenticate(header) {
+    if (!header?.startsWith('Bearer ')) return null;
+    try {
+      const parts = header.slice(7).split('.');
+      if (parts.length !== 3 || parts.some(p => !/^[\w-]+$/.test(p))) return null;
+      const body = JSON.parse(new TextDecoder().decode(decode(parts[1])));
+      if (!steamId.test(body.sub) || body.aud !== audience || !Number.isFinite(body.exp) || body.exp <= now()) return null;
+      const valid = await crypto.subtle.verify('HMAC', await key(), decode(parts[2]), encoder.encode(`${parts[0]}.${parts[1]}`));
+      return valid ? body.sub : null;
+    } catch { return null; }
+  }
+  async function rpc(player, action, data) {
+    const response = await fetchImpl(`${env.SUPABASE_URL}/rest/v1/rpc/${rpcName}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', apikey: env.SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ p_player: player, p_action: action, p_data: data }), signal: AbortSignal.timeout(10000)
+    });
+    if (!response.ok) throw new Error('database');
+    return await response.json();
+  }
+  return async request => {
+    if (request.method !== 'POST') return json({ error: 'method_not_allowed' }, 405);
+    const appConfigured = testing
+      ? (!env.STEAM_APP_ID || env.STEAM_APP_ID === '480')
+      : (env.STEAM_WEB_API_KEY && /^[1-9][0-9]*$/.test(env.STEAM_APP_ID ?? '') && env.STEAM_APP_ID !== '480');
+    if (!env.RANKED_SIGNING_SECRET || env.RANKED_SIGNING_SECRET.length < 32 || !appConfigured
+        || !env.SUPABASE_URL?.startsWith('https://') || !env.SUPABASE_SERVICE_ROLE_KEY)
+      return json({ error: 'ranked_unavailable' }, 503);
+    let body;
+    try {
+      // Bound the streamed request too; Content-Length is not trusted.
+      const reader = request.body?.getReader();
+      if (!reader) return json({ error: 'invalid_request' }, 400);
+      const chunks = []; let size = 0;
+      for (;;) {
+        const next = await reader.read(); if (next.done) break;
+        size += next.value.length;
+        if (size > 12288) { await reader.cancel(); return json({ error: 'request_too_large' }, 413); }
+        chunks.push(next.value);
+      }
+      const bytes = new Uint8Array(size); let offset = 0;
+      for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+      body = JSON.parse(new TextDecoder().decode(bytes));
+      if (!body || typeof body !== 'object' || Array.isArray(body)) throw new Error();
+    } catch { return json({ error: 'invalid_request' }, 400); }
+    try {
+      if (body.action === 'auth_test') {
+        if (!testing) return json({ error: 'test_mode_disabled' }, 403);
+        if (body.appId !== 480 || typeof body.steamId !== 'string' || !steamId.test(body.steamId))
+          return json({ error: 'invalid_test_identity' }, 400);
+        const profile = await rpc(body.steamId, 'profile', {});
+        return json({ ...profile, steamId: body.steamId, token: await tokenFor(body.steamId), testMode: true });
+      }
+      if (body.action === 'auth') {
+        if (testing) return json({ error: 'test_auth_required' }, 400);
+        if (typeof body.ticket !== 'string' || !/^(?:[0-9a-f]{2}){16,4096}$/i.test(body.ticket))
+          return json({ error: 'invalid_ticket' }, 400);
+        const query = new URLSearchParams({ key: env.STEAM_WEB_API_KEY, appid: env.STEAM_APP_ID,
+          ticket: body.ticket, identity: IDENTITY });
+        const response = await fetchImpl(`https://partner.steam-api.com/ISteamUserAuth/AuthenticateUserTicket/v1/?${query}`,
+          { signal: AbortSignal.timeout(10000) });
+        const identity = response.ok ? (await response.json())?.response?.params : null;
+        if (identity?.result !== 'OK' || !steamId.test(identity.steamid) || identity.publisherbanned)
+          return json({ error: 'steam_auth_failed' }, 401);
+        const profile = await rpc(identity.steamid, 'profile', {});
+        return json({ ...profile, steamId: identity.steamid, token: await tokenFor(identity.steamid) });
+      }
+      if (!actions.has(body.action)) return json({ error: 'invalid_action' }, 400);
+      const player = await authenticate(request.headers.get('Authorization'));
+      if (!player) return json({ error: 'authentication_required' }, 401);
+      // Copy only allowed fields. Steam identity and rating can never come from the request body.
+      const data = {};
+      if (body.action === 'queue') {
+        if (body.protocol !== (env.RANKED_PROTOCOL || 'glowglow-classic-5')
+            || !['asia','europe','americas','oceania'].includes(body.region)) return json({ error: 'incompatible_queue' }, 400);
+        data.protocol = body.protocol; data.region = body.region;
+      }
+      if (['lobby','start','report','status'].includes(body.action)) {
+        if (typeof body.matchId !== 'string' || !uuid.test(body.matchId)) return json({ error: 'invalid_match' }, 400);
+        data.matchId = body.matchId;
+      }
+      if (body.action === 'cancel' && body.matchId) {
+        if (typeof body.matchId !== 'string' || !uuid.test(body.matchId)) return json({ error: 'invalid_match' }, 400);
+        data.matchId = body.matchId;
+      }
+      if (body.action === 'lobby') {
+        if (typeof body.lobby !== 'string' || !/^[1-9][0-9]{0,19}$/.test(body.lobby)) return json({ error: 'invalid_lobby' }, 400);
+        data.lobby = body.lobby;
+      }
+      if (body.action === 'report') {
+        if (body.winner !== 'draw' && !steamId.test(body.winner ?? '')) return json({ error: 'invalid_winner' }, 400);
+        data.winner = body.winner;
+      }
+      return json(await rpc(player, body.action, data));
+    } catch {
+      // Do not return Steam tickets, API URLs, database errors or service credentials to players/logs.
+      return json({ error: 'ranked_request_failed' }, 503);
+    }
+  };
+}

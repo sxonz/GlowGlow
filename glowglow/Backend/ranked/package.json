@@ -1,0 +1,12 @@
+{
+  "name": "glowglow-ranked",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "dashboard": "node tools/prepare-dashboard.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
+}

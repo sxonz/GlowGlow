@@ -1,0 +1,4 @@
+project_id = "glowglow-ranked"
+
+[functions.ranked]
+verify_jwt = false
