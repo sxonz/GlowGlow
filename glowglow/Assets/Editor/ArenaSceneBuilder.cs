@@ -116,9 +116,9 @@ public static class ArenaSceneBuilder
 
         var topBar = Image("Top Bar", root, new Color(.025f, .008f, .08f, .88f));
         SetRect(topBar.rectTransform, new Vector2(0, .88f), Vector2.one);
-        var p1 = Text("P1 Lives", topBar.transform, "P1  ◆ ◆ ◆", 32, Hex("FF78DE"), TextAlignmentOptions.MidlineLeft);
+        var p1 = Text("P1 Lives", topBar.transform, "P1  HP 100/100", 32, Hex("FF78DE"), TextAlignmentOptions.MidlineLeft);
         SetRect(p1.rectTransform, new Vector2(.04f, 0), new Vector2(.38f, 1));
-        var p2 = Text("P2 Lives", topBar.transform, "◆ ◆ ◆  P2", 32, Hex("A795FF"), TextAlignmentOptions.MidlineRight);
+        var p2 = Text("P2 Lives", topBar.transform, "HP 100/100  P2", 32, Hex("A795FF"), TextAlignmentOptions.MidlineRight);
         SetRect(p2.rectTransform, new Vector2(.62f, 0), new Vector2(.96f, 1));
         var timer = Text("Timer", topBar.transform, "08:00", 42, Color.white, TextAlignmentOptions.Center);
         SetRect(timer.rectTransform, new Vector2(.4f, 0), new Vector2(.6f, 1));

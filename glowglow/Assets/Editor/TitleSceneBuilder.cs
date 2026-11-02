@@ -40,7 +40,11 @@ public static class TitleSceneBuilder
 
         var root = canvasGo.GetComponent<RectTransform>();
         var bg = Image("Background", root, background, Color.white, Vector2.zero, Vector2.one);
-        bg.preserveAspect = false;
+        bg.preserveAspect = true;
+        // Fill the screen by cropping the edges, keeping the artwork's circles round.
+        var backgroundFit = bg.gameObject.AddComponent<AspectRatioFitter>();
+        backgroundFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        backgroundFit.aspectRatio = background.rect.width / background.rect.height;
         Image("Dark Wash", root, null, new Color(0.025f, 0.008f, 0.09f, 0.44f), Vector2.zero, Vector2.one);
         var shade = Image("Left Shade", root, null, Color.white, Vector2.zero, new Vector2(.68f, 1));
         shade.gameObject.AddComponent<UIHorizontalGradient>();
@@ -95,8 +99,6 @@ public static class TitleSceneBuilder
 
         var status = Text("Status", root, "READY  ·  SELECT A MODE", 18, new Color(.95f, .74f, 1, .9f), TextAlignmentOptions.MidlineRight);
         SetRect(status.rectTransform, new Vector2(.62f, .055f), new Vector2(.925f, .105f));
-        var hint = Text("Hint", root, "WASD / STICK  이동     ENTER / A  선택", 16, new Color(1, 1, 1, .62f), TextAlignmentOptions.MidlineLeft);
-        SetRect(hint.rectTransform, new Vector2(.075f, .045f), new Vector2(.48f, .1f));
 
         var controllerGo = new GameObject("Title Screen Controller", typeof(TitleScreenController));
         var controller = controllerGo.GetComponent<TitleScreenController>();

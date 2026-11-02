@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-/// <summary>Minimal bot setup. Rating is an AI difficulty setting, not a calibrated ladder score.</summary>
+/// <summary>Bot difficulty setup. Rating is an AI difficulty setting, not a calibrated ladder score.</summary>
 public sealed class BotMatchSetup : MonoBehaviour
 {
     private TMP_FontAsset font;
@@ -17,7 +17,6 @@ public sealed class BotMatchSetup : MonoBehaviour
     private Button startButton;
     private Action<int> start;
     private Action onClose;
-    private static readonly Color Surface = new(.045f, .025f, .085f, 1);
     private static readonly Color Accent = new(.6f, .9f, 1f, 1);
 
     public static void Show(Transform parent, TMP_FontAsset font, Action<int> start, Action onClose)
@@ -40,15 +39,17 @@ public sealed class BotMatchSetup : MonoBehaviour
     private void Build()
     {
         var panel = Rect(transform, "Panel", new Vector2(.5f, .5f), new Vector2(.5f, .5f));
-        panel.sizeDelta = new Vector2(640, 590);
-        panel.gameObject.AddComponent<Image>().color = Surface;
-        var border = panel.gameObject.AddComponent<Outline>(); border.effectColor = new Color(.6f, .25f, .6f); border.effectDistance = Vector2.one;
-        Label(panel, "BOT MATCH  /  봇 대전", .07f, .87f, .94f, .97f, 32, Color.white);
-        Label(panel, "상대 봇의 레이팅을 정하세요", .07f, .80f, .94f, .87f, 20, Accent);
-        Label(panel, "봇 레이팅", .07f, .72f, .6f, .79f, 22, Color.white);
-        ratingTier = Label(panel, "", .42f, .72f, .93f, .79f, 24, Accent);
+        panel.sizeDelta = new Vector2(1020, 660);
+        NeonUI.Panel(panel,NeonUI.Cyan);
+        Label(panel,"SINGLEPLAYER / DIFFICULTY",.06f,.88f,.47f,.95f,15,NeonUI.Cyan);
+        Label(panel, "BOT MATCH", .06f, .74f, .47f, .87f, 42, Color.white);
+        Label(panel, "반응 속도와 회피 판단을\n원하는 난도로 조절하세요.", .06f, .17f, .47f, .32f, 21, NeonUI.Muted);
+        NeonUI.Art(panel,"Bot Orbit","Orbit Seal",new Color(.34f,.87f,1,.18f),.08f,.31f,.43f,.73f).preserveAspect=true;
+        NeonUI.Emblem(panel,"Bot",NeonUI.Cyan,.16f,.40f,.35f,.64f);
+        Label(panel, "상대 봇 레이팅", .52f, .84f, .94f, .93f, 26, Color.white);
+        ratingTier = Label(panel, "", .52f, .75f, .94f, .81f, 22, Accent);
         ratingTier.alignment = TextAlignmentOptions.MidlineRight;
-        var inputRect = Rect(panel, "Rating", new Vector2(.07f, .56f), new Vector2(.93f, .71f));
+        var inputRect = Rect(panel, "Rating", new Vector2(.52f, .60f), new Vector2(.94f, .74f));
         inputRect.gameObject.AddComponent<Image>().color = new Color(.1f, .08f, .16f);
         ratingInput = inputRect.gameObject.AddComponent<TMP_InputField>();
         var viewport = Rect(inputRect, "Viewport", new Vector2(.04f, .05f), new Vector2(.96f, .95f));
@@ -59,19 +60,21 @@ public sealed class BotMatchSetup : MonoBehaviour
         ratingInput.contentType = TMP_InputField.ContentType.IntegerNumber;
         ratingInput.characterLimit = 4;
         ratingInput.lineType = TMP_InputField.LineType.SingleLine;
+        NeonUI.Input(ratingInput,NeonUI.Cyan);
         ratingInput.onValueChanged.AddListener(_ => Validate());
         BuildRatingSlider(panel);
         int[] presets = { 600, 1200, 1800, 2400 };
         for (int i = 0; i < presets.Length; i++)
         {
             int value = presets[i];
-            MakeButton(panel, TierName(value) + " " + value, .07f + i * .22f, .30f, .27f + i * .22f, .38f,
+            float x=.52f+(i%2)*.22f, y=.30f-(i/2)*.095f;
+            MakeButton(panel, TierName(value) + " " + value, x,y,x+.20f,y+.077f,
                 () => ratingInput.text = value.ToString());
         }
-        feedback = Label(panel, "", .07f, .21f, .93f, .29f, 19, Accent);
-        Label(panel, "레이팅에 따라 반응·예측 강화 · 3000: 매 프레임 판단", .07f, .15f, .93f, .21f, 17, new Color(.7f, .67f, .78f));
-        MakeButton(panel, "뒤로", .07f, .04f, .32f, .13f, Close);
-        startButton = MakeButton(panel, "대전 시작", .36f, .04f, .93f, .13f, Begin);
+        feedback = Label(panel, "", .52f, .12f, .94f, .19f, 17, Accent);
+        MakeButton(panel, "BACK", .06f, .05f, .30f, .13f, Close);
+        startButton = MakeButton(panel, "대전 시작", .52f, .035f, .94f, .115f, Begin);
+        NeonUI.Button(startButton,NeonUI.Cyan,true);
         ratingInput.text = BotPlayerInput.DefaultRating.ToString();
         Validate();
         EventSystem.current?.SetSelectedGameObject(ratingInput.gameObject);
@@ -94,7 +97,7 @@ public sealed class BotMatchSetup : MonoBehaviour
 
     private void BuildRatingSlider(Transform panel)
     {
-        var root = Rect(panel, "Rating Slider", new Vector2(.18f, .44f), new Vector2(.82f, .54f));
+        var root = Rect(panel, "Rating Slider", new Vector2(.59f, .47f), new Vector2(.87f, .55f));
         var hitArea = root.gameObject.AddComponent<Image>(); hitArea.color = Color.clear;
         var track = Rect(root, "Track", new Vector2(0, .43f), new Vector2(1, .57f));
         track.gameObject.AddComponent<Image>().color = new Color(.2f, .16f, .28f);
@@ -108,11 +111,12 @@ public sealed class BotMatchSetup : MonoBehaviour
         ratingSlider.minValue = BotPlayerInput.MinRating; ratingSlider.maxValue = BotPlayerInput.MaxRating;
         ratingSlider.wholeNumbers = true; ratingSlider.fillRect = fill; ratingSlider.handleRect = handle;
         ratingSlider.targetGraphic = handleImage;
+        NeonUI.Slider(ratingSlider,NeonUI.Cyan);
         ratingSlider.onValueChanged.AddListener(value => ratingInput.text = Mathf.RoundToInt(value).ToString());
-        MakeButton(panel, "−", .07f, .45f, .15f, .53f, () => StepRating(-1));
-        MakeButton(panel, "+", .85f, .45f, .93f, .53f, () => StepRating(1));
-        Label(panel, "200", .18f, .395f, .35f, .44f, 16, Accent);
-        var maximum = Label(panel, "3000", .65f, .395f, .82f, .44f, 16, Accent);
+        MakeButton(panel, "−", .52f, .47f, .58f, .55f, () => StepRating(-1));
+        MakeButton(panel, "+", .88f, .47f, .94f, .55f, () => StepRating(1));
+        Label(panel, "200", .59f, .415f, .72f, .465f, 16, Accent);
+        var maximum = Label(panel, "3000", .74f, .415f, .87f, .465f, 16, Accent);
         maximum.alignment = TextAlignmentOptions.MidlineRight;
     }
 
@@ -130,7 +134,7 @@ public sealed class BotMatchSetup : MonoBehaviour
         startButton.interactable = valid;
         ratingTier.text = valid ? TierName(rating) : "—";
         feedback.color = valid ? Accent : new Color(1f, .5f, .6f);
-        feedback.text = valid ? $"상대  BOT {rating}   ·   3회 피격 시 패배" :
+        feedback.text = valid ? $"상대  BOT {rating}" :
             $"{BotPlayerInput.MinRating}~{BotPlayerInput.MaxRating} 사이의 정수를 입력하세요";
     }
 
@@ -174,6 +178,7 @@ public sealed class BotMatchSetup : MonoBehaviour
         var text = Rect(parent, "Label", new Vector2(x0, y0), new Vector2(x1, y1)).gameObject.AddComponent<TextMeshProUGUI>();
         text.font = font; text.text = value; text.fontSize = size; text.color = color;
         text.alignment = TextAlignmentOptions.MidlineLeft; text.raycastTarget = false;
+        text.enableAutoSizing=true; text.fontSizeMin=size*.8f; text.fontSizeMax=size;
         return text;
     }
 
@@ -182,6 +187,7 @@ public sealed class BotMatchSetup : MonoBehaviour
         var rect = Rect(parent, value, new Vector2(x0, y0), new Vector2(x1, y1));
         var background = rect.gameObject.AddComponent<Image>(); background.color = new Color(.16f, .1f, .23f);
         var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = background;
+        NeonUI.Button(button,NeonUI.Cyan);
         button.onClick.AddListener(() => action());
         Label(rect, value, .03f, 0, .97f, 1, 19, Color.white).alignment = TextAlignmentOptions.Center;
         return button;

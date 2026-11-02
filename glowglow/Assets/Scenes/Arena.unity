@@ -217,8 +217,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "P1  \xB7  \uBF51\uC740 \uD0C4\uB9C9 0/5   |   \uB371\uC5D0 \uD0C4\uB9C9\uC744
-    2\uC885 \uC774\uC0C1 \uB123\uC5B4\uC8FC\uC138\uC694"
+  m_text:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}
   m_sharedMaterial: {fileID: -8449338359398879728, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}
@@ -3813,7 +3812,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u25C6 \u25C6 \u25C6  P2"
+  m_text: "HP 100/100  P2"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}
   m_sharedMaterial: {fileID: -8449338359398879728, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}
@@ -6421,7 +6420,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "P1  \u25C6 \u25C6 \u25C6"
+  m_text: "P1  HP 100/100"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}
   m_sharedMaterial: {fileID: -8449338359398879728, guid: c1b700c3b812c434db0f5e1f0d4b7166, type: 2}

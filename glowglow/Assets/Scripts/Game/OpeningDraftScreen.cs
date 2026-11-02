@@ -28,6 +28,8 @@ public sealed class OpeningDraftScreen : MonoBehaviour
     private readonly CanvasGroup[] botPicks = new CanvasGroup[OpeningDraft.RoundCount];
     private float botShownAt;
     private int summaryRating;
+    private int shownRemaining = -1;
+    private bool shownReady, summaryWasChoosing;
     private readonly RectTransform[] cards = new RectTransform[OpeningDraft.OfferCount];
     private readonly Button[] buttons = new Button[OpeningDraft.OfferCount];
     private readonly Image[] backgrounds = new Image[OpeningDraft.OfferCount];
@@ -56,13 +58,15 @@ public sealed class OpeningDraftScreen : MonoBehaviour
 
     private void ShowRound()
     {
-        overlay.transform.Find("Title").GetComponent<TMP_Text>().text = $"시작 선택 {draft.RoundNumber} / 3  ·  하나를 선택하세요";
-        overlay.transform.Find("Subtitle").GetComponent<TMP_Text>().text = draft.RoundNumber == 1
-            ? "첫 번째 선택은 신규 탄막입니다" : "신규 탄막을 획득하거나 보유 탄막을 강화하세요";
+        overlay.transform.Find("Title").GetComponent<TMP_Text>().text = $"{draft.RoundNumber} / 3  ·  하나를 선택하세요";
+        var subtitle = overlay.transform.Find("Subtitle").GetComponent<TMP_Text>();
+        subtitle.gameObject.SetActive(draft.RoundNumber > 1);
+        if (draft.RoundNumber > 1) subtitle.text = "신규 탄막을 획득하거나 보유 탄막을 강화하세요";
         confirm.GetComponentInChildren<TMP_Text>().text = draft.RoundNumber == 3
             ? (GlowGlow.Online.OnlineSession.Current?.InArena == true ? "선택 확정 · 준비 완료" : "선택 확정 · 전투 시작")
             : "선택 확정 · 다음 라운드";
         shownAt = Time.unscaledTime;
+        shownRemaining = -1;
         deadline = shownAt + FlipSeconds + DealInterval * (cards.Length - 1) + SelectionSeconds;
         for (int i = 0; i < cards.Length; i++)
         {
@@ -70,7 +74,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             var weapon = offer.Weapon;
             var face = faces[i].transform;
             face.Find("Name").GetComponent<TMP_Text>().text = offer.IsUpgrade ? offer.Upgrade.displayName : weapon.displayName;
-            face.Find("Name").GetComponent<TMP_Text>().color = weapon.RarityColor;
+            face.Find("Name").GetComponent<TMP_Text>().color = NeonUI.White;
             face.Find("Rarity").GetComponent<TMP_Text>().text = offer.IsUpgrade ? "보유 탄막 강화" : weapon.RarityTag + " · 신규 탄막";
             face.Find("Stats").GetComponent<TMP_Text>().text = offer.IsUpgrade
                 ? $"{weapon.displayName} · Lv.{offer.Target.Upgrades.GetLevel(offer.Upgrade) + 1}\n{offer.Upgrade.description}"
@@ -81,7 +85,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             upgradeDisplays[i].Show(offer.Target, draft.UpgradeDefinitions, offer.IsUpgrade ? offer.Upgrade : null);
             icon.sprite = offer.IsUpgrade && offer.Upgrade.icon != null ? offer.Upgrade.icon :
                 weapon.icon != null ? weapon.icon : RuntimeShapes.Circle;
-            icon.color = weapon.color;
+            icon.color = !offer.IsUpgrade && weapon.icon != null ? Color.white : weapon.color;
         }
         Refresh();
         Update();
@@ -105,8 +109,13 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             buttons[i].interactable = ready;
         }
         float remaining = Mathf.Clamp(deadline - now, 0, SelectionSeconds);
-        countdown.text = ready ? $"{Mathf.CeilToInt(remaining):00}초" : "카드를 펼치는 중";
-        countdown.color = ready && remaining <= 5 ? new Color(1, .45f, .6f) : Color.white;
+        int seconds=Mathf.CeilToInt(remaining);
+        if(seconds!=shownRemaining || ready!=shownReady)
+        {
+            shownRemaining=seconds; shownReady=ready;
+            countdown.text = ready ? $"{seconds:00}초" : "펼치는 중";
+            countdown.color = ready && remaining <= 5 ? new Color(1, .45f, .6f) : Color.white;
+        }
         timerFill.fillAmount = remaining / SelectionSeconds;
         confirm.interactable = ready && draft.SelectedIndex >= 0;
         if (!ready) return;
@@ -130,12 +139,12 @@ public sealed class OpeningDraftScreen : MonoBehaviour
     {
         string owned = string.Join(" · ", System.Linq.Enumerable.Select(draft.Acquired,
             weapon => weapon.Definition.displayName + (weapon.Upgrades.Count > 0 ? " (강화)" : "")));
-        selectionLabel.text = string.IsNullOrEmpty(owned) ? "클릭 또는 숫자 1–3으로 선택 · ENTER로 확정" : $"보유 탄막: {owned}";
+        selectionLabel.gameObject.SetActive(!string.IsNullOrEmpty(owned));
+        if (!string.IsNullOrEmpty(owned)) selectionLabel.text = $"보유 탄막: {owned}";
         for (int i = 0; i < cards.Length; i++)
         {
             bool selected = draft.SelectedIndex == i;
-            backgrounds[i].color = selected ? new Color(.32f, .08f, .31f) : new Color(.085f, .045f, .16f);
-            cards[i].GetComponent<Outline>().effectColor = selected ? new Color(1, .35f, .8f) : new Color(.35f, .25f, .55f);
+            NeonUI.Selection(buttons[i],selected,draft.Offers[i].Weapon.color);
             badges[i].text = selected ? "선택됨 · 확정 대기" : $"[ {i + 1} ]  선택";
         }
     }
@@ -172,7 +181,9 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         shade.anchorMin = Vector2.zero;
         shade.anchorMax = Vector2.one;
         shade.sizeDelta = Vector2.zero;
-        shade.gameObject.AddComponent<Image>().color = new Color(.018f, .008f, .05f, .97f);
+        shade.gameObject.AddComponent<Image>().color = NeonUI.Ink;
+        NeonUI.Art(overlay.transform,"Draft Orbit","Orbit Seal",new Color(.5f,.4f,1,.08f),.015f,.27f,.20f,.72f).preserveAspect=true;
+        NeonUI.Text(overlay.transform,"Draft Eyebrow","LOADOUT / CHOOSE YOUR BARRAGE",font,18,NeonUI.Cyan,.20f,.92f,.80f,.965f,TextAlignmentOptions.Center);
         Text(overlay.transform, "Title", "", new Vector2(0, 370), new Vector2(1500, 80), 46);
         Text(overlay.transform, "Subtitle", "", new Vector2(0, 310), new Vector2(1200, 50), 25);
         countdown = Text(overlay.transform, "Countdown", "8초", new Vector2(0, 250), new Vector2(700, 60), 34);
@@ -180,7 +191,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         track.gameObject.AddComponent<Image>().color = new Color(.18f, .1f, .25f);
         var fill = Rect(track, "Fill", Vector2.zero, new Vector2(1470, 5));
         timerFill = fill.gameObject.AddComponent<Image>();
-        timerFill.sprite = RuntimeShapes.Square;
+        timerFill.sprite = NeonUI.Asset("Rule");
         timerFill.color = new Color(1, .3f, .8f);
         timerFill.type = Image.Type.Filled;
         timerFill.fillMethod = Image.FillMethod.Horizontal;
@@ -191,7 +202,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             card.gameObject.AddComponent<Outline>().effectDistance = new Vector2(2, -2);
             var button = buttons[i] = card.gameObject.AddComponent<Button>();
             button.targetGraphic = backgrounds[i];
-            button.transition = Selectable.Transition.None;
+            NeonUI.Button(button,NeonUI.Violet);
             button.navigation = new Navigation { mode = Navigation.Mode.None };
             int index = i;
             button.onClick.AddListener(() => Toggle(index));
@@ -200,7 +211,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             Text(face, "Rarity", "", new Vector2(0, 185), new Vector2(260, 35), 20);
             faces[i] = face.gameObject.AddComponent<CanvasGroup>();
             faces[i].blocksRaycasts = false;
-            var icon = Rect(face, "Icon", new Vector2(0, 112), new Vector2(90, 90)).gameObject.AddComponent<Image>();
+            var icon = Rect(face, "Icon", new Vector2(0, 102), new Vector2(118, 118)).gameObject.AddComponent<Image>();
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             var shardRoot = Rect(face, "Upgrade Shards", new Vector2(0, 104), new Vector2(128, 128));
@@ -215,10 +226,10 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         confirmImage.color = new Color(.65f, .1f, .48f);
         confirm = confirmRect.gameObject.AddComponent<Button>();
         confirm.targetGraphic = confirmImage;
+        NeonUI.Button(confirm,NeonUI.Pink,true);
         confirm.navigation = new Navigation { mode = Navigation.Mode.None };
         confirm.onClick.AddListener(() => FinishRound());
         Text(confirmRect, "Label", "선택 확정 · 전투 시작", Vector2.zero, new Vector2(420, 60), 27);
-        Text(overlay.transform, "Hint", "숫자 1–3 / 클릭으로 선택 · ENTER로 확정 · 매 라운드 8초, 미선택 시 자동 선택", new Vector2(0, -390), new Vector2(1600, 50), 22);
     }
 
     private void ShowBotChoices(IReadOnlyList<OpeningDraft.Offer> choices, int rating)
@@ -238,6 +249,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
                 var tile = Rect(botSummary.transform, "Bot Pick " + (i + 1), new Vector2((i - 1) * 490, -9), new Vector2(474, 62));
                 var background = tile.gameObject.AddComponent<Image>();
                 background.color = new Color(.075f, .055f, .13f);
+                NeonUI.Panel(background,NeonUI.Cyan);
                 background.raycastTarget = false;
                 botPicks[i] = tile.gameObject.AddComponent<CanvasGroup>();
                 botPicks[i].interactable = botPicks[i].blocksRaycasts = false;
@@ -250,6 +262,7 @@ public sealed class OpeningDraftScreen : MonoBehaviour
         botSummary.SetActive(true);
         botShownAt = Time.unscaledTime;
         summaryRating = rating;
+        summaryWasChoosing = false;
         for (int i = 0; i < botPicks.Length; i++)
         {
             var tile = botPicks[i];
@@ -260,7 +273,8 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             var icon = tile.transform.Find("Icon").GetComponent<Image>();
             icon.sprite = pick.IsUpgrade && pick.Upgrade.icon != null ? pick.Upgrade.icon : pick.Weapon.icon;
             if (icon.sprite == null) icon.sprite = RuntimeShapes.Circle;
-            icon.color = pick.Weapon.color;
+            icon.color = !pick.IsUpgrade || pick.Upgrade.icon == null
+                ? pick.Weapon.icon != null ? Color.white : pick.Weapon.color : pick.Weapon.color;
             tile.transform.Find("Name").GetComponent<TMP_Text>().text = pick.IsUpgrade ? pick.Upgrade.displayName : pick.Weapon.displayName;
             var detail = tile.transform.Find("Detail").GetComponent<TMP_Text>();
             detail.text = pick.IsUpgrade ? $"{i + 1:00}  강화 · {pick.Weapon.displayName}" : $"{i + 1:00}  신규 탄막";
@@ -277,7 +291,12 @@ public sealed class OpeningDraftScreen : MonoBehaviour
             tile.alpha = Mathf.Clamp01((now - botShownAt - revealed * .22f) / .16f);
             revealed++;
         }
-        botSummaryTitle.text = $"BOT {summaryRating}  ·  " + (now - botShownAt < .6f ? "선택 중…" : "선택 완료") + "  /  선택 요약";
+        bool choosing=now-botShownAt<.6f;
+        if(choosing!=summaryWasChoosing || string.IsNullOrEmpty(botSummaryTitle.text))
+        {
+            summaryWasChoosing=choosing;
+            botSummaryTitle.text = $"BOT {summaryRating}  ·  " + (choosing ? "선택 중…" : "선택 완료") + "  /  선택 요약";
+        }
     }
 
     private static RectTransform Rect(Transform parent, string name, Vector2 position, Vector2 size)

@@ -25,6 +25,7 @@ public sealed class TrainingGround : MonoBehaviour
     private int selected;
     private bool movingTarget;
     private float targetPhase;
+    private int shownHits = -1, shownDamage = -1, shownHealth = -1;
     private static readonly Color Panel = new(.035f, .025f, .075f, 1);
     private static readonly Color Card = new(.085f, .065f, .14f, 1);
     private static readonly Color Accent = new(.55f, .9f, 1f, 1);
@@ -64,6 +65,7 @@ public sealed class TrainingGround : MonoBehaviour
         Vector2 playerPosition = resetPositions ? new Vector2(-5.8f, 0) : (Vector2)match.PlayerOne.transform.position;
         Vector2 targetPosition = resetPositions ? new Vector2(4.8f, 0) : (Vector2)match.PlayerTwo.transform.position;
         ProjectileBase.DespawnAll();
+        GetComponent<CombatVfx>()?.Clear();
         match.PlayerOne.ResetCombatant(playerPosition);
         match.PlayerTwo.ResetCombatant(targetPosition);
         foreach (var runtime in weapons) runtime.ResetCooldown();
@@ -130,7 +132,14 @@ public sealed class TrainingGround : MonoBehaviour
             var desired = new Vector2(4.8f, Mathf.Sin(targetPhase * 1.3f) * 3f);
             target.position = Vector2.MoveTowards(target.position, desired, Time.deltaTime * 3.9f);
         }
-        telemetry.text = $"표적 명중  <color=#8FE6FF>{match.PlayerTwo.HitsTaken:000}</color>   /   제한 시간 없음";
+        var targetPlayer = match.PlayerTwo;
+        if (shownHits != targetPlayer.HitsTaken || shownDamage != targetPlayer.DamageTaken || shownHealth != targetPlayer.Health)
+        {
+            shownHits = targetPlayer.HitsTaken;
+            shownDamage = targetPlayer.DamageTaken;
+            shownHealth = targetPlayer.Health;
+            telemetry.text = $"표적 HP <color=#8FE6FF>{shownHealth}/{PlayerCombatant.MaxHealth}</color> · 명중 {shownHits:000}\n누적 피해 {shownDamage}";
+        }
         cooldownLabel.text = Selected == null ? "—" : Selected.CooldownRemaining > 0
             ? $"재사용까지 {Selected.CooldownRemaining:0.0}초" : "발사 준비 완료";
         cooldownFill.fillAmount = Selected == null ? 0 : 1 - Selected.CooldownFraction;
@@ -140,14 +149,13 @@ public sealed class TrainingGround : MonoBehaviour
     {
         if (Selected == null) return;
         selectedName.text = Selected.Definition.displayName;
-        selectedName.color = Selected.Definition.RarityColor;
+        selectedName.color = NeonUI.White;
         var value = Selected.Stats;
         string lifetime = float.IsPositiveInfinity(value.Lifetime) ? "제한 없음" : $"{value.Lifetime:0.##}초";
         stats.text = $"쿨타임  {value.Cooldown:0.##}초     탄속  {value.Speed:0.#}\n수명  {lifetime}     범위  {value.Range:0.#}";
         for (int i = 0; i < weaponButtons.Count; i++)
         {
-            weaponButtons[i].GetComponent<Image>().color = i == selected ? new Color(.18f, .24f, .34f) : Card;
-            weaponButtons[i].GetComponent<Outline>().enabled = i == selected;
+            NeonUI.Selection(weaponButtons[i],i==selected,weapons[i].Definition.color);
         }
         foreach (var update in refreshUpgrades) update();
     }
@@ -157,7 +165,7 @@ public sealed class TrainingGround : MonoBehaviour
         if (weaponGrid == null) return;
         float width = (((RectTransform)weaponGrid.transform).rect.width - 8) / 2;
         if (Mathf.Abs(weaponGrid.cellSize.x - width) > .1f)
-            weaponGrid.cellSize = new Vector2(width, 43);
+            weaponGrid.cellSize = new Vector2(width, 58);
     }
 
     private void Build()
@@ -174,12 +182,13 @@ public sealed class TrainingGround : MonoBehaviour
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
         var root = (RectTransform)overlay.transform;
         var header = Box(root, "Header", .02f, .9f, .67f, .98f, Panel);
-        Label(header, "TRAINING  /  훈련장", .025f, .48f, .8f, .94f, 28, Color.white);
-        Label(header, "덱 제한 없이, 원하는 조합을 바로 테스트하세요", .025f, .05f, .98f, .45f, 18, Muted);
+        NeonUI.Emblem(header,"Training",NeonUI.Cyan,.02f,.10f,.09f,.90f);
+        Label(header, "TRAINING  /  훈련장", .105f, .44f, .95f, .85f, 26, Color.white);
+        Label(header, "덱 제한 없이, 원하는 탄막을 바로 테스트하세요", .105f, .12f, .98f, .43f, 17, Muted);
         var footer = Box(root, "Controls", .02f, .02f, .67f, .10f, Panel);
-        Label(footer, "WASD 이동   ·   마우스 조준 / 발사   ·   SPACE 대시", .025f, .49f, .98f, .96f, 19, Color.white);
+        Label(footer, "WASD 이동   ·   MOUSE 조준 / 발사   ·   SPACE 대시", .025f, .49f, .98f, .96f, 19, Color.white);
         Label(footer, "Q / E 또는 휠 전환   ·   R 전장 초기화   ·   ESC 나가기", .025f, .02f, .98f, .48f, 18, Muted);
-        var side = Box(root, "Loadout", .70f, 0, 1, 1, Panel);
+        var side = Box(root, "Loadout", .70f, .015f, .99f, .985f, Panel);
         Label(side, "탄막 설정", .055f, .935f, .72f, .98f, 28, Color.white);
         MakeButton(side, "나가기", .76f, .937f, .95f, .976f, () => SceneManager.LoadScene("Title"));
         Label(side, "선택 즉시 적용 · 탄막별 설정 유지", .055f, .903f, .95f, .933f, 17, Muted);
@@ -188,24 +197,22 @@ public sealed class TrainingGround : MonoBehaviour
         weaponGrid = grid;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 2;
-        grid.cellSize = new Vector2(193, 43);
+        grid.cellSize = new Vector2(193, 58);
         grid.spacing = new Vector2(8, 8);
         // Width follows the actual sidebar on wider aspect ratios.
         Canvas.ForceUpdateCanvases();
-        grid.cellSize = new Vector2((weaponContent.rect.width - 8) / 2, 43);
+        grid.cellSize = new Vector2((weaponContent.rect.width - 8) / 2, 58);
         for (int i = 0; i < weapons.Count; i++)
         {
             int index = i;
             var definition = weapons[i].Definition;
             var button = MakeButton(weaponContent, definition.displayName, 0, 0, 1, 1, () => SelectWeapon(index));
-            var outline = button.gameObject.AddComponent<Outline>();
-            outline.effectColor = Accent;
-            outline.effectDistance = new Vector2(1, -1);
             var label = button.GetComponentInChildren<TMP_Text>();
             label.rectTransform.anchorMin = new Vector2(.24f, .06f);
             label.fontSize = 17;
             var icon = Box(button.transform, "Icon", .04f, .2f, .20f, .8f, definition.color).GetComponent<Image>();
             icon.sprite = definition.icon != null ? definition.icon : RuntimeShapes.Circle;
+            icon.color = definition.icon != null ? Color.white : definition.color;
             icon.preserveAspect = true;
             icon.raycastTarget = false;
             weaponButtons.Add(button);
@@ -229,15 +236,15 @@ public sealed class TrainingGround : MonoBehaviour
             ResetArena();
         });
         MakeButton(side, "전장 초기화 · R", .51f, .18f, .945f, .22f, ResetArena);
-        telemetry = Label(side, "", .055f, .13f, .945f, .17f, 18, Color.white);
+        telemetry = Label(side, "", .055f, .13f, .945f, .177f, 17, Color.white);
         cooldownLabel = Label(side, "", .055f, .078f, .945f, .12f, 20, Accent);
         var track = Box(side, "Cooldown Track", .055f, .055f, .945f, .063f, Card);
         cooldownFill = Box(track, "Fill", 0, 0, 1, 1, Accent).GetComponent<Image>();
-        cooldownFill.sprite = RuntimeShapes.Circle;
+        cooldownFill.sprite = NeonUI.Asset("Rule");
         cooldownFill.type = Image.Type.Filled;
         cooldownFill.fillMethod = Image.FillMethod.Horizontal;
         cooldownFill.fillOrigin = 0;
-        Label(side, "위치는 유지되고 탄막·쿨타임이 초기화됩니다", .055f, .012f, .945f, .046f, 15, Muted);
+        Label(side, "탄막·쿨타임이 초기화됩니다", .055f, .012f, .945f, .046f, 15, Muted);
     }
 
     private void RebuildUpgrades()
@@ -249,11 +256,11 @@ public sealed class TrainingGround : MonoBehaviour
             if (!upgrade.CanApplyTo(Selected.Definition)) continue;
             var row = Box(upgradeContent, upgrade.name, 0, 0, 1, 1, Card);
             var rowLayout = row.gameObject.AddComponent<LayoutElement>();
-            var title = Label(row, upgrade.displayName, .04f, .66f, .70f, .95f, 19, Color.white);
-            var description = Label(row, upgrade.description, .04f, .08f, .72f, .64f, 16, Muted);
+            var title = Label(row, upgrade.displayName, .04f, .59f, .70f, .87f, 19, Color.white);
+            var description = Label(row, upgrade.description, .04f, .12f, .72f, .60f, 16, Muted);
             float textWidth = Mathf.Max(240, upgradeContent.rect.width * .68f);
-            rowLayout.preferredHeight = Mathf.Max(74, description.GetPreferredValues(upgrade.description, textWidth, Mathf.Infinity).y / .56f + 4);
-            var levelText = Label(row, "", .75f, .62f, .97f, .93f, 17, Accent);
+            rowLayout.preferredHeight = Mathf.Max(82, description.GetPreferredValues(upgrade.description, textWidth, Mathf.Infinity).y / .48f + 4);
+            var levelText = Label(row, "", .75f, .56f, .97f, .87f, 17, Accent);
             levelText.alignment = TextAlignmentOptions.Center;
             var minus = MakeButton(row, "−", .75f, .15f, .85f, .5f,
                 () => ChangeLevel(upgrade, Selected.Upgrades.GetLevel(upgrade) - 1));
@@ -316,6 +323,8 @@ public sealed class TrainingGround : MonoBehaviour
     {
         var rect = Rect(parent, name, x0, y0, x1, y1);
         rect.gameObject.AddComponent<Image>().color = color;
+        if(name!="Fill" && name!="Handle" && name!="Icon" && !name.Contains("Scrollbar") && name!="Cooldown Track")
+            NeonUI.Panel(rect,NeonUI.Cyan);
         return rect;
     }
 
@@ -346,6 +355,7 @@ public sealed class TrainingGround : MonoBehaviour
         button.colors = colors;
         button.navigation = new Navigation { mode = Navigation.Mode.None };
         button.onClick.AddListener(() => action());
+        NeonUI.Button(button,NeonUI.Cyan);
         Label(rect, text, .04f, .06f, .96f, .94f, 18, Color.white).alignment = TextAlignmentOptions.Center;
         return button;
     }

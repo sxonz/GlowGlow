@@ -56,7 +56,8 @@ public sealed class DeckScreen : MonoBehaviour
     {
         LoadCards(catalog, true);
         foreach (var label in GetComponentsInChildren<TMP_Text>(true))
-            if (label.text.StartsWith("무기 도감")) label.text = $"무기 도감  ·  {cards.Count}종";
+            if (label.text.StartsWith("무기 도감") || label.text.StartsWith("탄막 도감"))
+                label.text = $"탄막 도감  ·  {cards.Count}종";
         previous.onClick.AddListener(() => { page--; RefreshCollection(); });
         next.onClick.AddListener(() => { page++; RefreshCollection(); });
         toggle.onClick.AddListener(ToggleSelected);
@@ -65,6 +66,7 @@ public sealed class DeckScreen : MonoBehaviour
         RefreshCollection();
         RefreshDeck();
         SelectCard(cards.Count > 0 ? cards[0] : null);
+        ApplyVisualTheme();
     }
 
     public void Build(DeckCatalog catalog, TMP_FontAsset titleFont, Action close)
@@ -72,10 +74,10 @@ public sealed class DeckScreen : MonoBehaviour
         font = titleFont;
         LoadCards(catalog, false);
 
-        Text(transform, "덱 구성 <size=55%> / 카드 도감</size>", 38, .035f, .88f, .8f, .97f);
-        Text(transform, "카드를 살펴보고 나만의 덱을 구성하세요.", 18, .035f, .82f, .8f, .88f);
+        Text(transform, "덱 구성 <size=55%> / 탄막 도감</size>", 38, .035f, .88f, .8f, .97f);
+        Text(transform, "나만의 덱을 구성하세요.", 18, .035f, .82f, .8f, .88f);
         var collection = Box(transform, "Collection", .025f, .13f, .37f, .80f);
-        Text(collection, $"무기 도감  ·  {cards.Count}종", 24, .05f, .88f, .95f, .98f);
+        Text(collection, $"탄막 도감  ·  {cards.Count}종", 24, .05f, .88f, .95f, .98f);
         grid = Rect(collection, "Cards", .05f, .15f, .95f, .86f);
         previous = Button(collection, "이전", .05f, .025f, .27f, .12f, () => { page--; RefreshCollection(); });
         next = Button(collection, "다음", .73f, .025f, .95f, .12f, () => { page++; RefreshCollection(); });
@@ -89,7 +91,7 @@ public sealed class DeckScreen : MonoBehaviour
         previewImage.color = new Color(.025f, .012f, .07f);
         preview = previewRect.gameObject.AddComponent<BarragePreview>();
         preview.Configure(previewImage);
-        details = Text(detail, "카드를 선택하면\n설명과 능력치를 볼 수 있습니다.", 22, .07f, .19f, .93f, .48f);
+        details = Text(detail, "탄막을 선택하면\n설명과 능력치를 볼 수 있습니다.", 22, .07f, .19f, .93f, .48f);
         details.enableAutoSizing = false;
         details.textWrappingMode = TextWrappingModes.Normal;
         details.alignment = TextAlignmentOptions.TopLeft;
@@ -99,7 +101,7 @@ public sealed class DeckScreen : MonoBehaviour
         var deck = Box(transform, "My Deck", .765f, .13f, .975f, .80f);
         deckCount = Text(deck, "", 24, .07f, .88f, .93f, .98f);
         deckRequirement = Text(deck, "8장을 구성해야 플레이할 수 있습니다", 15, .07f, .81f, .93f, .88f);
-        starterButton = Button(deck, "기본 8장으로 채우기", .07f, .70f, .93f, .79f, null);
+        starterButton = Button(deck, "기본 덱", .07f, .70f, .93f, .79f, null);
         var viewport = Rect(deck, "Viewport", .07f, .05f, .93f, .68f);
         viewport.gameObject.AddComponent<RectMask2D>();
         var hit = viewport.gameObject.AddComponent<Image>();
@@ -112,23 +114,64 @@ public sealed class DeckScreen : MonoBehaviour
         scroll.horizontal = false;
         scroll.movementType = ScrollRect.MovementType.Clamped;
         scroll.scrollSensitivity = 30;
-        backButton = Button(transform, "BACK · 메인 메뉴", .035f, .035f, .23f, .10f, close);
-        Text(transform, "카드 선택 → 상세 확인 → 덱에 추가 / 제거", 17, .27f, .035f, .95f, .10f);
+        backButton = Button(transform, "BACK", .035f, .035f, .23f, .10f, close);
         BuildSlots();
         RefreshCollection();
         RefreshDeck();
         SelectCard(cards.Count > 0 ? cards[0] : null);
+        ApplyVisualTheme();
+    }
+
+    public void ApplyVisualTheme()
+    {
+        NeonUI.Place((RectTransform)transform,.035f,.055f,.965f,.95f);
+        NeonUI.Panel((RectTransform)transform,NeonUI.Violet);
+        foreach(var panelName in new[]{"Collection","Details","My Deck"})
+        {
+            var panel=transform.Find(panelName) as RectTransform;
+            if(panel!=null) NeonUI.Panel(panel,NeonUI.Violet);
+        }
+        NeonUI.Text(transform,"Armory Eyebrow","ARMORY / BUILD YOUR LOADOUT",font,14,NeonUI.Cyan,.035f,.955f,.70f,.985f);
+        NeonUI.Rule(transform,"Armory Rule",new Color(.69f,.49f,1,.42f),.035f,.815f,.965f);
+        foreach(var button in GetComponentsInChildren<Button>(true)) NeonUI.Button(button,NeonUI.Violet,button==toggle);
+        foreach(var slot in collectionSlots)
+        {
+            var preview=slot.transform.Find("Bullet Preview/Weapon Icon") as RectTransform;
+            if(preview!=null) preview.sizeDelta=new Vector2(76,76);
+            var title=slot.transform.Find("Card Name").GetComponent<TMP_Text>();
+            title.alignment=TextAlignmentOptions.Center; title.fontSizeMax=22;
+            slot.transform.Find("Card Status").GetComponent<TMP_Text>().alignment=TextAlignmentOptions.Center;
+        }
+        foreach(var row in deckSlots)
+        {
+            var label=row.GetComponentInChildren<TMP_Text>();
+            NeonUI.Place(label.rectTransform,.23f,.06f,.95f,.94f);
+            label.alignment=TextAlignmentOptions.MidlineLeft;
+        }
+        if(preview!=null) NeonUI.Panel((RectTransform)preview.transform,NeonUI.Cyan);
+        RefreshCollectionSelection();
+    }
+
+    private void RefreshCollectionSelection()
+    {
+        for(int cell=0;cell<collectionSlots.Count;cell++)
+        {
+            int index=page*6+cell;
+            bool picked=index<cards.Count && cards[index]==selected;
+            NeonUI.Selection(collectionSlots[cell],picked,picked?cards[index].weapon.color:NeonUI.Violet);
+        }
     }
 
     private void SelectCard(DeckCatalog.Card card)
     {
         selected = card;
+        RefreshCollectionSelection();
         if (preview != null) preview.Select(card?.weapon);
         toggle.interactable = card != null;
         if (card == null) return;
         var weapon = card.weapon;
         var stats = weapon.ResolveStats(null);
-        details.text = $"<color=#{ColorUtility.ToHtmlStringRGB(weapon.RarityColor)}><size=120%>{weapon.displayName}</size></color> · {weapon.RarityTag}\n" +
+        details.text = $"<color=#{ColorUtility.ToHtmlStringRGB(Color.Lerp(weapon.RarityColor,Color.white,.4f))}><size=120%>{weapon.displayName}</size></color> · {weapon.RarityTag}\n" +
             $"{card.description}\n\n쿨타임 {stats.Cooldown:0.##}초";
         bool included = saved.cards.Contains(card.id);
         toggle.interactable = included || saved.cards.Count < DeckCatalog.RequiredDeckSize;
@@ -180,16 +223,17 @@ public sealed class DeckScreen : MonoBehaviour
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(() => SelectCard(card));
             button.transform.Find("Card Name").GetComponent<TMP_Text>().text = card.weapon.displayName;
-            button.transform.Find("Card Name").GetComponent<TMP_Text>().color = card.weapon.RarityColor;
+            button.transform.Find("Card Name").GetComponent<TMP_Text>().color = NeonUI.White;
             button.transform.Find("Card Status").GetComponent<TMP_Text>().text = card.weapon.RarityTag +
                 (saved.cards.Contains(card.id) ? " · 덱에 포함됨" : " · 상세 보기");
             foreach (var image in button.transform.Find("Bullet Preview").GetComponentsInChildren<Image>())
             {
-                image.color = card.weapon.color;
+                image.color = Color.white;
                 image.sprite = card.weapon.icon;
                 image.preserveAspect = true;
             }
         }
+        RefreshCollectionSelection();
     }
 
     private void RefreshDeck()
@@ -207,7 +251,9 @@ public sealed class DeckScreen : MonoBehaviour
             if (i >= saved.cards.Count) continue;
             var card = cards.Find(candidate => candidate.id == saved.cards[i]);
             row.GetComponentInChildren<TMP_Text>().text = $"{i + 1:00}  {card.weapon.displayName}";
-            row.GetComponentInChildren<TMP_Text>().color = card.weapon.RarityColor;
+            row.GetComponentInChildren<TMP_Text>().color = NeonUI.White;
+            var icon=NeonUI.Art(row.transform,"Deck Glyph","Diamond",Color.white,.045f,.15f,.19f,.85f);
+            icon.sprite=card.weapon.icon; icon.preserveAspect=true;
             row.onClick.RemoveAllListeners();
             row.onClick.AddListener(() => SelectCard(card));
         }
@@ -215,8 +261,8 @@ public sealed class DeckScreen : MonoBehaviour
 
     private void BuildSlots()
     {
-        emptyCollection = Text(grid, "등록된 카드가 없습니다.", 22, 0, .4f, 1, .6f);
-        emptyDeck = Text(deckList, "아직 비어 있습니다.\n도감에서 카드를 추가하세요.", 18, 0, 0, 1, 1);
+        emptyCollection = Text(grid, "등록된 탄막이 없습니다.", 22, 0, .4f, 1, .6f);
+        emptyDeck = Text(deckList, "아직 비어 있습니다.\n도감에서 탄막을 추가하세요.", 18, 0, 0, 1, 1);
         for (int cell = 0; cell < 6; cell++)
         {
             float x = (cell % 2) * .52f;

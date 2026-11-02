@@ -1,0 +1,46 @@
+PASS: 32 prepared UI sprites load from one atlas
+PASS: Every frame and glyph shares one texture
+PASS: Atlas is 2 MiB of RGBA32 texels, without mipmaps or CPU readability
+PASS: Panels use prepared nine-slice borders
+PASS: No runtime sprite packing is required
+PASS: Real title scene loads
+PASS: Main menu artwork remains unchanged
+CAPTURE ui-main.png: 1600x900; overflowing text fields=0
+PASS: Singleplayer uses the common panel skin
+PASS: Mode list keeps scroll and clipping behavior
+CAPTURE ui-singleplayer.png: 1600x900; overflowing text fields=0
+PASS: Bot setup retains rating validation
+PASS: Bot input and slider stay synchronized
+CAPTURE ui-bot-setup.png: 1600x900; overflowing text fields=0
+PASS: Settings slider uses the shared diamond handle
+PASS: Settings keyboard navigation retained
+CAPTURE ui-settings.png: 1600x900; overflowing text fields=0
+PASS: Deck keeps live preview and eight slots
+PASS: Selecting a barrage updates its luminous frame
+CAPTURE ui-deck-1.png: 1600x900; overflowing text fields=0
+CAPTURE ui-deck-2.png: 1600x900; overflowing text fields=0
+CAPTURE ui-deck-3.png: 1600x900; overflowing text fields=0
+CAPTURE ui-deck-4.png: 1600x900; overflowing text fields=0
+PASS: Last collection page still contains the nineteenth barrage
+CAPTURE ui-multiplayer.png: 1600x900; overflowing text fields=0
+PASS: Online lobby skin initializes without creating a connection
+CAPTURE ui-online.png: 1600x900; overflowing text fields=0
+PASS: UI restyle preserves draft gating
+CAPTURE ui-draft.png: 1600x900; overflowing text fields=0
+PASS: Draft selection enables confirm
+PASS: Confirm frame finishes its focus transition
+PASS: All three draft confirmations still begin combat
+CAPTURE ui-combat.png: 1600x900; overflowing text fields=0
+PASS: Warmed combat slot refresh allocates zero bytes across 100 calls
+PASS: Result card exposes working rematch and exit controls
+CAPTURE ui-result.png: 1600x900; overflowing text fields=0
+PASS: Training screen initializes
+CAPTURE ui-training.png: 1600x900; overflowing text fields=0
+CAPTURE ui-training-compact.png: 1200x900; overflowing text fields=0
+CAPTURE ui-training-wide.png: 1920x1080; overflowing text fields=0
+PASS: Training shows the selected barrage frame
+PASS: Prepared barrage icons retain original colors
+PASS: Training upgrade controls still apply all three upgrades
+CAPTURE ui-training-upgraded.png: 1600x900; overflowing text fields=0
+PASS: Training reset keeps health behavior
+PASS: 28 UI theme checks.
