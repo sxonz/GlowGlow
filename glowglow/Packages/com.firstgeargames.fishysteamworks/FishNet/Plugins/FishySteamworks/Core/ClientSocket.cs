@@ -121,6 +121,8 @@ namespace FishySteamworks.Client
         /// </summary>
         private void OnLocalConnectionState(SteamNetConnectionStatusChangedCallback_t args)
         {
+            // Steam callbacks are global; an old or server-side socket is not this client.
+            if (args.m_hConn != _socket) return;
             if (args.m_info.m_eState == ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connected)
             {
                 base.SetLocalConnectionState(LocalConnectionState.Started, false);

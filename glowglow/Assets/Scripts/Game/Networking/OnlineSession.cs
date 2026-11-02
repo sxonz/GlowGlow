@@ -22,7 +22,8 @@ namespace GlowGlow.Online
     public struct ClassicPlayerState
     {
         public Vector2 Position, Aim;
-        public int Hits, Shield, Selected;
+        public byte Health;
+        public int Shield, Selected;
         public float[] Cooldowns, Durations;
     }
     public struct ClassicState : IBroadcast
@@ -43,19 +44,24 @@ namespace GlowGlow.Online
         public bool Interrupted { get; private set; }
         public bool WaitingForCombat => !combatStarted && !Interrupted;
         public int LocalSlot { get; private set; } = -1;
-        public string Status { get; private set; } = "클래식 · 친구와 대전";
+        public string Status { get; private set; } = "클래식 · 랭크 매칭 또는 친선전";
         public bool Connected => manager != null && manager.IsClientStarted;
-        public bool HasSession => manager != null;
+        public bool HasSession => manager != null || steam != null && steam.IsBusy || IsRanked;
+        public bool IsRanked => ranked != null && ranked.Active;
+        private RankedMatchmaking ranked;
         public long Ping => manager == null ? 0 : manager.TimeManager.RoundTripTime;
         public PlayerCombatant LocalPlayer => Match == null ? null : LocalSlot == 0 ? Match.PlayerOne : Match.PlayerTwo;
         public int Round => round;
         public int ReceivedVisualFrames => presentation != null ? presentation.AppliedFrames : 0;
-        public bool Smoke => (Application.isEditor || Debug.isDebugBuild) && Array.IndexOf(Environment.GetCommandLineArgs(), "-classic-smoke") >= 0;
+        public int FramesPerSecond => presentation != null ? presentation.FramesPerSecond : 0;
+        private bool? smoke;
+        public bool Smoke => smoke ??= (Application.isEditor || Debug.isDebugBuild) && Array.IndexOf(Environment.GetCommandLineArgs(), "-classic-smoke") >= 0;
         private NetworkManager manager;
         private SteamSession steam;
         private DeckCatalog catalog;
         private bool local, leaving, draftSent, startSent, combatStarted;
-        private float deadline, inputDeadline, nextSend;
+        private float deadline, inputDeadline, nextSend, nextVisualSend, nextInputSend;
+        private PlayerCommand pendingInput = new PlayerCommand { SelectedSlot = -1 };
         private uint inputSequence, lastInput, snapshotSequence, lastState;
         private int round;
         private readonly Dictionary<int, int> participants = new();
@@ -114,8 +120,18 @@ namespace GlowGlow.Online
         {
             if (HasSession) return;
             if (!steam.Initialize(out var error)) { Status = error; return; }
-            Status = "Steam 방 생성 중…"; steam.Host();
+            Status = "방 생성 중…"; steam.Host();
         }
+        public void StartRanked()
+        {
+            if (HasSession) return;
+            if (catalog == null || !catalog.IsSavedDeckValid())
+            { Status = "먼저 덱에 탄막 8개를 넣어 주세요."; return; }
+            if (ranked == null) ranked = gameObject.AddComponent<RankedMatchmaking>();
+            ranked.Begin(this, steam);
+        }
+        internal void SetRankedStatus(string message) => Status = message;
+        internal void FailRanked(string message) => Fail(message);
         public void JoinSteam(string code)
         {
             if (HasSession) return;
@@ -125,7 +141,10 @@ namespace GlowGlow.Online
         }
         private void OnSteamLobby(ulong host, bool asHost)
         {
-            if (HasSession) return;
+            if (manager != null) return;
+            if (IsRanked && (host.ToString() != ranked.HostId
+                || asHost != (Steamworks.SteamUser.GetSteamID().m_SteamID.ToString() == ranked.HostId)))
+            { Fail("매칭된 상대방과 연결되지 않았습니다."); return; }
             StartNetwork(false, asHost, host.ToString());
         }
         public void StartLocal(bool host)
@@ -135,7 +154,7 @@ namespace GlowGlow.Online
         }
         private void StartNetwork(bool useLocal, bool host, string address)
         {
-            if (catalog == null || !catalog.IsSavedDeckValid()) { Status = "먼저 덱에 서로 다른 탄막 8개를 넣어 주세요."; return; }
+            if (catalog == null || !catalog.IsSavedDeckValid()) { Status = "먼저 덱에 탄막 8개를 넣어 주세요."; return; }
             var prefab = Resources.Load<GameObject>("Online/NetworkManager");
             if (prefab == null) { Fail("네트워크 리소스가 없습니다."); return; }
             local = useLocal; IsHost = host; leaving = Interrupted = false;
@@ -177,7 +196,8 @@ namespace GlowGlow.Online
             manager.ClientManager.RegisterBroadcast<ClassicState>(OnState);
             manager.ClientManager.RegisterBroadcast<ClassicNotice>(OnNotice);
             manager.ClientManager.RegisterBroadcast<ClassicVisualFrame>(OnVisuals);
-            deadline = Time.unscaledTime + 25;
+            manager.ClientManager.RegisterBroadcast<ClassicVisualRemoval>(OnVisualRemoval);
+            deadline = Time.unscaledTime + (useLocal ? 25 : 60);
             Status = host ? "상대방을 기다리는 중…" : "호스트에 연결 중…";
             if (host && !manager.ServerManager.StartConnection()) { Fail("호스트를 시작하지 못했습니다."); return; }
             if (!manager.ClientManager.StartConnection()) Fail("연결을 시작하지 못했습니다.");
@@ -189,6 +209,7 @@ namespace GlowGlow.Online
             if (!local && !own)
             {
                 string address = manager.TransportManager.Transport.GetConnectionAddress(connection.ClientId);
+                if (IsRanked && address != ranked.OpponentId) { connection.Disconnect(true); return; }
                 bool member = false;
                 for (int i = 0; i < Steamworks.SteamMatchmaking.GetNumLobbyMembers(steam.Lobby); i++)
                     member |= Steamworks.SteamMatchmaking.GetLobbyMemberByIndex(steam.Lobby, i).m_SteamID.ToString() == address;
@@ -213,6 +234,7 @@ namespace GlowGlow.Online
         public void Attach(MatchController match)
         {
             Match = match;
+            BarrageVisibility.SetLocalOwner(LocalPlayer.PlayerIndex);
             presentation = match.gameObject.AddComponent<ClassicPresentation>();
             presentation.Initialize(match, IsHost);
             if (!IsHost)
@@ -267,6 +289,8 @@ namespace GlowGlow.Online
             if (Match == null || data.Round < round || !catalog.IsDeckValid(data.DeckOne) || !catalog.IsDeckValid(data.DeckTwo)) return;
             round = data.Round; proposal = data; Interrupted = false;
             combatStarted = startScheduled = false;
+            pendingInput = new PlayerCommand { SelectedSlot = -1 };
+            nextInputSend = nextVisualSend = 0;
             ready[0] = ready[1] = null; rematch[0] = rematch[1] = false;
             lastState = 0; selectedSlot = -1;
             presentation.ClearReplicas();
@@ -275,7 +299,7 @@ namespace GlowGlow.Online
                 Status = "준비 완료 · 상대방의 선택을 기다리는 중…";
                 manager.ClientManager.Broadcast(new ClassicReady { Round = round, Choices = draft.SelectedIndices.ToArray() });
             });
-            Status = "각자 덱에서 시작 탄막과 업그레이드를 선택하세요.";
+            Status = "시작 탄막과 업그레이드를 선택하세요.";
             deadline = Time.unscaledTime + 65;
             if (Smoke)
             {
@@ -314,13 +338,14 @@ namespace GlowGlow.Online
             if (one == null || two == null) { Fail("드래프트 정보를 확인할 수 없습니다."); return; }
             pendingOne = one; pendingTwo = two;
             startTick = data.StartTick; startScheduled = true;
-            Status = "두 플레이어 준비 완료 · 곧 대전을 시작합니다.";
+            Status = "준비 완료 · 곧 대전을 시작합니다.";
         }
         private void StartScheduledCombat()
         {
             startScheduled = false;
             Match.StartOnlineCombat(pendingOne, pendingTwo);
             combatStarted = true;
+            if (IsRanked) ranked.NotifyCombatStarted();
             Status = "대전 중";
             deadline = 0;
             inputDeadline = Time.unscaledTime + 5;
@@ -361,8 +386,18 @@ namespace GlowGlow.Online
                 var command = LocalPlayer.GetComponent<LocalPlayerInput>().ReadCommand(LocalPlayer.transform.position);
                 if (Smoke) command = GetComponent<ClassicSmokeProbe>().ReadCommand(LocalPlayer.transform.position);
                 if (selectedSlot >= 0) { command.SelectedSlot = selectedSlot; selectedSlot = -1; }
-                // Inputs use reliable ordered delivery: a one-frame dash, click or slot selection must not vanish.
-                manager.ClientManager.Broadcast(new ClassicInput { Round = round, Sequence = ++inputSequence, Command = command });
+                command.DashPressed |= pendingInput.DashPressed;
+                command.FirePressed |= pendingInput.FirePressed;
+                if (command.SelectedSlot < 0) command.SelectedSlot = pendingInput.SelectedSlot;
+                command.WeaponCycle = Mathf.Clamp(command.WeaponCycle + pendingInput.WeaponCycle, -1, 1);
+                pendingInput = command;
+                // Retain button edges between sends without flooding reliable traffic at the render FPS.
+                if (Time.unscaledTime >= nextInputSend)
+                {
+                    nextInputSend = Time.unscaledTime + 1f / 60;
+                    manager.ClientManager.Broadcast(new ClassicInput { Round = round, Sequence = ++inputSequence, Command = pendingInput });
+                    pendingInput = new PlayerCommand { SelectedSlot = -1 };
+                }
             }
             else if (Time.unscaledTime > inputDeadline)
             {
@@ -378,8 +413,14 @@ namespace GlowGlow.Online
                 Winner = Match.Winner == Match.PlayerOne ? 0 : Match.Winner == Match.PlayerTwo ? 1 : -1,
                 One = Match.PlayerOne.CaptureNetworkState(), Two = Match.PlayerTwo.CaptureNetworkState() };
             Send(state, Channel.Unreliable);
-            // Visual chunks are independently sequenced; lost chunks never delete unrelated projectiles.
-            foreach (var frame in presentation.Capture(round, snapshotSequence)) Send(frame, Channel.Unreliable, true);
+            if (Time.unscaledTime >= nextVisualSend)
+            {
+                nextVisualSend = Mathf.Max(nextVisualSend, Time.unscaledTime - .05f) + .05f;
+                var updates = presentation.Capture(round, snapshotSequence);
+                // Destruction has its own reliable path; it does not depend on completing a visual frame.
+                foreach (var removal in presentation.Removals) Send(removal, Channel.Reliable, true);
+                foreach (var frame in updates) Send(frame, Channel.Unreliable, true);
+            }
         }
         private void OnState(ClassicState state, Channel channel)
         {
@@ -388,12 +429,17 @@ namespace GlowGlow.Online
             Match.PlayerOne.ApplyNetworkState(state.One);
             Match.PlayerTwo.ApplyNetworkState(state.Two);
             Match.ApplyOnlineClock(state.Playing, state.Drafting, state.Remaining, state.Winner);
-            if (!state.Playing && !state.Drafting) Status = "상대방과 재대전에 동의하면 다시 덱 선택을 시작합니다.";
+            if (!state.Playing && !state.Drafting && !IsRanked) Status = "상대방과 재대전에 동의하면 다시 덱 선택을 시작합니다.";
         }
         private void OnVisuals(ClassicVisualFrame frame, Channel channel)
         {
             if (IsHost || Match == null || frame.Round != round || Interrupted) return;
             presentation.Apply(frame);
+        }
+        private void OnVisualRemoval(ClassicVisualRemoval removal, Channel channel)
+        {
+            if (IsHost || Match == null || removal.Round != round || Interrupted) return;
+            presentation.ApplyRemoval(removal);
         }
         private void Send<T>(T message, Channel channel = Channel.Reliable, bool guestOnly = false) where T : struct, IBroadcast
         {
@@ -403,12 +449,14 @@ namespace GlowGlow.Online
         }
         public void RequestRematch()
         {
+            if (IsRanked) { Status = "랭크 대전은 나간 뒤 새 상대를 찾아 주세요. · ESC 나가기"; return; }
             if (Match == null || Match.IsPlaying || Match.IsDrafting || Interrupted || !Connected) return;
             manager.ClientManager.Broadcast(new ClassicRematch { Round = round });
             Status = "재대전 동의 완료 · 상대방을 기다리는 중…";
         }
         private void OnRematch(NetworkConnection connection, ClassicRematch data, Channel channel)
         {
+            if (IsRanked) return;
             if (Match == null || !combatStarted || !Participant(connection, out int slot) || data.Round != round || Match.IsPlaying || Match.IsDrafting || Interrupted) return;
             rematch[slot] = true;
             if (rematch[0] && rematch[1]) BeginDraft();
@@ -420,22 +468,30 @@ namespace GlowGlow.Online
         }
         private void OnClient(ClientConnectionStateArgs args)
         {
-            if (args.ConnectionState == LocalConnectionState.Stopped && !leaving) Fail("호스트와 연결이 종료됐습니다.");
+            if (args.ConnectionState == LocalConnectionState.Stopped && !leaving)
+                Fail(!local && !string.IsNullOrEmpty(steam.LastConnectionError)
+                    ? steam.LastConnectionError : "호스트와 연결이 종료됐습니다.");
         }
         private void OnNotice(ClassicNotice data, Channel channel)
         {
             Status = data.Message;
-            if (data.Interrupted) { Interrupted = true; Match?.StopOnlineCombat(); }
+            if (data.Interrupted)
+            {
+                Interrupted = true; Match?.StopOnlineCombat();
+                if (presentation != null) presentation.ClearReplicas();
+            }
         }
         private void Interrupt(string message)
         {
             if (Interrupted) return;
             Interrupted = true; Status = message;
             Match?.StopOnlineCombat();
+            if (presentation != null) presentation.ClearReplicas();
             if (IsHost && manager != null) Send(new ClassicNotice { Message = message, Interrupted = true });
         }
         private void Fail(string message)
         {
+            Debug.LogWarning($"CLASSIC_CONNECTION_FAILED host={IsHost} connected={Connected} arena={InArena} reason={message}");
             Interrupt(message);
             Disconnect();
             Status = message;
@@ -459,6 +515,7 @@ namespace GlowGlow.Online
         }
         public void Back()
         {
+            if (IsRanked) { ranked.Leave(); return; }
             Disconnect(); InArena = false;
             Destroy(gameObject);
             SceneManager.LoadScene("Title");

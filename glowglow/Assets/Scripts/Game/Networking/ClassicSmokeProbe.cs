@@ -15,11 +15,21 @@ namespace GlowGlow.Online
         private bool sawHits, sawCooldown, sawUpgrade;
         private int completed;
         private string output;
+        private bool stress;
+        private bool mineStress;
+        private readonly MineProjectile[] stressMines = new MineProjectile[12];
+        private int stressWave, peakVisuals, baselineVisuals, frameSamples;
+        private float frameTotal, maxFrame, bandwidthAt;
+        private long previousBytes, peakBytesPerSecond;
         private OnlineSession Session => OnlineSession.Current;
         private void Start()
         {
-            deadline = Time.unscaledTime + 90;
+            // Two real 100-HP matches take longer than the former three-hit rounds.
+            deadline = Time.unscaledTime + 180;
             var args = Environment.GetCommandLineArgs();
+            stress = Array.IndexOf(args, "-classic-stress") >= 0;
+            mineStress = Array.IndexOf(args, "-classic-mine-stress") >= 0;
+            stress |= mineStress;
             int index = Array.IndexOf(args, "-online-result");
             output = index >= 0 && index + 1 < args.Length ? args[index + 1] : Path.Combine(Application.persistentDataPath, "classic-smoke.txt");
         }
@@ -27,9 +37,15 @@ namespace GlowGlow.Online
         {
             if (Session?.Match == null) return new PlayerCommand { SelectedSlot = -1 };
             var target = Session.LocalSlot == 0 ? Session.Match.PlayerTwo : Session.Match.PlayerOne;
+            if (stress) return new PlayerCommand { SelectedSlot = -1, Aim = Vector2.right };
             float age = started < 0 ? 0 : Time.unscaledTime - started;
-            return new PlayerCommand { Move = age < .5f ? Vector2.up : Vector2.zero,
-                Aim = ((Vector2)target.transform.position - position).normalized,
+            Vector2 toward = (Vector2)target.transform.position - position;
+            float distanceSquared = toward.sqrMagnitude;
+            Vector2 direction = distanceSquared > .0001f ? toward.normalized : Vector2.right;
+            // Random real drafts can contain melee/orbit weapons and renewable shields.
+            // Approach through ordinary input so those loadouts can also finish a match.
+            return new PlayerCommand { Move = age < .5f ? Vector2.up : distanceSquared > .81f ? direction : Vector2.zero,
+                Aim = direction,
                 AimPosition = target.transform.position, Fire = age > 1,
                 FirePressed = age > 1 && Time.frameCount % 30 == 0,
                 DashPressed = age < .2f,
@@ -39,7 +55,12 @@ namespace GlowGlow.Online
         private void Update()
         {
             if (done) return;
-            if (Time.unscaledTime > deadline) { Finish(false, "timeout"); return; }
+            if (Time.unscaledTime > deadline)
+            {
+                var timedMatch = Session?.Match;
+                Finish(false, $"timeout rounds={completed} round={Session?.Round} hp={timedMatch?.PlayerOne.Health}/{timedMatch?.PlayerTwo.Health}");
+                return;
+            }
             if (Session == null || Session.Interrupted) { Finish(false, Session?.Status ?? "no session"); return; }
             var match = Session.Match;
             if (match == null) return;
@@ -50,6 +71,7 @@ namespace GlowGlow.Online
                     trackedRound = Session.Round; started = Time.unscaledTime; initial = Session.LocalPlayer.transform.position;
                     requested = false;
                 }
+                if (stress) { UpdateStress(match); return; }
                 moved = Mathf.Max(moved, Vector2.Distance(initial, Session.LocalPlayer.transform.position));
                 sawHits |= match.PlayerOne.HitsTaken > 0 || match.PlayerTwo.HitsTaken > 0;
                 foreach (var player in new[] { match.PlayerOne, match.PlayerTwo })
@@ -80,6 +102,49 @@ namespace GlowGlow.Online
                 }
                 else Session.RequestRematch();
             }
+        }
+        private void UpdateStress(MatchController match)
+        {
+            float age = Time.unscaledTime - started;
+            var presentation = match.GetComponent<ClassicPresentation>();
+            int visible = Session.IsHost ? presentation.SourceVisualCount : presentation.ActiveReplicaCount;
+            if (age < 1.8f) baselineVisuals = visible;
+            peakVisuals = Mathf.Max(peakVisuals, visible);
+            if (age > 1)
+            {
+                frameSamples++; frameTotal += Time.unscaledDeltaTime;
+                maxFrame = Mathf.Max(maxFrame, Time.unscaledDeltaTime);
+            }
+            if (Time.unscaledTime - bandwidthAt >= 1)
+            {
+                peakBytesPerSecond = Math.Max(peakBytesPerSecond, presentation.TotalCaptureBytes - previousBytes);
+                previousBytes = presentation.TotalCaptureBytes; bandwidthAt = Time.unscaledTime;
+            }
+            if (Session.IsHost && stressWave < 3 && age >= 2 + stressWave * 3)
+            {
+                stressWave++;
+                if (mineStress)
+                    for (int i = (stressWave - 1) * 4; i < stressWave * 4; i++)
+                        stressMines[i] = ProjectileBase.SpawnBuiltin<MineProjectile>(match.PlayerOne,
+                            new Vector2(-4 + i % 6 * 1.5f, -2.5f + i / 6 * 5), Vector2.right,
+                            new WeaponStats(4, 0, 20, .34f, 1.5f, new Color(1, .48f, .14f)));
+                for (int i = 0; i < 350; i++)
+                {
+                    var position = new Vector2(-3 + (i % 35) * .17f, -2 + (i / 35) * .25f);
+                    var stats = new WeaponStats(.1f, 1, 1.5f, .035f, 10, Color.HSVToRGB((i % 16) / 16f, .7f, 1));
+                    ProjectileBase.SpawnBuiltin<Bullet>(match.PlayerOne, position, Vector2.up, stats);
+                }
+            }
+            if (mineStress && Session.IsHost && age > 11)
+                for (int i = 0; i < stressMines.Length; i++)
+                    if (stressMines[i] != null) { stressMines[i].RemoveProjectile(); stressMines[i] = null; }
+            if (age < 14) return;
+            bool cleaned = visible <= baselineVisuals;
+            bool pass = cleaned && peakVisuals >= baselineVisuals + 350 && (Session.IsHost || presentation.CreatedReplicaCount <= 380)
+                && peakBytesPerSecond <= 70000;
+            Finish(pass, $"stress=350x3 mines={(mineStress ? 12 : 0)} peakVisuals={peakVisuals} remaining={visible} baseline={baselineVisuals} "
+                + $"created={presentation.CreatedReplicaCount} peakVisualBytesPerSecond={peakBytesPerSecond} "
+                + $"meanFrameMs={frameTotal / Mathf.Max(1, frameSamples) * 1000:F2} maxFrameMs={maxFrame * 1000:F2}");
         }
         private void Finish(bool pass, string details)
         {

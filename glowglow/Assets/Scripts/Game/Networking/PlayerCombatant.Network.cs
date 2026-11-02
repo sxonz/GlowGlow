@@ -3,6 +3,15 @@ using GlowGlow.Online;
 
 public sealed partial class PlayerCombatant
 {
+    public void AppendNetworkRenderers(System.Collections.Generic.List<Renderer> result,
+        System.Collections.Generic.List<Renderer> scratch)
+    {
+        GetComponentsInChildren(false, scratch);
+        result.AddRange(scratch);
+        if (afterimageRoot == null) return;
+        afterimageRoot.GetComponentsInChildren(false, scratch);
+        result.AddRange(scratch);
+    }
     public bool NetworkReplica { get; private set; }
     private int networkShield;
 
@@ -24,7 +33,7 @@ public sealed partial class PlayerCombatant
             durations[i] = Hand.Drawn[i].CooldownDuration;
         }
         return new ClassicPlayerState { Position = transform.position, Aim = aim,
-            Hits = HitsTaken, Shield = ShieldRemaining, Selected = Hand?.SelectedIndex ?? -1,
+            Health = (byte)Health, Shield = ShieldRemaining, Selected = Hand?.SelectedIndex ?? -1,
             Cooldowns = cooldowns, Durations = durations };
     }
 
@@ -33,7 +42,10 @@ public sealed partial class PlayerCombatant
         if (!NetworkReplica) return;
         transform.position = state.Position;
         aim = state.Aim;
-        HitsTaken = Mathf.Clamp(state.Hits, 0, 3);
+        if (state.Health < Health || state.Shield < networkShield)
+            CombatVfx.Burst(gameObject.scene, state.Position, visuals.color, 1.25f);
+        if (state.Health < Health) HitsTaken++;
+        Health = Mathf.Clamp(state.Health, 0, MaxHealth);
         networkShield = Mathf.Max(0, state.Shield);
         if (Hand == null) return;
         if (Hand.Select(state.Selected)) CurrentWeapon = Hand.Selected;

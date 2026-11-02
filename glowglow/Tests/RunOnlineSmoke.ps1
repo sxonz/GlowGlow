@@ -1,7 +1,10 @@
 param(
     [string]$PlayerPath = "$PSScriptRoot/../Temp/OnlineValidation/Builds/ClassicOnline/GlowGlow.exe",
     [int[]]$Latency = @(0, 50, 100),
-    [switch]$RenderWindow
+    [ValidateRange(190, 900)][int]$TimeoutSeconds = 200,
+    [switch]$RenderWindow,
+    [switch]$Stress,
+    [switch]$MineStress
 )
 $ErrorActionPreference = 'Stop'
 $onlinePlayerPath = (Resolve-Path -LiteralPath $PlayerPath).Path
@@ -18,6 +21,8 @@ foreach ($delay in $Latency) {
     $clientArgs = @('-batchmode', '-screen-width', '1280', '-screen-height', '720', '-classic-client', '-classic-smoke',
         '-online-result', ('"' + $clientResult + '"'), '-logFile', ('"' + $clientResult + '.log"'))
     if ($delay -gt 0) { $hostArgs += @('-online-latency', $delay); $clientArgs += @('-online-latency', $delay) }
+    if ($Stress) { $hostArgs += '-classic-stress'; $clientArgs += '-classic-stress' }
+    if ($MineStress) { $hostArgs += '-classic-mine-stress'; $clientArgs += '-classic-mine-stress' }
     if ($RenderWindow) {
         $hostArgs = @($hostArgs | Where-Object { $_ -ne '-batchmode' })
         $clientArgs = @($clientArgs | Where-Object { $_ -ne '-batchmode' })
@@ -28,7 +33,7 @@ foreach ($delay in $Latency) {
         $hostProcess = Start-Process -FilePath $onlinePlayerPath -ArgumentList $hostArgs -WindowStyle Hidden -PassThru
         Start-Sleep -Seconds 2
         $clientProcess = Start-Process -FilePath $onlinePlayerPath -ArgumentList $clientArgs -WindowStyle Hidden -PassThru
-        $classicDeadline = [DateTime]::UtcNow.AddSeconds(100)
+        $classicDeadline = [DateTime]::UtcNow.AddSeconds($TimeoutSeconds)
         while (!$hostProcess.WaitForExit(1000)) { if ([DateTime]::UtcNow -gt $classicDeadline) { throw 'Host process timed out.' } }
         if (!$clientProcess.WaitForExit(10000)) { throw 'Client process timed out.' }
         $hostText = Get-Content -LiteralPath $hostResult -Raw
@@ -36,7 +41,7 @@ foreach ($delay in $Latency) {
         Write-Output "Host: $hostText"
         Write-Output "Client: $clientText"
         foreach ($classicLog in @(($hostResult + '.log'), ($clientResult + '.log'))) {
-            $classicErrors = Select-String -LiteralPath $classicLog -Pattern 'Exception:|error CS|CLASSIC_SMOKE FAIL|Packet.*exceeds|exceeds.*MTU'
+            $classicErrors = Select-String -LiteralPath $classicLog -Pattern 'Exception:|error CS|CLASSIC_SMOKE FAIL|Packet.*exceeds|exceeds.*MTU|method not found|LogError \('
             if ($classicErrors) { Write-Output ($classicErrors | Select-Object -First 4); $allPassed = $false }
         }
         $hostWinner = [regex]::Match($hostText, 'winnerSlot=(-?\d+)').Groups[1].Value

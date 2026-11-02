@@ -279,6 +279,7 @@ namespace FishySteamworks.Server
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void OnRemoteConnectionState(SteamNetConnectionStatusChangedCallback_t args)
         {
+            if (args.m_info.m_hListenSocket != _socket) return;
             ulong clientSteamID = args.m_info.m_identityRemote.GetSteamID64();
             if (args.m_info.m_eState == ESteamNetworkingConnectionState.k_ESteamNetworkingConnectionState_Connecting)
             {

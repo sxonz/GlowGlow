@@ -1,0 +1,6 @@
+{
+  "endpoint": "https://mnnmfpattjescycllnxo.supabase.co/functions/v1/ranked",
+  "steamAppId": 480,
+  "region": "asia",
+  "developmentTest": true
+}
