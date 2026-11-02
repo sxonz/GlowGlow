@@ -1,24 +1,13 @@
-# Development-time bake, matching the existing monochrome barrage icon set.
-Add-Type -AssemblyName System.Drawing
-$bitmap = New-Object System.Drawing.Bitmap 64,64
-for ($y=0; $y -lt 64; $y++) {
-    for ($x=0; $x -lt 64; $x++) {
-        $coverage=0
-        for ($sy=0; $sy -lt 4; $sy++) {
-            for ($sx=0; $sx -lt 4; $sx++) {
-                $px=$x+($sx+.5)/4-32
-                $py=$y+($sy+.5)/4-32
-                $r=[Math]::Sqrt($px*$px+$py*$py)
-                $angle=[Math]::Atan2($py,$px)
-                $disc=($px-14.14)*($px-14.14)+($py+14.14)*($py+14.14) -lt 49 -or
-                      ($px+14.14)*($px+14.14)+($py-14.14)*($py-14.14) -lt 49
-                $arc=[Math]::Abs($r-20) -lt 1.5 -and [Math]::Abs([Math]::Sin($angle+[Math]::PI/4)) -gt .4
-                if ($disc -or $arc) { $coverage++ }
-            }
-        }
-        $bitmap.SetPixel($x,$y,[System.Drawing.Color]::FromArgb([int](255*$coverage/16),255,255,255))
-    }
-}
-$target=Join-Path $PSScriptRoot '../Assets/UI/BarrageIcons/PrismShot.png'
-$bitmap.Save([IO.Path]::GetFullPath($target),[System.Drawing.Imaging.ImageFormat]::Png)
-$bitmap.Dispose()
+# Compatibility entry point: Prism now belongs to the shared authored icon atlas.
+# Close the project's Unity Editor first, or use GlowGlow/Bake Weapon Icons there.
+param([string]$UnityPath = 'C:/Program Files/Unity/Hub/Editor/6000.0.68f1/Editor/Unity.exe')
+$ErrorActionPreference = 'Stop'
+$taskProject = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
+if (-not (Test-Path -LiteralPath $UnityPath)) { throw "Unity executable not found: $UnityPath" }
+$taskLog = Join-Path $taskProject 'Logs/weapon-icons-bake.log'
+New-Item -ItemType Directory -Path (Split-Path -Parent $taskLog) -Force | Out-Null
+$taskProcess = Start-Process -FilePath $UnityPath -WindowStyle Hidden -PassThru -Wait -ArgumentList @(
+    '-batchmode', '-projectPath', ('"' + $taskProject + '"'),
+    '-executeMethod', 'WeaponIconAuthoring.BakeBatch', '-logFile', ('"' + $taskLog + '"'))
+if ($taskProcess.ExitCode -ne 0) { throw "Icon bake failed. See $taskLog" }
+Write-Output "Shared weapon icons baked. Log: $taskLog"
