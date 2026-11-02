@@ -17,6 +17,7 @@ Shader "GlowGlow/ArenaClippedSprite"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
+            #include "BarrageVisibility.cginc"
             sampler2D _MainTex;
             float4 _ClipRect;
             struct Input { float4 vertex:POSITION; float4 color:COLOR; float2 uv:TEXCOORD0; };
@@ -35,6 +36,7 @@ Shader "GlowGlow/ArenaClippedSprite"
                 clip(input.world-_ClipRect.xy);
                 clip(_ClipRect.zw-input.world);
                 fixed4 color=tex2D(_MainTex,input.uv)*input.color;
+                color.a *= OwnBarrageOpacity();
                 color.rgb*=color.a;
                 return color;
             }

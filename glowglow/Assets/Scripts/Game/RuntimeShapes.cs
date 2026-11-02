@@ -4,7 +4,14 @@ using UnityEngine;
 // Runtime code only loads and reuses those assets; it never builds textures or sprites.
 public static class RuntimeShapes
 {
-    private static Sprite circle, barrel, softGlow, square, spike;
+    private static Sprite circle, barrel, softGlow, square, spike, upgradeDiamond, upgradeDiamondLit;
+    private static readonly Sprite[] constellationFigures = new Sprite[3];
+    public static Sprite ConstellationFigure(int pattern) => Load(ref constellationFigures[pattern],
+        pattern == 0 ? "ConstellationHydra" : pattern == 1 ? "ConstellationEridanus" : "ConstellationDraco");
+    public static Sprite UpgradeDiamond => Load(ref upgradeDiamond, "UpgradeDiamond");
+    public static Sprite UpgradeDiamondLit => Load(ref upgradeDiamondLit, "UpgradeDiamondLit");
+    private static Sprite uiCircle;
+    public static Sprite UICircle => Load(ref uiCircle, "UICircle");
     public static Sprite Circle => Load(ref circle, "Circle");
     public static Sprite Barrel => Load(ref barrel, "Barrel");
     public static Sprite SoftGlow => Load(ref softGlow, "SoftGlow");
@@ -25,6 +32,7 @@ public static class RuntimeShapes
         var glow = new GameObject("Soft Glow", typeof(SpriteRenderer)).GetComponent<SpriteRenderer>();
         glow.transform.SetParent(source.transform, false);
         glow.sprite = SoftGlow;
+        glow.sharedMaterial = NeonVisualStyle.Glow;
         return glow;
     }
 

@@ -5,12 +5,21 @@ using UnityEngine;
 public sealed class ArenaCameraLayout : MonoBehaviour
 {
     public bool TrainingLayout { get; set; }
+    private Camera view;
+    private float lastAspect = -1;
+    private bool lastTraining;
     private void OnEnable() => Apply();
-    private void LateUpdate() => Apply();
+    private void LateUpdate()
+    {
+        if (view == null || view.aspect != lastAspect || TrainingLayout != lastTraining) Apply();
+    }
 
     public void Apply()
     {
-        var camera = GetComponent<Camera>();
+        if (view == null) view = GetComponent<Camera>();
+        var camera = view;
+        lastAspect = camera.aspect;
+        lastTraining = TrainingLayout;
         // Clear the entire frame, including the HUD bands, on every scene transition.
         camera.rect = new Rect(0, 0, 1, 1);
         camera.clearFlags = CameraClearFlags.SolidColor;
