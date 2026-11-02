@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: OctoCurve
   m_EditorClassIdentifier:
-  displayName: 회전 탄도
-  description: 8방향 탄환이 초당 60도로 휘어져 날아감
+  displayName: 소용돌이
+  description: 탄환이 휘어져 날아감
   icon: {fileID: 0}
   displaySlot: 1
   maxLevel: 1

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: SpreadInterceptor
   m_EditorClassIdentifier:
-  displayName: 요격 탄환
-  description: 가운데 탄 크기 50% 증가 · 적 소형 탄 1발 파괴
+  displayName: 격추
+  description: 가운데 탄 크기 50% 증가 · 적 소형 탄 파괴
   icon: {fileID: 0}
   displaySlot: 1
   maxLevel: 1

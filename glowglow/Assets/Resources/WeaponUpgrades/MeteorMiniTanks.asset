@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: MeteorMiniTanks
   m_EditorClassIdentifier:
-  displayName: 미니탱크 지원
-  description: 좌우에 크기 50%의 미니탱크 낙하 · 각각 파편 6개 · 폭발 범위 50%
+  displayName: 지원군 모집
+  description: 좌우에 미니탱크 낙하
   icon: {fileID: 0}
   displaySlot: 0
   maxLevel: 1

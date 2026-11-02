@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: PrismExplosion
   m_EditorClassIdentifier:
-  displayName: 착탄 폭발
+  displayName: 폭발탄
   description: 탄환이 적이나 벽·지형에 부딪히면 반경 0.6의 폭발 발생
   icon: {fileID: 0}
   displaySlot: 2

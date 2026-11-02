@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: BombQuickWarning
   m_EditorClassIdentifier:
-  displayName: 단축 신관
+  displayName: 성급함
   description: 예고 시간 25% 감소
   icon: {fileID: 0}
   displaySlot: 2

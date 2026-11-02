@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BoomerangPersist
   m_EditorClassIdentifier:
   displayName: 반사 부메랑
-  description: 발사한 부메랑이 벽에 최대 2회 반사 · 이후 벽을 통과
+  description: 발사한 부메랑이 벽에 최대 2회 반사
   icon: {fileID: 0}
   displaySlot: 2
   maxLevel: 1

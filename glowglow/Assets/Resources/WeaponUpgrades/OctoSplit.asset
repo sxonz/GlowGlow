@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OctoSplit
   m_EditorClassIdentifier:
   displayName: 잔탄 분열
-  description: 수명 종료 시 크기 50%의 탄환 2개로 분열 · 분열탄 수명 0.45초 · 재분열 없음
+  description: 수명 종료 시 탄환 2개로 분열
   icon: {fileID: 0}
   displaySlot: 2
   maxLevel: 1

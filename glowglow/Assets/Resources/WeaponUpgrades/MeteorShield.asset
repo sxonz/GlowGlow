@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MeteorShield
   m_EditorClassIdentifier:
   displayName: 낙하 보호막
-  description: 낙하 시작 시 보호막 1 획득 · 착지 후에도 유지 · 최대 1
+  description: 낙하 시 보호막 1 획득
   icon: {fileID: 0}
   displaySlot: 2
   maxLevel: 1

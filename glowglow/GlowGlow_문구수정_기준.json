@@ -1,0 +1,2420 @@
+[
+  {
+    "id": "T030",
+    "text": "무기 도감  ·  {cards.Count}종",
+    "source": "Assets/Scripts/DeckScreen.cs:59",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T031",
+    "text": "덱 구성  / 카드 도감",
+    "source": "Assets/Scripts/DeckScreen.cs:75",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T032",
+    "text": "카드를 살펴보고 나만의 덱을 구성하세요.",
+    "source": "Assets/Scripts/DeckScreen.cs:76",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T033",
+    "text": "이전",
+    "source": "Assets/Scripts/DeckScreen.cs:80",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T034",
+    "text": "다음",
+    "source": "Assets/Scripts/DeckScreen.cs:81",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T035",
+    "text": "카드를 선택하면\n설명과 능력치를 볼 수 있습니다.",
+    "source": "Assets/Scripts/DeckScreen.cs:92",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T036",
+    "text": "덱에 추가",
+    "source": "Assets/Scripts/DeckScreen.cs:96",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T037",
+    "text": "8장을 구성해야 플레이할 수 있습니다",
+    "source": "Assets/Scripts/DeckScreen.cs:101",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T038",
+    "text": "기본 8장으로 채우기",
+    "source": "Assets/Scripts/DeckScreen.cs:102",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T039",
+    "text": "BACK · 메인 메뉴",
+    "source": "Assets/Scripts/DeckScreen.cs:115",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T040",
+    "text": "카드 선택 → 상세 확인 → 덱에 추가 / 제거",
+    "source": "Assets/Scripts/DeckScreen.cs:116",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T041",
+    "text": "{card.description}\n\n쿨타임 {stats.Cooldown:0.##}초",
+    "source": "Assets/Scripts/DeckScreen.cs:132",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T042",
+    "text": "덱에서 제거",
+    "source": "Assets/Scripts/DeckScreen.cs:135",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T043",
+    "text": "덱이 가득 찼습니다 (8/8)",
+    "source": "Assets/Scripts/DeckScreen.cs:135",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T044",
+    "text": "{page + 1} / {pages}",
+    "source": "Assets/Scripts/DeckScreen.cs:171",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T045",
+    "text": "· 덱에 포함됨",
+    "source": "Assets/Scripts/DeckScreen.cs:185",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T046",
+    "text": "· 상세 보기",
+    "source": "Assets/Scripts/DeckScreen.cs:185",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T047",
+    "text": "내 덱  ·  {saved.cards.Count}/8",
+    "source": "Assets/Scripts/DeckScreen.cs:197",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T048",
+    "text": "플레이 준비 완료 · 자동 저장",
+    "source": "Assets/Scripts/DeckScreen.cs:199",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T049",
+    "text": "플레이하려면 정확히 8장이 필요합니다",
+    "source": "Assets/Scripts/DeckScreen.cs:199",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T050",
+    "text": "{i + 1:00}  {card.weapon.displayName}",
+    "source": "Assets/Scripts/DeckScreen.cs:209",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T051",
+    "text": "등록된 카드가 없습니다.",
+    "source": "Assets/Scripts/DeckScreen.cs:218",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T052",
+    "text": "아직 비어 있습니다.\n도감에서 카드를 추가하세요.",
+    "source": "Assets/Scripts/DeckScreen.cs:219",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T384",
+    "text": "{weapon.displayName} · {weapon.RarityTag}\n",
+    "source": "Assets/Scripts/DeckScreen.cs:131",
+    "section": "덱 구성"
+  },
+  {
+    "id": "T188",
+    "text": "랭크 대전",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:39",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T189",
+    "text": "자동 매칭 서버 주소를 RankedSettings.json에 설정해 주세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:80",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T378",
+    "text": "480 자동 매칭 테스트는 개발 빌드에서 developmentTest를 켜 주세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:83",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T190",
+    "text": "랭크 대전을 지원하는 게임 버전으로 실행해 주세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:86",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T191",
+    "text": "랭크 대전 종료 중…",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:98",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T379",
+    "text": "[테스트]",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:101",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T380",
+    "text": "Steam 연결 경로 준비 중…",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:114",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T192",
+    "text": "랭크 프로필 확인 중…",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:120",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T193",
+    "text": "Steam 인증을 완료하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:124",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T194",
+    "text": "랭크 서버에 연결하지 못했습니다. 잠시 뒤 다시 시도하세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:131",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T195",
+    "text": "매칭 서버 응답이 끊겼습니다. 다시 시도해 주세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:136",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T196",
+    "text": "상대를 찾는 중 · 점수 {reply.rating} · 허용 차이 ±{reply.range}",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:138",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T197",
+    "text": "매칭 정보를 확인하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:145",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T198",
+    "text": "상대를 찾았습니다. 연결 중…",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:149",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T199",
+    "text": "매칭 방을 등록하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:157",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T200",
+    "text": "매칭 상태를 확인하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:161",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T201",
+    "text": "상대방이 매칭을 취소했거나 연결 시간이 초과됐습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:163",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T202",
+    "text": "대전 준비 시간이 초과됐습니다. 양쪽의 연결 및 탄막 선택 상태를 확인해 주세요.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:172",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T203",
+    "text": "랭크 대전 시작을 확인하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:176",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T204",
+    "text": "랭크 대전 중",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:177",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T205",
+    "text": "연결이 끊겨 랭크 결과를 확인하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:185",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T206",
+    "text": "경기 결과 확인 중…",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:187",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T207",
+    "text": "랭크 점수 {reply.rating} ({reply.rating - initialRating:+0;-0;0}) · ESC 나가기",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:204",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T208",
+    "text": "랭크 결과 확인이 보류됐습니다. · ESC 나가기",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:205",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T209",
+    "text": "· ESC 나가기",
+    "source": "Assets/Scripts/Game/Networking/RankedMatchmaking.cs:214",
+    "section": "랭크 매칭·결과·오류"
+  },
+  {
+    "id": "T001",
+    "text": "훈련장",
+    "source": "Assets/Scripts/TitleScreenController.cs:32",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T002",
+    "text": "TRAINING · 모든 탄막 / 업그레이드 자유 테스트",
+    "source": "Assets/Scripts/TitleScreenController.cs:32",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T003",
+    "text": "봇 대전",
+    "source": "Assets/Scripts/TitleScreenController.cs:37",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T004",
+    "text": "BOT MATCH · 레이팅을 정하고 대전",
+    "source": "Assets/Scripts/TitleScreenController.cs:43",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T005",
+    "text": "SINGLEPLAYER",
+    "source": "Assets/Scripts/TitleScreenController.cs:56",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T006",
+    "text": "훈련장 · 봇 대전 · 캠페인",
+    "source": "Assets/Scripts/TitleScreenController.cs:56",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T007",
+    "text": "MULTIPLAYER  ·  모드 선택",
+    "source": "Assets/Scripts/TitleScreenController.cs:137",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T008",
+    "text": "SINGLEPLAYER  ·  훈련장 / 모드 선택",
+    "source": "Assets/Scripts/TitleScreenController.cs:143",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T009",
+    "text": "DECK  ·  카드 도감 / 덱 구성",
+    "source": "Assets/Scripts/TitleScreenController.cs:149",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T010",
+    "text": "덱 구성",
+    "source": "Assets/Scripts/TitleScreenController.cs:160",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T011",
+    "text": "카드 도감 · 내 덱 편집",
+    "source": "Assets/Scripts/TitleScreenController.cs:160",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T012",
+    "text": "CLASSIC  ·  친구와 대전",
+    "source": "Assets/Scripts/TitleScreenController.cs:181",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T013",
+    "text": "덱에 정확히 8장을 구성한 뒤 플레이하세요",
+    "source": "Assets/Scripts/TitleScreenController.cs:188",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T014",
+    "text": "READY  ·  SELECT A MODE",
+    "source": "Assets/Scripts/TitleScreenController.cs:195",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T015",
+    "text": "0% · 음소거",
+    "source": "Assets/Scripts/TitleScreenController.cs:212",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T016",
+    "text": "{Mathf.RoundToInt(value * 100f)}%",
+    "source": "Assets/Scripts/TitleScreenController.cs:212",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T017",
+    "text": "MASTER VOLUME",
+    "source": "Assets/Scripts/TitleScreenController.cs:255",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T018",
+    "text": "{Mathf.RoundToInt(slider.value * 100f)}%",
+    "source": "Assets/Scripts/TitleScreenController.cs:260",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T019",
+    "text": "클릭 / 드래그로 조절 · 방향키 ← →",
+    "source": "Assets/Scripts/TitleScreenController.cs:264",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T020",
+    "text": "봇 대전 · 캠페인",
+    "source": "Assets/Scripts/TitleScreenController.cs:305",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T021",
+    "text": "MULTIPLAYER",
+    "source": "Assets/Scripts/TitleScreenController.cs:306",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T022",
+    "text": "모드 선택",
+    "source": "Assets/Scripts/TitleScreenController.cs:306",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T023",
+    "text": "잠금 · 준비 중",
+    "source": "Assets/Scripts/TitleScreenController.cs:309",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T024",
+    "text": "캠페인",
+    "source": "Assets/Scripts/TitleScreenController.cs:310",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T025",
+    "text": "BACK",
+    "source": "Assets/Scripts/TitleScreenController.cs:311",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T026",
+    "text": "메인 메뉴로",
+    "source": "Assets/Scripts/TitleScreenController.cs:311",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T027",
+    "text": "클래식",
+    "source": "Assets/Scripts/TitleScreenController.cs:315",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T028",
+    "text": "CLASSIC · 두 플레이어 대전",
+    "source": "Assets/Scripts/TitleScreenController.cs:315",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T029",
+    "text": "/ 모드 선택",
+    "source": "Assets/Scripts/TitleScreenController.cs:350",
+    "section": "메뉴·모드·설정"
+  },
+  {
+    "id": "T053",
+    "text": "BOT MATCH  /  봇 대전",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:46",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T054",
+    "text": "상대 봇의 레이팅을 정하세요",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:47",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T055",
+    "text": "봇 레이팅",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:48",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T056",
+    "text": "레이팅에 따라 반응·예측 강화 · 3000: 매 프레임 판단",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:72",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T057",
+    "text": "뒤로",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:73",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T058",
+    "text": "대전 시작",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:74",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T059",
+    "text": "특이점",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:86",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T060",
+    "text": "블랙홀",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:87",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T061",
+    "text": "초신성",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:88",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T062",
+    "text": "항성",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:89",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T063",
+    "text": "행성",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:90",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T064",
+    "text": "유성",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:91",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T065",
+    "text": "우주 먼지",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:92",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T066",
+    "text": "−",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:112",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T067",
+    "text": "+",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:113",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T068",
+    "text": "200",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:114",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T069",
+    "text": "3000",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:115",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T070",
+    "text": "—",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:131",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T071",
+    "text": "상대  BOT {rating}   ·   3회 피격 시 패배",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:133",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T072",
+    "text": "{BotPlayerInput.MinRating}~{BotPlayerInput.MaxRating} 사이의 정수를 입력하세요",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:134",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T387",
+    "text": "{등급} {레이팅}",
+    "source": "Assets/Scripts/Game/BotMatchSetup.cs:68",
+    "section": "봇 대전 설정·등급"
+  },
+  {
+    "id": "T095",
+    "text": "시작 선택 {draft.RoundNumber} / 3  ·  하나를 선택하세요",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:59",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T096",
+    "text": "첫 번째 선택은 신규 탄막입니다",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:61",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T097",
+    "text": "신규 탄막을 획득하거나 보유 탄막을 강화하세요",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:61",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T098",
+    "text": "선택 확정 · 준비 완료",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:63",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T099",
+    "text": "선택 확정 · 전투 시작",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:63",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T100",
+    "text": "선택 확정 · 다음 라운드",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:64",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T101",
+    "text": "보유 탄막 강화",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:74",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T102",
+    "text": "· 신규 탄막",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:74",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T103",
+    "text": "{weapon.displayName} · Lv.{offer.Target.Upgrades.GetLevel(offer.Upgrade) + 1}\n{offer.Upgrade.description}",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:76",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T104",
+    "text": "탄속  {weapon.projectileSpeed:0.#}\n쿨타임  {weapon.cooldown:0.#}초",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:77",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T105",
+    "text": "{Mathf.CeilToInt(remaining):00}초",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:108",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T106",
+    "text": "카드를 펼치는 중",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:108",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T107",
+    "text": "(강화)",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:132",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T108",
+    "text": "클릭 또는 숫자 1–3으로 선택 · ENTER로 확정",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:133",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T109",
+    "text": "보유 탄막: {owned}",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:133",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T110",
+    "text": "선택됨 · 확정 대기",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:139",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T111",
+    "text": "[ {i + 1} ]  선택",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:139",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T112",
+    "text": "8초",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:178",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T114",
+    "text": "GLOW\nGLOW",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:198",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T115",
+    "text": "숫자 1–3 / 클릭으로 선택 · ENTER로 확정 · 매 라운드 8초, 미선택 시 자동 선택",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:221",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T116",
+    "text": "{i + 1:00}  강화 · {pick.Weapon.displayName}",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:266",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T117",
+    "text": "{i + 1:00}  신규 탄막",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:266",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T118",
+    "text": "선택 중…",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:280",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T119",
+    "text": "선택 완료",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:280",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T120",
+    "text": "/  선택 요약",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:280",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T113",
+    "text": "BOT {summaryRating}  ·  {선택 중… / 선택 완료}  /  선택 요약",
+    "source": "Assets/Scripts/Game/OpeningDraftScreen.cs:280",
+    "section": "시작 카드 선택·봇 선택 요약"
+  },
+  {
+    "id": "T245",
+    "text": "빠른 사격",
+    "source": "WeaponUpgrades/BasicCooldown.asset:15",
+    "section": "업그레이드 이름·설명 / BasicCooldown"
+  },
+  {
+    "id": "T246",
+    "text": "쿨타임 10% 감소",
+    "source": "WeaponUpgrades/BasicCooldown.asset:16",
+    "section": "업그레이드 이름·설명 / BasicCooldown"
+  },
+  {
+    "id": "T247",
+    "text": "탄환 확대",
+    "source": "WeaponUpgrades/BasicSize.asset:15",
+    "section": "업그레이드 이름·설명 / BasicSize"
+  },
+  {
+    "id": "T248",
+    "text": "탄환 크기 20% 증가",
+    "source": "WeaponUpgrades/BasicSize.asset:16",
+    "section": "업그레이드 이름·설명 / BasicSize"
+  },
+  {
+    "id": "T249",
+    "text": "탄속 강화",
+    "source": "WeaponUpgrades/BasicSpeed.asset:15",
+    "section": "업그레이드 이름·설명 / BasicSpeed"
+  },
+  {
+    "id": "T250",
+    "text": "탄속 20% 증가",
+    "source": "WeaponUpgrades/BasicSpeed.asset:16",
+    "section": "업그레이드 이름·설명 / BasicSpeed"
+  },
+  {
+    "id": "T251",
+    "text": "연쇄 폭발",
+    "source": "WeaponUpgrades/BombChain.asset:15",
+    "section": "업그레이드 이름·설명 / BombChain"
+  },
+  {
+    "id": "T252",
+    "text": "50% 확률로 무작위 위치에 추가 폭발 · 최대 1회",
+    "source": "WeaponUpgrades/BombChain.asset:16",
+    "section": "업그레이드 이름·설명 / BombChain"
+  },
+  {
+    "id": "T253",
+    "text": "파편 증식",
+    "source": "WeaponUpgrades/BombFragments.asset:15",
+    "section": "업그레이드 이름·설명 / BombFragments"
+  },
+  {
+    "id": "T254",
+    "text": "파편 개수 50% 증가",
+    "source": "WeaponUpgrades/BombFragments.asset:16",
+    "section": "업그레이드 이름·설명 / BombFragments"
+  },
+  {
+    "id": "T255",
+    "text": "단축 신관",
+    "source": "WeaponUpgrades/BombQuickWarning.asset:15",
+    "section": "업그레이드 이름·설명 / BombQuickWarning"
+  },
+  {
+    "id": "T256",
+    "text": "예고 시간 25% 감소",
+    "source": "WeaponUpgrades/BombQuickWarning.asset:16",
+    "section": "업그레이드 이름·설명 / BombQuickWarning"
+  },
+  {
+    "id": "T257",
+    "text": "반사 부메랑",
+    "source": "WeaponUpgrades/BoomerangPersist.asset:15",
+    "section": "업그레이드 이름·설명 / BoomerangPersist"
+  },
+  {
+    "id": "T258",
+    "text": "발사한 부메랑이 벽에 최대 2회 반사 · 이후 벽을 통과",
+    "source": "WeaponUpgrades/BoomerangPersist.asset:16",
+    "section": "업그레이드 이름·설명 / BoomerangPersist"
+  },
+  {
+    "id": "T259",
+    "text": "회수 보상",
+    "source": "WeaponUpgrades/BoomerangRefund.asset:15",
+    "section": "업그레이드 이름·설명 / BoomerangRefund"
+  },
+  {
+    "id": "T260",
+    "text": "부메랑 회수 시 쿨타임 회복량 2배 (2초 → 4초 감소)",
+    "source": "WeaponUpgrades/BoomerangRefund.asset:16",
+    "section": "업그레이드 이름·설명 / BoomerangRefund"
+  },
+  {
+    "id": "T261",
+    "text": "대형 부메랑",
+    "source": "WeaponUpgrades/BoomerangSize.asset:15",
+    "section": "업그레이드 이름·설명 / BoomerangSize"
+  },
+  {
+    "id": "T262",
+    "text": "부메랑 크기 15% 증가",
+    "source": "WeaponUpgrades/BoomerangSize.asset:16",
+    "section": "업그레이드 이름·설명 / BoomerangSize"
+  },
+  {
+    "id": "T263",
+    "text": "빠른 도탄",
+    "source": "WeaponUpgrades/BouncerCooldown.asset:15",
+    "section": "업그레이드 이름·설명 / BouncerCooldown"
+  },
+  {
+    "id": "T264",
+    "text": "쿨타임 10% 감소",
+    "source": "WeaponUpgrades/BouncerCooldown.asset:16",
+    "section": "업그레이드 이름·설명 / BouncerCooldown"
+  },
+  {
+    "id": "T265",
+    "text": "반사 충전",
+    "source": "WeaponUpgrades/BouncerLifetime.asset:15",
+    "section": "업그레이드 이름·설명 / BouncerLifetime"
+  },
+  {
+    "id": "T266",
+    "text": "벽이나 지형에 반사될 때마다 수명 0.3초 증가",
+    "source": "WeaponUpgrades/BouncerLifetime.asset:16",
+    "section": "업그레이드 이름·설명 / BouncerLifetime"
+  },
+  {
+    "id": "T267",
+    "text": "변칙 반사",
+    "source": "WeaponUpgrades/BouncerRandom.asset:15",
+    "section": "업그레이드 이름·설명 / BouncerRandom"
+  },
+  {
+    "id": "T268",
+    "text": "반사 각도에 -20~20도 무작위 편차",
+    "source": "WeaponUpgrades/BouncerRandom.asset:16",
+    "section": "업그레이드 이름·설명 / BouncerRandom"
+  },
+  {
+    "id": "T392",
+    "text": "궤도 유지",
+    "source": "WeaponUpgrades/FourAxisLifetime.asset:15",
+    "section": "업그레이드 이름·설명 / FourAxisLifetime"
+  },
+  {
+    "id": "T393",
+    "text": "오브 수명 50% 증가",
+    "source": "WeaponUpgrades/FourAxisLifetime.asset:16",
+    "section": "업그레이드 이름·설명 / FourAxisLifetime"
+  },
+  {
+    "id": "T394",
+    "text": "범위 증가",
+    "source": "WeaponUpgrades/FourAxisSize.asset:15",
+    "section": "업그레이드 이름·설명 / FourAxisSize"
+  },
+  {
+    "id": "T395",
+    "text": "각 축의 공전 반경 50% 증가",
+    "source": "WeaponUpgrades/FourAxisSize.asset:16",
+    "section": "업그레이드 이름·설명 / FourAxisSize"
+  },
+  {
+    "id": "T396",
+    "text": "탄막 반사",
+    "source": "WeaponUpgrades/FourAxisSpeed.asset:15",
+    "section": "업그레이드 이름·설명 / FourAxisSpeed"
+  },
+  {
+    "id": "T397",
+    "text": "오브에 닿은 적 탄환을 반대 방향으로 반사",
+    "source": "WeaponUpgrades/FourAxisSpeed.asset:16",
+    "section": "업그레이드 이름·설명 / FourAxisSpeed"
+  },
+  {
+    "id": "T269",
+    "text": "충전 효율",
+    "source": "WeaponUpgrades/LaserCooldown.asset:15",
+    "section": "업그레이드 이름·설명 / LaserCooldown"
+  },
+  {
+    "id": "T270",
+    "text": "쿨타임 15% 감소",
+    "source": "WeaponUpgrades/LaserCooldown.asset:16",
+    "section": "업그레이드 이름·설명 / LaserCooldown"
+  },
+  {
+    "id": "T271",
+    "text": "기동 충전",
+    "source": "WeaponUpgrades/LaserFreeWarning.asset:15",
+    "section": "업그레이드 이름·설명 / LaserFreeWarning"
+  },
+  {
+    "id": "T272",
+    "text": "예고 중 이동 감속 미적용",
+    "source": "WeaponUpgrades/LaserFreeWarning.asset:16",
+    "section": "업그레이드 이름·설명 / LaserFreeWarning"
+  },
+  {
+    "id": "T273",
+    "text": "신속 충전",
+    "source": "WeaponUpgrades/LaserQuickWarning.asset:15",
+    "section": "업그레이드 이름·설명 / LaserQuickWarning"
+  },
+  {
+    "id": "T274",
+    "text": "예고 시간 25% 감소",
+    "source": "WeaponUpgrades/LaserQuickWarning.asset:16",
+    "section": "업그레이드 이름·설명 / LaserQuickWarning"
+  },
+  {
+    "id": "T275",
+    "text": "미니탱크 지원",
+    "source": "WeaponUpgrades/MeteorMiniTanks.asset:15",
+    "section": "업그레이드 이름·설명 / MeteorMiniTanks"
+  },
+  {
+    "id": "T276",
+    "text": "좌우에 크기 50%의 미니탱크 낙하 · 각각 파편 6개 · 폭발 범위 50%",
+    "source": "WeaponUpgrades/MeteorMiniTanks.asset:16",
+    "section": "업그레이드 이름·설명 / MeteorMiniTanks"
+  },
+  {
+    "id": "T277",
+    "text": "낙하 보호막",
+    "source": "WeaponUpgrades/MeteorShield.asset:15",
+    "section": "업그레이드 이름·설명 / MeteorShield"
+  },
+  {
+    "id": "T278",
+    "text": "낙하 시작 시 보호막 1 획득 · 착지 후에도 유지 · 최대 1",
+    "source": "WeaponUpgrades/MeteorShield.asset:16",
+    "section": "업그레이드 이름·설명 / MeteorShield"
+  },
+  {
+    "id": "T279",
+    "text": "빠른 예고",
+    "source": "WeaponUpgrades/MeteorTracking.asset:15",
+    "section": "업그레이드 이름·설명 / MeteorTracking"
+  },
+  {
+    "id": "T280",
+    "text": "예고선 가로 이동 속도 10% 증가",
+    "source": "WeaponUpgrades/MeteorTracking.asset:16",
+    "section": "업그레이드 이름·설명 / MeteorTracking"
+  },
+  {
+    "id": "T281",
+    "text": "회전 탄도",
+    "source": "WeaponUpgrades/OctoCurve.asset:15",
+    "section": "업그레이드 이름·설명 / OctoCurve"
+  },
+  {
+    "id": "T282",
+    "text": "8방향 탄환이 초당 60도로 휘어져 날아감",
+    "source": "WeaponUpgrades/OctoCurve.asset:16",
+    "section": "업그레이드 이름·설명 / OctoCurve"
+  },
+  {
+    "id": "T283",
+    "text": "속사 팔방탄",
+    "source": "WeaponUpgrades/OctoRapid.asset:15",
+    "section": "업그레이드 이름·설명 / OctoRapid"
+  },
+  {
+    "id": "T284",
+    "text": "탄속 25% 증가 · 쿨타임 15% 감소",
+    "source": "WeaponUpgrades/OctoRapid.asset:16",
+    "section": "업그레이드 이름·설명 / OctoRapid"
+  },
+  {
+    "id": "T285",
+    "text": "잔탄 분열",
+    "source": "WeaponUpgrades/OctoSplit.asset:15",
+    "section": "업그레이드 이름·설명 / OctoSplit"
+  },
+  {
+    "id": "T286",
+    "text": "수명 종료 시 크기 50%의 탄환 2개로 분열 · 분열탄 수명 0.45초 · 재분열 없음",
+    "source": "WeaponUpgrades/OctoSplit.asset:16",
+    "section": "업그레이드 이름·설명 / OctoSplit"
+  },
+  {
+    "id": "T287",
+    "text": "듀얼 회전",
+    "source": "WeaponUpgrades/OrbDouble.asset:15",
+    "section": "업그레이드 이름·설명 / OrbDouble"
+  },
+  {
+    "id": "T288",
+    "text": "같은 크기의 오브 1개 추가 · 같은 반경에서 서로 반대편으로 공전",
+    "source": "WeaponUpgrades/OrbDouble.asset:16",
+    "section": "업그레이드 이름·설명 / OrbDouble"
+  },
+  {
+    "id": "T289",
+    "text": "궤도 유지",
+    "source": "WeaponUpgrades/OrbLifetime.asset:15",
+    "section": "업그레이드 이름·설명 / OrbLifetime"
+  },
+  {
+    "id": "T290",
+    "text": "오브 수명 50% 증가",
+    "source": "WeaponUpgrades/OrbLifetime.asset:16",
+    "section": "업그레이드 이름·설명 / OrbLifetime"
+  },
+  {
+    "id": "T291",
+    "text": "고속 공전",
+    "source": "WeaponUpgrades/OrbSpeed.asset:15",
+    "section": "업그레이드 이름·설명 / OrbSpeed"
+  },
+  {
+    "id": "T292",
+    "text": "회전 속도 50% 증가",
+    "source": "WeaponUpgrades/OrbSpeed.asset:16",
+    "section": "업그레이드 이름·설명 / OrbSpeed"
+  },
+  {
+    "id": "T293",
+    "text": "직선 부스터",
+    "source": "WeaponUpgrades/OverdriveAcceleration.asset:15",
+    "section": "업그레이드 이름·설명 / OverdriveAcceleration"
+  },
+  {
+    "id": "T294",
+    "text": "직선 가속과 최고 속도가 크게 증가",
+    "source": "WeaponUpgrades/OverdriveAcceleration.asset:16",
+    "section": "업그레이드 이름·설명 / OverdriveAcceleration"
+  },
+  {
+    "id": "T295",
+    "text": "관성 제어",
+    "source": "WeaponUpgrades/OverdriveHandling.asset:15",
+    "section": "업그레이드 이름·설명 / OverdriveHandling"
+  },
+  {
+    "id": "T296",
+    "text": "관성 감소 · 방향 전환과 정지 향상",
+    "source": "WeaponUpgrades/OverdriveHandling.asset:16",
+    "section": "업그레이드 이름·설명 / OverdriveHandling"
+  },
+  {
+    "id": "T297",
+    "text": "이중 보호막",
+    "source": "WeaponUpgrades/OverdriveShield.asset:15",
+    "section": "업그레이드 이름·설명 / OverdriveShield"
+  },
+  {
+    "id": "T298",
+    "text": "보호막 체력 2배 증가",
+    "source": "WeaponUpgrades/OverdriveShield.asset:16",
+    "section": "업그레이드 이름·설명 / OverdriveShield"
+  },
+  {
+    "id": "T299",
+    "text": "빠른 재장전",
+    "source": "WeaponUpgrades/PrismCooldown.asset:15",
+    "section": "업그레이드 이름·설명 / PrismCooldown"
+  },
+  {
+    "id": "T300",
+    "text": "Prism Shot 쿨타임 15% 감소",
+    "source": "WeaponUpgrades/PrismCooldown.asset:16",
+    "section": "업그레이드 이름·설명 / PrismCooldown"
+  },
+  {
+    "id": "T301",
+    "text": "착탄 폭발",
+    "source": "WeaponUpgrades/PrismExplosion.asset:15",
+    "section": "업그레이드 이름·설명 / PrismExplosion"
+  },
+  {
+    "id": "T302",
+    "text": "탄환이 적이나 벽·지형에 부딪히면 반경 0.6의 폭발 발생",
+    "source": "WeaponUpgrades/PrismExplosion.asset:16",
+    "section": "업그레이드 이름·설명 / PrismExplosion"
+  },
+  {
+    "id": "T303",
+    "text": "꼬리 탄환",
+    "source": "WeaponUpgrades/PrismTail.asset:15",
+    "section": "업그레이드 이름·설명 / PrismTail"
+  },
+  {
+    "id": "T304",
+    "text": "3·4·5 궤적을 한 번 더 발사한 뒤 중앙 4번 탄환 추가 발사",
+    "source": "WeaponUpgrades/PrismTail.asset:16",
+    "section": "업그레이드 이름·설명 / PrismTail"
+  },
+  {
+    "id": "T305",
+    "text": "펄스 순환",
+    "source": "WeaponUpgrades/PulseCooldown.asset:15",
+    "section": "업그레이드 이름·설명 / PulseCooldown"
+  },
+  {
+    "id": "T306",
+    "text": "쿨타임 15% 감소",
+    "source": "WeaponUpgrades/PulseCooldown.asset:16",
+    "section": "업그레이드 이름·설명 / PulseCooldown"
+  },
+  {
+    "id": "T307",
+    "text": "돌진 충격",
+    "source": "WeaponUpgrades/PulseDash.asset:15",
+    "section": "업그레이드 이름·설명 / PulseDash"
+  },
+  {
+    "id": "T308",
+    "text": "돌진 종료 0.25초 전부터 종료 후 0.35초까지 범위 50% 감소 · 밀치는 힘 200% 증가 · 벽 충돌 피해. 끌어당기기와 조합하면 시전자 접촉 피해.",
+    "source": "WeaponUpgrades/PulseDash.asset:16",
+    "section": "업그레이드 이름·설명 / PulseDash"
+  },
+  {
+    "id": "T309",
+    "text": "역방향 펄스",
+    "source": "WeaponUpgrades/PulsePull.asset:15",
+    "section": "업그레이드 이름·설명 / PulsePull"
+  },
+  {
+    "id": "T310",
+    "text": "밀치기 대신 끌어당김 · 효과도 안쪽으로 수축",
+    "source": "WeaponUpgrades/PulsePull.asset:16",
+    "section": "업그레이드 이름·설명 / PulsePull"
+  },
+  {
+    "id": "T398",
+    "text": "혜성",
+    "source": "WeaponUpgrades/SolarComets.asset:15",
+    "section": "업그레이드 이름·설명 / SolarComets"
+  },
+  {
+    "id": "T399",
+    "text": "시전 중 맵 상단·우상단에서 하단·좌하단으로 무작위 혜성우 발생",
+    "source": "WeaponUpgrades/SolarComets.asset:16",
+    "section": "업그레이드 이름·설명 / SolarComets"
+  },
+  {
+    "id": "T400",
+    "text": "솔라 플레어",
+    "source": "WeaponUpgrades/SolarFlare.asset:15",
+    "section": "업그레이드 이름·설명 / SolarFlare"
+  },
+  {
+    "id": "T401",
+    "text": "3초 구간마다 무작위 시점에 파동 방출 · 1.5초간 이동 속도 30% 감소",
+    "source": "WeaponUpgrades/SolarFlare.asset:16",
+    "section": "업그레이드 이름·설명 / SolarFlare"
+  },
+  {
+    "id": "T402",
+    "text": "행성 방출",
+    "source": "WeaponUpgrades/SolarRelease.asset:15",
+    "section": "업그레이드 이름·설명 / SolarRelease"
+  },
+  {
+    "id": "T403",
+    "text": "방어막 소진 또는 5초 종료 후 바깥 행성부터 0.1초 간격으로 마우스 방향에 발사",
+    "source": "WeaponUpgrades/SolarRelease.asset:16",
+    "section": "업그레이드 이름·설명 / SolarRelease"
+  },
+  {
+    "id": "T311",
+    "text": "확장 탄열",
+    "source": "WeaponUpgrades/SpreadExtra.asset:15",
+    "section": "업그레이드 이름·설명 / SpreadExtra"
+  },
+  {
+    "id": "T312",
+    "text": "±30도 탄 2발 추가 · 0.3초 뒤 발사",
+    "source": "WeaponUpgrades/SpreadExtra.asset:16",
+    "section": "업그레이드 이름·설명 / SpreadExtra"
+  },
+  {
+    "id": "T313",
+    "text": "요격 탄환",
+    "source": "WeaponUpgrades/SpreadInterceptor.asset:15",
+    "section": "업그레이드 이름·설명 / SpreadInterceptor"
+  },
+  {
+    "id": "T314",
+    "text": "가운데 탄 크기 50% 증가 · 적 소형 탄 1발 파괴",
+    "source": "WeaponUpgrades/SpreadInterceptor.asset:16",
+    "section": "업그레이드 이름·설명 / SpreadInterceptor"
+  },
+  {
+    "id": "T315",
+    "text": "고속 확산",
+    "source": "WeaponUpgrades/SpreadSpeed.asset:15",
+    "section": "업그레이드 이름·설명 / SpreadSpeed"
+  },
+  {
+    "id": "T316",
+    "text": "탄속 25% 증가",
+    "source": "WeaponUpgrades/SpreadSpeed.asset:16",
+    "section": "업그레이드 이름·설명 / SpreadSpeed"
+  },
+  {
+    "id": "T147",
+    "text": "나가기",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:40",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T148",
+    "text": "클래식 1대1",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:43",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T149",
+    "text": "비슷한 실력의 상대와 랭크 대전\n친구와는 방 코드로 연결",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:44",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T150",
+    "text": "랭크 매칭",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:45",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T151",
+    "text": "매칭 취소 / 나가기",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:46",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T152",
+    "text": "친구와 Steam 방 만들기",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:48",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T153",
+    "text": "방 코드",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:56",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T154",
+    "text": "참가",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:59",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T155",
+    "text": "로컬 호스트",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:63",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T156",
+    "text": "로컬 참가",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:64",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T157",
+    "text": "친구가 만든 방의 코드를 입력하세요",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:66",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T158",
+    "text": "랭크 대전 · 방 코드 입력 없이 자동 연결",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:85",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T159",
+    "text": "방 코드:",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:87",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T160",
+    "text": "\n클릭해서 복사",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:87",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T161",
+    "text": "상대방 연결 대기 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:88",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T162",
+    "text": "CLASSIC · {session.Ping} ms",
+    "source": "Assets/Scripts/Game/Networking/OnlineScreen.cs:92",
+    "section": "온라인 대전 화면"
+  },
+  {
+    "id": "T163",
+    "text": "클래식 · 랭크 매칭 또는 친구와 대전",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:46",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T164",
+    "text": "Steam 방 생성 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:120",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T165",
+    "text": "먼저 덱에 서로 다른 탄막 8개를 넣어 주세요.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:126",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T166",
+    "text": "올바른 방 코드를 입력하세요.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:135",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T167",
+    "text": "Steam 방 참가 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:137",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T168",
+    "text": "배정된 상대방과 연결되지 않았습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:144",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T169",
+    "text": "네트워크 리소스가 없습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:156",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T170",
+    "text": "상대방을 기다리는 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:198",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T171",
+    "text": "호스트에 연결 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:198",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T172",
+    "text": "호스트를 시작하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:199",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T173",
+    "text": "연결을 시작하지 못했습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:200",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T174",
+    "text": "게임 버전이 다릅니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:222",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T175",
+    "text": "상대방의 덱과 장면 로딩을 기다리는 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:247",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T176",
+    "text": "준비 완료 · 상대방의 선택을 기다리는 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:295",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T177",
+    "text": "각자 덱에서 시작 탄막과 업그레이드를 선택하세요.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:298",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T178",
+    "text": "드래프트 정보를 확인할 수 없습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:334",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T179",
+    "text": "두 플레이어 준비 완료 · 곧 대전을 시작합니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:337",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T180",
+    "text": "대전 중",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:345",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T181",
+    "text": "연결 또는 드래프트 대기 시간이 초과됐습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:378",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T182",
+    "text": "상대방의 입력이 끊겨 대전을 중단했습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:400",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T183",
+    "text": "상대방과 재대전에 동의하면 다시 덱 선택을 시작합니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:428",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T184",
+    "text": "랭크 대전은 나간 뒤 새 상대를 찾아 주세요. · ESC 나가기",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:448",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T185",
+    "text": "재대전 동의 완료 · 상대방을 기다리는 중…",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:451",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T186",
+    "text": "상대방의 연결이 종료됐습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:463",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T187",
+    "text": "호스트와 연결이 종료됐습니다.",
+    "source": "Assets/Scripts/Game/Networking/OnlineSession.cs:469",
+    "section": "온라인 연결·대전 상태·오류"
+  },
+  {
+    "id": "T089",
+    "text": "{ownerLabel}  ·  장착 탄막 {count}/3   |   숫자 1–3 / 휠 / 클릭으로 선택",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:72",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T090",
+    "text": "·  시작 탄막 선택 대기",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:73",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T091",
+    "text": "빈 슬롯",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:86",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T092",
+    "text": "—",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:90",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T093",
+    "text": "{remaining:0.0}s",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:90",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T094",
+    "text": "READY",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:90",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T386",
+    "text": "P{player.PlayerIndex}",
+    "source": "Assets/Scripts/Game/DrawnWeaponBar.cs:71",
+    "section": "장착 탄막 표시"
+  },
+  {
+    "id": "T073",
+    "text": "WASD 이동 · MOUSE 조준 / 발사 · SPACE 대시 · 1–3 / 휠 탄막 선택 · ESC 나가기",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:43",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T074",
+    "text": "P1",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:46",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T075",
+    "text": "BOT · {match.BotRating}",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:48",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T076",
+    "text": "P2",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:48",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T077",
+    "text": "{seconds / 60:00}:{seconds % 60:00}",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:50",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T078",
+    "text": "DRAW\nR  재시작",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:52",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T079",
+    "text": "VICTORY",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:53",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T080",
+    "text": "BOT WINS",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:53",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T081",
+    "text": "\nR  재시작",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:53",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T082",
+    "text": "PLAYER {match.Winner.PlayerIndex} WINS\nR  재시작",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:54",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T083",
+    "text": "{session.Ping} ms · 나 P{session.LocalSlot + 1}",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:58",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T084",
+    "text": "\nESC 나가기",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:61",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T085",
+    "text": "R  재시작",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:62",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T086",
+    "text": "ESC 나가기 · 새 상대 찾기",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:62",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T087",
+    "text": "R  재대전 동의 · ESC 나가기",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:62",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T088",
+    "text": "× × ×",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:66",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T385",
+    "text": "+{player.ShieldRemaining}",
+    "source": "Assets/Scripts/Game/ArenaHud.cs:68",
+    "section": "전투 HUD·결과"
+  },
+  {
+    "id": "T233",
+    "text": "작은 구체를 총구에서 발사합니다. 기본 탄속 11, 발사 간격 0.26초.",
+    "source": "Deck Catalog.asset / pulse-shot",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T234",
+    "text": "총구를 따라가는 예고선 1초 후 레이저를 0.5초간 발사하며 뒤로 반동을 받습니다. 예고와 발사 중 감속하고 초당 최대 30도로 조준합니다. 종료 후 커서로 빠르게 회전합니다. 쿨타임 2초.",
+    "source": "Deck Catalog.asset / basic-barrage-02",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T235",
+    "text": "정면 1발과 ±10도·±20도의 작은 탄환을 0.1초 간격으로 발사합니다. 총 5발, 쿨타임 2초.",
+    "source": "Deck Catalog.asset / basic-barrage-03",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T236",
+    "text": "지정 위치를 1초간 예고한 뒤 사각 폭발과 4방향 무작위 파편을 생성합니다. 쿨타임 3초.",
+    "source": "Deck Catalog.asset / basic-barrage-04",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T237",
+    "text": "주변 적을 펄스 범위 끝까지 밀어내며 밀려난 거리에 따른 관성을 적용합니다. 기본 피해는 없으며 0.3초 동안 이동 속도를 75%로 낮춥니다. 범위 3, 쿨타임 2초.",
+    "source": "Deck Catalog.asset / basic-barrage-05",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T238",
+    "text": "최대 5초간 직선 이동을 유지할수록 가속하고 관성이 커집니다. 보호막 3과 회전 가시를 얻으며 보호막 소진 또는 시간 종료 시 해제됩니다. 쿨타임 10초.",
+    "source": "Deck Catalog.asset / basic-barrage-06",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T239",
+    "text": "벽에서 반사되는 탄환입니다. 탄속 15에서 12.75까지 서서히 감속하며 3초간 유지됩니다. 마지막 0.4초 동안 페이드아웃합니다. 쿨타임 1.2초. 적에게 명중하면 사라집니다.",
+    "source": "Deck Catalog.asset / basic-barrage-07",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T240",
+    "text": "잔상을 남기는 오브 1개가 플레이어 주변을 5초간 공전하며 접촉한 적을 공격합니다. 쿨타임 10초.",
+    "source": "Deck Catalog.asset / basic-barrage-08",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T241",
+    "text": "2초간 사라져 세로 예고선을 커서 방향으로 가로 이동시킵니다. 추적 속도는 기본 이속의 90%입니다. 다시 클릭하면 즉시 낙하합니다. 위에서 바닥까지 내리꽂으며 경로의 적을 공격하고, 착지 폭발과 중력 파편도 피해를 줍니다. 쿨타임 10초.",
+    "source": "Deck Catalog.asset / meteor-dive",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T242",
+    "text": "주변 8방향으로 탄속 6의 탄환을 동시에 발사합니다. 수명 0.8초, 쿨타임 1.4초.",
+    "source": "Deck Catalog.asset / octo-shot",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T243",
+    "text": "발사 방향으로 빠르게 날아가며 점차 감속하고, 거의 멈추면 그 순간의 플레이어 위치를 향해 빠르게 돌아오는 부메랑입니다. 적을 관통하며, 회수 시 남은 쿨타임이 2초 감소합니다. 받지 못하면 그대로 지나갑니다. 쿨타임 8초.",
+    "source": "Deck Catalog.asset / boomerang",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T244",
+    "text": "7발을 1·7, 3·4·5, 2·6 순서로 발사합니다. 직선·이중나선·공전 탄환이 0.8초 후 거리 5에서 부채꼴을 형성한 뒤에도 각 궤적을 유지하며 퍼집니다. 수명 제한 없이 이동하며 적이나 벽에 닿으면 소멸합니다. 쿨타임 5초.",
+    "source": "Deck Catalog.asset / prism-shot",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T390",
+    "text": "4개의 오브가 플레이어와 앞선 오브를 차례로 중심 삼아 4단 공전합니다. 축마다 반경 1.2, 회전 속도 180·360·540·720도/초. 5초간 유지되며 쿨타임 10초.",
+    "source": "Deck Catalog.asset / four-axis",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T391",
+    "text": "제자리에 거대한 태양을 펼치고 맵 전역에 닿는 궤도의 행성 8개로 공격합니다. 시전 중 이동·대시·추가 발사가 잠기며 방어막 3개를 얻습니다. 방어막 소진 또는 5초 후 종료됩니다. 쿨타임 15초.",
+    "source": "Deck Catalog.asset / solar-system",
+    "section": "탄막 설명"
+  },
+  {
+    "id": "T388",
+    "text": "4-axis",
+    "source": "Assets/Settings/4-axis.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T221",
+    "text": "Laser Shot",
+    "source": "Assets/Settings/Basic Barrage 02.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T222",
+    "text": "Spread Shot",
+    "source": "Assets/Settings/Basic Barrage 03.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T223",
+    "text": "Bomb",
+    "source": "Assets/Settings/Basic Barrage 04.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T224",
+    "text": "Electric Pulse",
+    "source": "Assets/Settings/Basic Barrage 05.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T225",
+    "text": "Overdrive",
+    "source": "Assets/Settings/Basic Barrage 06.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T226",
+    "text": "Bouncer",
+    "source": "Assets/Settings/Basic Barrage 07.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T227",
+    "text": "Orbit Orb",
+    "source": "Assets/Settings/Basic Barrage 08.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T228",
+    "text": "Boomerang",
+    "source": "Assets/Settings/Boomerang.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T229",
+    "text": "Meteor Dive",
+    "source": "Assets/Settings/Meteor Dive.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T230",
+    "text": "Octo Shot",
+    "source": "Assets/Settings/Octo Shot.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T231",
+    "text": "Prism Shot",
+    "source": "Assets/Settings/Prism Shot.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T232",
+    "text": "Basic Shot",
+    "source": "Assets/Settings/Pulse Shot.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T389",
+    "text": "Solar System",
+    "source": "Assets/Settings/Solar System.asset:15",
+    "section": "탄막 이름"
+  },
+  {
+    "id": "T121",
+    "text": "사용 가능한 탄막이 없습니다",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:81",
+    "section": "훈련장"
+  },
+  {
+    "id": "T122",
+    "text": "표적 명중  {match.PlayerTwo.HitsTaken:000}   /   제한 시간 없음",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:133",
+    "section": "훈련장"
+  },
+  {
+    "id": "T123",
+    "text": "—",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:134",
+    "section": "훈련장"
+  },
+  {
+    "id": "T124",
+    "text": "재사용까지 {Selected.CooldownRemaining:0.0}초",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:135",
+    "section": "훈련장"
+  },
+  {
+    "id": "T125",
+    "text": "발사 준비 완료",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:135",
+    "section": "훈련장"
+  },
+  {
+    "id": "T126",
+    "text": "제한 없음",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:145",
+    "section": "훈련장"
+  },
+  {
+    "id": "T127",
+    "text": "{value.Lifetime:0.##}초",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:145",
+    "section": "훈련장"
+  },
+  {
+    "id": "T128",
+    "text": "쿨타임  {value.Cooldown:0.##}초     탄속  {value.Speed:0.#}\n수명  {lifetime}     범위  {value.Range:0.#}",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:146",
+    "section": "훈련장"
+  },
+  {
+    "id": "T129",
+    "text": "TRAINING  /  훈련장",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:177",
+    "section": "훈련장"
+  },
+  {
+    "id": "T130",
+    "text": "덱 제한 없이, 원하는 조합을 바로 테스트하세요",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:178",
+    "section": "훈련장"
+  },
+  {
+    "id": "T131",
+    "text": "WASD 이동   ·   마우스 조준 / 발사   ·   SPACE 대시",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:180",
+    "section": "훈련장"
+  },
+  {
+    "id": "T132",
+    "text": "Q / E 또는 휠 전환   ·   R 전장 초기화   ·   ESC 나가기",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:181",
+    "section": "훈련장"
+  },
+  {
+    "id": "T133",
+    "text": "탄막 설정",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:183",
+    "section": "훈련장"
+  },
+  {
+    "id": "T134",
+    "text": "나가기",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:184",
+    "section": "훈련장"
+  },
+  {
+    "id": "T135",
+    "text": "선택 즉시 적용 · 탄막별 설정 유지",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:185",
+    "section": "훈련장"
+  },
+  {
+    "id": "T136",
+    "text": "업그레이드",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:215",
+    "section": "훈련장"
+  },
+  {
+    "id": "T137",
+    "text": "기본",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:216",
+    "section": "훈련장"
+  },
+  {
+    "id": "T138",
+    "text": "최대",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:217",
+    "section": "훈련장"
+  },
+  {
+    "id": "T139",
+    "text": "표적: 고정",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:224",
+    "section": "훈련장"
+  },
+  {
+    "id": "T140",
+    "text": "표적: 이동",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:228",
+    "section": "훈련장"
+  },
+  {
+    "id": "T141",
+    "text": "전장 초기화 · R",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:231",
+    "section": "훈련장"
+  },
+  {
+    "id": "T142",
+    "text": "위치는 유지되고 탄막·쿨타임이 초기화됩니다",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:240",
+    "section": "훈련장"
+  },
+  {
+    "id": "T143",
+    "text": "−",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:258",
+    "section": "훈련장"
+  },
+  {
+    "id": "T144",
+    "text": "+",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:260",
+    "section": "훈련장"
+  },
+  {
+    "id": "T145",
+    "text": "{level} / {upgrade.maxLevel}",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:265",
+    "section": "훈련장"
+  },
+  {
+    "id": "T146",
+    "text": "이 탄막에는 업그레이드가 없습니다",
+    "source": "Assets/Scripts/Game/TrainingGround.cs:273",
+    "section": "훈련장"
+  },
+  {
+    "id": "T217",
+    "text": "레어",
+    "source": "Assets/Scripts/Game/Barrages/WeaponRarity.cs:9",
+    "section": "희귀도"
+  },
+  {
+    "id": "T218",
+    "text": "유니크",
+    "source": "Assets/Scripts/Game/Barrages/WeaponRarity.cs:10",
+    "section": "희귀도"
+  },
+  {
+    "id": "T219",
+    "text": "레전더리",
+    "source": "Assets/Scripts/Game/Barrages/WeaponRarity.cs:11",
+    "section": "희귀도"
+  },
+  {
+    "id": "T220",
+    "text": "커먼",
+    "source": "Assets/Scripts/Game/Barrages/WeaponRarity.cs:12",
+    "section": "희귀도"
+  },
+  {
+    "id": "T366",
+    "text": "P1  ·  뽑은 탄막 0/5   |   덱에 탄막을 2종 이상 넣어주세요",
+    "source": "Assets/Scenes/Arena.unity:220",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T367",
+    "text": "—",
+    "source": "Assets/Scenes/Arena.unity:445",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T368",
+    "text": "5",
+    "source": "Assets/Scenes/Arena.unity:794",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T369",
+    "text": "빈 슬롯",
+    "source": "Assets/Scenes/Arena.unity:1336",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T370",
+    "text": "P1  WASD · MOUSE · SPACE     |     P2  ARROWS · RCTRL · RSHIFT |     ESC  TITLE",
+    "source": "Assets/Scenes/Arena.unity:2628",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T371",
+    "text": "◆ ◆ ◆  P2",
+    "source": "Assets/Scenes/Arena.unity:3816",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T372",
+    "text": "1",
+    "source": "Assets/Scenes/Arena.unity:5573",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T373",
+    "text": "08:00",
+    "source": "Assets/Scenes/Arena.unity:6028",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T374",
+    "text": "P1  ◆ ◆ ◆",
+    "source": "Assets/Scenes/Arena.unity:6424",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T375",
+    "text": "3",
+    "source": "Assets/Scenes/Arena.unity:6658",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T376",
+    "text": "2",
+    "source": "Assets/Scenes/Arena.unity:6836",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T377",
+    "text": "4",
+    "source": "Assets/Scenes/Arena.unity:7542",
+    "section": "Arena 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T210",
+    "text": "Steam을 실행한 뒤 다시 시도하세요. 출시 빌드는 Steam 앱 등록이 필요합니다.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:59",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T211",
+    "text": "출시 빌드에서는 개발용 Steam App ID를 사용할 수 없습니다.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:63",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T212",
+    "text": "Steam 초기화 실패:",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:87",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T381",
+    "text": "Steam이 상대와 통신 경로를 찾지 못해 연결 시간이 초과됐습니다.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:112",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T382",
+    "text": "Steam 연결이 종료됐습니다. (코드 {data.m_info.m_eEndReason})",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:113",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T383",
+    "text": "Steam 요청이 지연되고 있습니다. 잠시 뒤 다시 시도하거나 게임을 재실행해 주세요.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:172",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T213",
+    "text": "방 생성에 실패했습니다:",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:178",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T214",
+    "text": "방에 들어갈 수 없습니다. 방 코드와 인원을 확인하세요.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:189",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T215",
+    "text": "호환되는 상대방의 방이 아닙니다.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:195",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T216",
+    "text": "Steam 응답 시간이 초과됐습니다. 다시 시도하세요.",
+    "source": "Assets/Scripts/Game/Networking/SteamSession.cs:216",
+    "section": "Steam 상태·오류"
+  },
+  {
+    "id": "T317",
+    "text": "Basic Shot",
+    "source": "Assets/Scenes/Title.unity:179",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T318",
+    "text": "Laser Shot",
+    "source": "Assets/Scenes/Title.unity:534",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T319",
+    "text": "무기 · 상세 보기",
+    "source": "Assets/Scenes/Title.unity:1536",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T320",
+    "text": "플레이하려면 정확히 8장이 필요합니다",
+    "source": "Assets/Scenes/Title.unity:2097",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T321",
+    "text": "80%",
+    "source": "Assets/Scenes/Title.unity:2235",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T322",
+    "text": "클래식",
+    "source": "Assets/Scenes/Title.unity:2819",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T323",
+    "text": "1 / 2",
+    "source": "Assets/Scenes/Title.unity:3086",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T324",
+    "text": "여기에무슨문구를넣으면좋을까",
+    "source": "Assets/Scenes/Title.unity:3427",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T325",
+    "text": "등록된 카드가 없습니다.",
+    "source": "Assets/Scenes/Title.unity:3545",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T326",
+    "text": "사운드 · 게임 설정",
+    "source": "Assets/Scenes/Title.unity:4412",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T327",
+    "text": "DECK",
+    "source": "Assets/Scenes/Title.unity:5146",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T328",
+    "text": "Bomb",
+    "source": "Assets/Scenes/Title.unity:5732",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T329",
+    "text": "Electric Pulse",
+    "source": "Assets/Scenes/Title.unity:5869",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T330",
+    "text": "메인 메뉴로",
+    "source": "Assets/Scenes/Title.unity:6919",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T331",
+    "text": "카드를 살펴보고 나만의 덱을 구성하세요.",
+    "source": "Assets/Scenes/Title.unity:7056",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T332",
+    "text": "BACK",
+    "source": "Assets/Scenes/Title.unity:7489",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T333",
+    "text": "GLOW\nGLOW",
+    "source": "Assets/Scenes/Title.unity:8422",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T334",
+    "text": "MULTIPLAYER  / 모드 선택",
+    "source": "Assets/Scenes/Title.unity:8737",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T335",
+    "text": "아직 비어 있습니다.\n도감에서 카드를 추가하세요.",
+    "source": "Assets/Scenes/Title.unity:8855",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T336",
+    "text": "V1.0",
+    "source": "Assets/Scenes/Title.unity:9087",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T337",
+    "text": "WASD / STICK  이동     ENTER / A  선택",
+    "source": "Assets/Scenes/Title.unity:9377",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T338",
+    "text": "이전",
+    "source": "Assets/Scenes/Title.unity:9514",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T339",
+    "text": "무기 도감  ·  8종",
+    "source": "Assets/Scenes/Title.unity:10052",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T340",
+    "text": "게임 종료",
+    "source": "Assets/Scenes/Title.unity:10189",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T341",
+    "text": "덱 구성  / 카드 도감",
+    "source": "Assets/Scenes/Title.unity:10326",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T342",
+    "text": "내 덱  ·  0/8",
+    "source": "Assets/Scenes/Title.unity:10471",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T343",
+    "text": "BACK · 메인 메뉴",
+    "source": "Assets/Scenes/Title.unity:10636",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T344",
+    "text": "Basic Shot\n작은 구체를 총구에서 발사합니다. 기본 탄속 12, 발사 간격 0.22초.\n\n쿨타임 0.22초  ·  최대 강화 +5",
+    "source": "Assets/Scenes/Title.unity:11237",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T345",
+    "text": "잠금 · 준비 중",
+    "source": "Assets/Scenes/Title.unity:11480",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T346",
+    "text": "QUIT",
+    "source": "Assets/Scenes/Title.unity:12843",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T347",
+    "text": "봇 대전",
+    "source": "Assets/Scenes/Title.unity:12980",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T348",
+    "text": "클릭 / 드래그로 조절 · 방향키 ← →",
+    "source": "Assets/Scenes/Title.unity:13544",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T349",
+    "text": "MASTER VOLUME",
+    "source": "Assets/Scenes/Title.unity:13969",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T350",
+    "text": "SINGLEPLAYER",
+    "source": "Assets/Scenes/Title.unity:14432",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T351",
+    "text": "봇 대전 · 캠페인",
+    "source": "Assets/Scenes/Title.unity:14569",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T352",
+    "text": "CLASSIC · 두 플레이어 대전",
+    "source": "Assets/Scenes/Title.unity:15150",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T353",
+    "text": "덱에 추가",
+    "source": "Assets/Scenes/Title.unity:16017",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T354",
+    "text": "모드 선택",
+    "source": "Assets/Scenes/Title.unity:16436",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T355",
+    "text": "SETTINGS",
+    "source": "Assets/Scenes/Title.unity:16782",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T356",
+    "text": "Spread Shot",
+    "source": "Assets/Scenes/Title.unity:16919",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T357",
+    "text": "다음",
+    "source": "Assets/Scenes/Title.unity:17196",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T358",
+    "text": "SINGLEPLAYER  / 모드 선택",
+    "source": "Assets/Scenes/Title.unity:17354",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T359",
+    "text": "READY  ·  SELECT A MODE",
+    "source": "Assets/Scenes/Title.unity:18841",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T360",
+    "text": "MULTIPLAYER",
+    "source": "Assets/Scenes/Title.unity:18970",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T361",
+    "text": "카드 선택 → 상세 확인 → 덱에 추가 / 제거",
+    "source": "Assets/Scenes/Title.unity:19244",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T362",
+    "text": "캠페인",
+    "source": "Assets/Scenes/Title.unity:19806",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T363",
+    "text": "기본 8장으로 채우기",
+    "source": "Assets/Scenes/Title.unity:19943",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T364",
+    "text": "카드 도감 · 내 덱 편집",
+    "source": "Assets/Scenes/Title.unity:20155",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  },
+  {
+    "id": "T365",
+    "text": "Overdrive",
+    "source": "Assets/Scenes/Title.unity:20292",
+    "section": "Title 씬 저장 문구 (초기값 포함)"
+  }
+]

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: OrbDouble
   m_EditorClassIdentifier:
-  displayName: 2-Axis
-  description: 첫 번째 오브를 중심으로 두 번째 오브가 공전 · 크기 50%
+  displayName: 듀얼 회전
+  description: 오브 1개 추가
   icon: {fileID: 0}
   displaySlot: 0
   maxLevel: 1

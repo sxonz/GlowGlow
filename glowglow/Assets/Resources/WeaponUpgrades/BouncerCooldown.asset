@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: BouncerCooldown
   m_EditorClassIdentifier:
-  displayName: 빠른 도탄
+  displayName: 빠른 사격
   description: 쿨타임 10% 감소
   icon: {fileID: 0}
   displaySlot: 2

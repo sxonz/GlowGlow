@@ -30,7 +30,8 @@ correction is followed. All improve toward the existing maximum-rating performan
 There is no ability switch at 2400. Search directions grow in small integer steps from 8
 to 64, with stopping always considered. At 3000, reaction delay reaches zero and urgent
 dashes have no intentional random failures. Health, movement speed and cooldown rules remain unchanged.
-Both combatants use the normal three-choice opening draft and three-hit match rules.
+Both combatants use the normal three-choice opening draft and 100-HP match rules.
+Per-attack damage and its validation runner are documented in `HEALTH_DAMAGE.md`.
 During the player's draft, the bot's three actual picks appear in a compact bottom
 strip over 0.6 seconds, including upgrade names and their target weapons. This adds
 no extra wait or confirmation. The strip stays visible through the three rounds.
@@ -118,3 +119,8 @@ The formation capture samples the exact 0.8-second position to avoid frame-rate-
 ## Classic online
 
 See [ONLINE_MULTIPLAYER.md](ONLINE_MULTIPLAYER.md) for the existing Classic mode's two-player test, validation scope and remaining latency limitations.
+
+## Neon graphics and local effects
+
+See [GRAPHICS_UPGRADE.md](GRAPHICS_UPGRADE.md) for shader/replication checks, the isolated
+`GraphicsSmokeRunner` render and 414-projectile load test, cosmetic budgets and measured results.

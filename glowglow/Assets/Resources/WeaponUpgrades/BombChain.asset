@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BombChain
   m_EditorClassIdentifier:
   displayName: 연쇄 폭발
-  description: 50% 확률로 무작위 위치에 추가 폭발 · 최대 1회
+  description: 50% 확률로 무작위 위치에 추가 폭발
   icon: {fileID: 0}
   displaySlot: 0
   maxLevel: 1

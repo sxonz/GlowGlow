@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 916a089dd7f84bce8d81df0c88201a36, type: 3}
   m_Name: SpreadExtra
   m_EditorClassIdentifier:
-  displayName: 확장 탄열
+  displayName: 탄열 확장
   description: ±30도 탄 2발 추가 · 0.3초 뒤 발사
   icon: {fileID: 0}
   displaySlot: 0

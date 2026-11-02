@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PrismTail
   m_EditorClassIdentifier:
   displayName: 꼬리 탄환
-  description: 3·4·5 궤적을 한 번 더 발사한 뒤 중앙 4번 탄환 추가 발사
+  description: 더 많은 탄환 발사
   icon: {fileID: 0}
   displaySlot: 1
   maxLevel: 1

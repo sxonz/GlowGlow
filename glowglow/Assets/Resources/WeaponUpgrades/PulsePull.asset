@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PulsePull
   m_EditorClassIdentifier:
   displayName: 역방향 펄스
-  description: 밀치기 대신 끌어당김 · 효과도 안쪽으로 수축
+  description: 밀치기 대신 끌어당기는 펄스 사용
   icon: {fileID: 0}
   displaySlot: 2
   maxLevel: 1
