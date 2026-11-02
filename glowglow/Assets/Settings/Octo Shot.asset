@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Octo Shot
   m_EditorClassIdentifier:
   displayName: Octo Shot
+  damage: 8
   rarity: 0
   steps:
   - shape: 9
@@ -25,7 +26,7 @@ MonoBehaviour:
     endSize: 1
     dealsDamage: 1
     opacity: 1
-  icon: {fileID: 21300000, guid: 7cbb03d774b148f8b4bad055aad364ed, type: 3}
+  icon: {fileID: -133376822, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 1.4
   projectileSpeed: 6

@@ -19,6 +19,7 @@ public sealed class BarragePreview : MonoBehaviour
     private float simulateAccumulator;
     private bool overdrivePreview;
     private bool bouncerPreview;
+    private bool minePreview;
     private float demoStart;
     private float nextDemoShot;
     private const int PreviewLayer = 31;
@@ -68,6 +69,11 @@ public sealed class BarragePreview : MonoBehaviour
         cameraView.targetTexture = texture;
         image.texture = texture;
         image.color = Color.white;
+        // The deck panel can change aspect with window size; never stretch circular paths.
+        var aspect = image.GetComponent<AspectRatioFitter>();
+        if (aspect == null) aspect = image.gameObject.AddComponent<AspectRatioFitter>();
+        aspect.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        aspect.aspectRatio = (float)texture.width / texture.height;
         titleCamera = Camera.main;
         if (titleCamera != null) { titleMask = titleCamera.cullingMask; titleCamera.cullingMask &= ~(1 << PreviewLayer); }
         shooter = CreatePlayer("Preview Shooter", new Color(1, .25f, .8f));
@@ -81,23 +87,30 @@ public sealed class BarragePreview : MonoBehaviour
         ProjectileBase.DespawnOwnedBy(shooter);
         ProjectileBase.DespawnOwnedBy(target);
         bool pulse = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.ElectricPulse);
-        bool orb = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OrbitOrb);
+        bool fourAxis = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.FourAxis);
+        bool solar = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.SolarSystem);
+        bool orb = fourAxis || System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OrbitOrb);
         bool octo = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.OctoShot);
-        cameraView.orthographicSize = octo ? 5.2f : 3.7f;
+        bool celestial = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null &&
+            (s.shape == BarrageShape.FireflyConvergence || s.shape == BarrageShape.TwinSatellites ||
+             s.shape == BarrageShape.BlossomBurst || s.shape == BarrageShape.ConstellationIgnition));
+        cameraView.orthographicSize = solar || octo || fourAxis || celestial ? 5.2f : 3.7f;
         overdrivePreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Overdrive);
         bouncerPreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Bouncer);
+        minePreview = System.Array.Exists(weapon.steps ?? System.Array.Empty<BarrageStep>(), s => s != null && s.shape == BarrageShape.Mine);
         shooter.ConfigurePreview(weapon);
         // Keep ranged attacks well separated; the radial pulse demonstrates its outer reach.
-        shooter.ResetCombatant(new Vector2(octo ? 0 : orb ? -.7f : pulse ? -1.4f : -4, 0));
-        target.ResetCombatant(new Vector2(octo ? 2.5f : orb ? .7f : pulse ? 1.4f : 4, 0));
+        shooter.ResetCombatant(new Vector2(minePreview || octo || solar ? 0 : orb ? -.7f : pulse ? -1.4f : -4, 0));
+        target.ResetCombatant(new Vector2(minePreview || octo || solar ? 2.5f : orb ? .7f : pulse ? 1.4f : 4, 0));
         // Give reset invulnerability time to expire before firing the demonstration.
         firedAt = Time.time + .6f;
         demoStart = firedAt;
         nextDemoShot = firedAt + .8f;
-        float length = overdrivePreview || orb ? 5 : Mathf.Max(1.8f, weapon.cooldown);
+        float length = overdrivePreview || orb || solar ? 5 : Mathf.Max(1.8f, weapon.cooldown);
         foreach (var step in weapon.steps ?? System.Array.Empty<BarrageStep>())
             if (step != null) length = Mathf.Max(length, step.delay + step.duration);
-        restartAt = firedAt + length + .7f;
+        restartAt = firedAt + length + (fourAxis || solar ? 1f : 0f) + .7f;
+        if (minePreview) restartAt = firedAt + 4;
         simulateAccumulator = 0;
     }
 
@@ -113,7 +126,14 @@ public sealed class BarragePreview : MonoBehaviour
             firedAt = float.PositiveInfinity;
         }
         // A moving target makes the short slow visible.
-        target.MovePreview(Vector2.up * Mathf.Cos(Time.time * 2), Time.deltaTime * .18f);
+        if (minePreview)
+        {
+            if (Time.time >= demoStart && Time.time < demoStart + 1.1f)
+                shooter.MovePreview(Vector2.left, Time.deltaTime * 2);
+            if (Time.time >= demoStart + 1.2f && Time.time < demoStart + 2.8f)
+                target.MovePreview(Vector2.left, Time.deltaTime * 2);
+        }
+        else target.MovePreview(Vector2.up * Mathf.Cos(Time.time * 2), Time.deltaTime * .18f);
         if (overdrivePreview && Time.time >= demoStart)
         {
             float phase = (Time.time - demoStart) % 2.4f;

@@ -17,15 +17,21 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     private static Material arenaClipMaterial;
     private Material unclippedMaterial;
     private bool clipped;
+    private bool neonBeam;
+    private float traceDuration;
+    private Vector2 traceOrigin;
+    private Vector3 traceFadeScale;
+    protected override bool FadeOnLifetimeEnd => traceDuration > 0;
     public bool IsTelegraph => step != null && !step.dealsDamage;
-    public bool IsBeam => step != null && (step.shape == BarrageShape.Line || step.followMuzzle);
+    public bool IsBeam => step != null && (step.shape == BarrageShape.Line || step.followMuzzle ||
+        step.shape == BarrageShape.Box && step.position == BarragePosition.Gun);
 
     // Signed clearance from the visible attack's dangerous area, including body radius.
     // Bomb warnings cover a rotating square; use its corner radius rather than only
     // the decorative warning circle so a bot does not stop inside the explosion.
     public float DangerClearance(Vector2 position, float bodyRadius)
     {
-        if (step == null) return float.PositiveInfinity;
+        if (step == null || IsDisappearing) return float.PositiveInfinity;
         if (IsBeam)
         {
             Vector2 axis = transform.right;
@@ -39,12 +45,13 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         return Vector2.Distance(position, transform.position) - radius - bodyRadius;
     }
     protected override bool DespawnOnHit => false;
-    protected override bool GlowEnabled => step != null && step.shape != BarrageShape.Line;
+    protected override bool GlowEnabled => step != null && step.shape != BarrageShape.Line && !neonBeam
+        && (step.dealsDamage || step.shape != BarrageShape.Circle);
 
     protected override void OnSpawn()
     {
         visual = GetComponent<SpriteRenderer>();
-        if(unclippedMaterial==null) unclippedMaterial=visual.sharedMaterial;
+        if(unclippedMaterial==null) unclippedMaterial=BarrageVisibility.SupportedMaterial(visual.sharedMaterial);
         box = GetComponent<BoxCollider2D>();
         circle = GetComponent<CircleCollider2D>();
         box.enabled = circle.enabled = false;
@@ -64,8 +71,19 @@ public sealed class BarrageShapeProjectile : ProjectileBase
             flashVisual.sortingOrder = 6;
         }
         flashVisual.enabled = false;
+        neonBeam = false;
+        traceDuration = 0;
+        traceOrigin = transform.position;
         step = null;
         startedAt = Time.time;
+    }
+
+    /// <summary>Draw a stationary beam from its start, keeping the collider on the visible span.</summary>
+    public void ConfigureTrace(BarrageStep value, float seconds, float elapsed = 0)
+    {
+        traceDuration = Mathf.Max(.001f, seconds);
+        startedAt = Time.time - Mathf.Max(0, elapsed);
+        Configure(value);
     }
 
     public void Configure(BarrageStep value, float offsetDegrees = 0)
@@ -98,6 +116,10 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         box.enabled = step.dealsDamage && !round;
         flashVisual.sprite = visual.sprite;
         bool laser = step.shape == BarrageShape.Box && step.position == BarragePosition.Gun;
+        neonBeam = laser && step.dealsDamage;
+        visual.sharedMaterial = neonBeam ? NeonBeamStyle.Material : round
+            ? NeonVisualStyle.Get(step.dealsDamage ? NeonVisualStyle.BlastMode : NeonVisualStyle.WarningMode) : unclippedMaterial;
+        flashVisual.sharedMaterial = visual.sharedMaterial;
         const float flashScale = 1.15f;
         flashVisual.transform.localScale = Vector3.one * flashScale;
         // Keep the enlarged flash's rear edge at the muzzle instead of extending behind it.
@@ -106,6 +128,8 @@ public sealed class BarrageShapeProjectile : ProjectileBase
             : Vector3.zero;
         initialRotation = transform.rotation;
         Tick(0);
+        if (step.flash && step.dealsDamage && !laser)
+            CombatVfx.Burst(gameObject.scene, transform.position, Stats.Color, Mathf.Clamp(baseDimensions.x, .5f, 1.5f), BarrageVisibility.OwnerTag(Owner));
     }
 
     protected override void Tick(float deltaTime)
@@ -119,13 +143,27 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         transform.localScale = step.shape == BarrageShape.Line
             ? new Vector3(baseDimensions.x, baseDimensions.y * size, 1)
             : new Vector3(baseDimensions.x * size, baseDimensions.y * size, 1);
+        if (traceDuration > 0 && neonBeam)
+        {
+            float length = baseDimensions.x * size * Mathf.Clamp01(age / traceDuration);
+            transform.localScale = new Vector3(length, baseDimensions.y * size, 1);
+            transform.position = (Vector3)traceOrigin + transform.right * (length * .5f);
+            box.enabled = step.dealsDamage && length > .0001f;
+        }
         FollowMuzzle();
         visual.color = new Color(Stats.Color.r, Stats.Color.g, Stats.Color.b, step.opacity);
         bool laser = step.shape == BarrageShape.Box && step.position == BarragePosition.Gun;
-        float flashDuration = laser ? .22f : .12f;
+        if (neonBeam)
+        {
+            var tint = Stats.Color;
+            tint.a = step.opacity;
+            visual.color = NeonBeamStyle.BodyColor(tint, age, RemainingLifetime);
+        }
+        float flashDuration = laser ? .085f : .12f;
         flashVisual.enabled = step.flash && age < flashDuration;
         Color flashColor = Color.Lerp(Stats.Color, Color.white, laser ? .85f : .25f);
-        flashColor.a = (laser ? .8f : .32f) * Mathf.Clamp01(1 - age / flashDuration);
+        float fade = Mathf.Clamp01(1 - age / flashDuration);
+        flashColor.a = laser ? .6f * fade * fade : .32f * fade;
         flashVisual.color = flashColor;
     }
 
@@ -135,10 +173,15 @@ public sealed class BarrageShapeProjectile : ProjectileBase
         if(arenaClipMaterial==null)
             arenaClipMaterial=new Material(Resources.Load<Shader>("ArenaClippedSprite"));
         var properties=new MaterialPropertyBlock();
-        properties.SetVector("_ClipRect",new Vector4(bounds.xMin,bounds.yMin,bounds.xMax,bounds.yMax));
         foreach(var renderer in GetComponentsInChildren<SpriteRenderer>(true))
         {
-            renderer.sharedMaterial=arenaClipMaterial;
+            renderer.GetPropertyBlock(properties);
+            properties.SetVector("_ClipRect",new Vector4(bounds.xMin,bounds.yMin,bounds.xMax,bounds.yMax));
+            bool body = renderer == visual || renderer == flashVisual;
+            renderer.sharedMaterial = body && neonBeam ? NeonBeamStyle.Material
+                : body && step != null && step.shape == BarrageShape.Circle
+                    ? NeonVisualStyle.Get(step.dealsDamage ? NeonVisualStyle.BlastMode : NeonVisualStyle.WarningMode)
+                    : arenaClipMaterial;
             renderer.SetPropertyBlock(properties);
         }
         clipped=true;
@@ -163,13 +206,26 @@ public sealed class BarrageShapeProjectile : ProjectileBase
     {
         if (step?.dealsDamage == true) TryHit(other, step.knockbackDistance, step.slowMultiplier, step.slowDuration);
     }
+    protected override void OnBeginDisappear()
+    {
+        if (traceDuration <= 0) return;
+        box.enabled = circle.enabled = false;
+        flashVisual.enabled = false;
+        traceFadeScale = transform.localScale;
+    }
+    protected override void OnDisappearVisual(float remaining)
+    {
+        // Leave a fading line on the original route instead of pulling its ends inward.
+        if (traceDuration > 0) transform.localScale = traceFadeScale;
+    }
     protected override void OnDespawn()
     {
+        traceDuration = 0;
         step = null; box.enabled = circle.enabled = false; flashVisual.enabled = false;
         if(!clipped) return;
         foreach(var renderer in GetComponentsInChildren<SpriteRenderer>(true))
         {
-            renderer.sharedMaterial=unclippedMaterial;
+            renderer.sharedMaterial = renderer.name == "Soft Glow" ? NeonVisualStyle.Glow : unclippedMaterial;
             renderer.SetPropertyBlock(null);
         }
         clipped=false;

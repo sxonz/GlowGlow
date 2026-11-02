@@ -25,14 +25,15 @@ public static class CombatUpgradeChecks
         SceneManager.SetActiveScene(scene);
         try
         {
-            weapons = new[] {"Pulse Shot", "Basic Barrage 02", "Basic Barrage 03", "Basic Barrage 04", "Basic Barrage 05", "Basic Barrage 06", "Basic Barrage 07", "Basic Barrage 08", "Meteor Dive", "Octo Shot", "Boomerang", "Prism Shot"}
+            weapons = new[] {"Pulse Shot", "Basic Barrage 02", "Basic Barrage 03", "Basic Barrage 04", "Basic Barrage 05", "Basic Barrage 06", "Basic Barrage 07", "Basic Barrage 08", "Meteor Dive", "Octo Shot", "Boomerang", "Prism Shot", "4-axis", "Solar System"}
                 .Select(name => AssetDatabase.LoadAssetAtPath<WeaponDefinition>("Assets/Settings/" + name + ".asset")).ToArray();
             upgrades = Resources.LoadAll<BarrageUpgradeDefinition>("WeaponUpgrades");
-            Check(weapons.All(w => w != null), "12 weapon assets load");
-            Check(upgrades.Length == 36 && Resources.LoadAll<WeaponUpgradeDefinition>("WeaponUpgrades").Length == 36, "36 dedicated upgrades, no temporary entries");
+            Check(weapons.All(w => w != null), "14 weapon assets load");
+            Check(upgrades.Length == 42 && Resources.LoadAll<WeaponUpgradeDefinition>("WeaponUpgrades").Length == 42, "42 dedicated upgrades, no temporary entries");
             foreach (var weapon in weapons)
             {
                 var set = upgrades.Where(u => u.CanApplyTo(weapon)).OrderBy(u => u.displaySlot).ToArray();
+
                 Check(set.Length == 3 && set.Select(u => u.displaySlot).SequenceEqual(new[] {0,1,2}), weapon.name + " three shards");
                 Check(set.All(u => u.maxLevel == 1 && u.effect != WeaponEffects.None), weapon.name + " one-time unlocks");
                 var runtime = new WeaponRuntime(weapon);
@@ -59,6 +60,9 @@ public static class CombatUpgradeChecks
             TestOverdrive();
             TestPulse();
             TestOrbAndBounce();
+            TestFourAxis();
+            TestSolarSystem();
+            TestSolarUpgrades();
             TestMeteorDive();
             TestMeteorUpgrades();
             TestOctoShot();
@@ -155,8 +159,9 @@ public static class CombatUpgradeChecks
         {
             var draft = new OpeningDraft(weapons, new System.Random(seed), upgrades);
             Check(draft.Offers.All(o => !o.IsUpgrade), "first round weapon-only");
-            draft.Select(0);
-            var firstPick = draft.Offers[0];
+            int firstIndex=draft.Offers.ToList().FindIndex(o=>upgrades.Any(u=>u.CanApplyTo(o.Weapon)));
+            draft.Select(firstIndex);
+            var firstPick = draft.Offers[firstIndex];
             draft.Confirm();
             Check(draft.Choices.Count == 1 && ReferenceEquals(draft.Choices[0], firstPick), "draft choice history keeps actual first pick");
             for (int round = 0; round < 2; round++)
@@ -198,11 +203,11 @@ public static class CombatUpgradeChecks
         var go = new GameObject("Shard test", typeof(RectTransform));
         var display = go.AddComponent<UpgradeShardDisplay>();
         display.Show(runtime, upgrades);
-        Check(go.GetComponentsInChildren<UpgradeDiamondGraphic>().Length == 3, "three vector upgrade diamonds");
+        Check(go.GetComponentsInChildren<Image>().Count(image => image.name.StartsWith("Upgrade Diamond ") && image.sprite == RuntimeShapes.UpgradeDiamond) == 3, "three imported diamond sprites");
         var upgrade = upgrades.Single(u => u.targetWeapon == weapons[0] && u.displaySlot == 2);
         runtime.TryUpgrade(upgrade);
-        NearColor(go.transform.Find("Upgrade Diamond 2").GetComponent<UpgradeDiamondGraphic>().color, weapons[0].RarityColor, "acquired shard colored");
-        NearColor(go.transform.Find("Upgrade Diamond 0").GetComponent<UpgradeDiamondGraphic>().color, UpgradeShardDisplay.LockedColor, "other shard remains gray");
+        NearColor(go.transform.Find("Upgrade Diamond 2").GetComponent<Image>().color, weapons[0].RarityColor, "acquired shard colored");
+        NearColor(go.transform.Find("Upgrade Diamond 0").GetComponent<Image>().color, UpgradeShardDisplay.LockedColor, "other shard remains gray");
         UnityEngine.Object.DestroyImmediate(go);
     }
 
@@ -322,30 +327,340 @@ public static class CombatUpgradeChecks
         Check(pull.GetComponent<LineRenderer>().GetPosition(0).magnitude<initial,"pull effect contracts");
     }
 
+    private static void TestSolarUpgrades()
+    {
+        Clear(); Reset(opponent,new Vector2(-6,-3));
+        var runtime=FullyUpgraded(13);
+        runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        var sun=owner.SolarSystem;
+        float start=Get<float>(sun,"startedAt");
+        Check(Get<float>(sun,"firstFlareAt")>=start+1 && Get<float>(sun,"firstFlareAt")<=start+4,"first flare window starts after emergence");
+        Check(Get<float>(sun,"secondFlareAt")>=start+5 && Get<float>(sun,"secondFlareAt")<=start+6,"second flare uses active lifetime after emergence");
+        Set(sun,"firstFlareAt",Time.time-1); Set(sun,"secondFlareAt",Time.time-1); Set(sun,"nextCometAt",Time.time-1);
+        Call(sun,"Tick",0f);
+        Check(Get<int>(sun,"flaresEmitted")==0 && Get<int>(sun,"cometCount")==0,"solar warmup blocks upgrade emissions");
+        Set(sun,"<SpawnedAt>k__BackingField",Time.time-1.01f);
+        Call(sun,"Tick",0f); Call(sun,"Tick",0f);
+        Check(Get<int>(sun,"flaresEmitted")==2,"exactly one flare per window");
+        var flares=UnityEngine.Object.FindObjectsByType<SolarFlare>(FindObjectsSortMode.None).Where(p=>p.IsSpawned).ToArray();
+        Check(flares.Length==2,"two pooled flare waves emitted");
+        Reset(opponent,new Vector2(2,0)); Physics2D.SyncTransforms();
+        Set(flares[0],"startedAt",Time.time-.4f); Call(flares[0],"Tick",.4f);
+        Near(opponent.MovementMultiplier,.7f,"flare applies thirty percent slow");
+        Check(opponent.HitsTaken==0,"flare causes no damage");
+        Near(Get<float>(opponent,"slowedUntil")-Time.time,1.5f,"flare slow duration",.001f);
+        var comet=UnityEngine.Object.FindObjectsByType<SolarComet>(FindObjectsSortMode.None).Single(p=>p.IsSpawned);
+        Check(comet.LinearVelocity.x<0 && comet.LinearVelocity.y<0,"comet flies toward lower left");
+        Check(comet.transform.position.y>=owner.ArenaHalfSize.y || comet.transform.position.x>=owner.ArenaHalfSize.x,"comet begins at top or upper right");
+        Reset(opponent,new Vector2(-6,-3));
+        var planets=UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsSortMode.None).Where(p=>p.IsSpawned).OrderByDescending(p=>Get<float>(p,"radius")).ToArray();
+        Set(owner,"aimPosition",Vector2.right*5);
+        Set(sun,"expiresAt",Time.time-1); Call(planets[0],"Tick",0f);
+        Check(!owner.IsSolarSystemActive && planets.All(p=>p.IsSpawned && Get<bool>(p,"released")),"normal ending releases all eight planets");
+        for(int i=0;i<8;i++) Near(Get<float>(planets[i],"launchAt")-Time.time,i*.1f,"outer-to-inner launch order",.001f);
+        Call(planets[0],"Tick",0f);
+        Near(Vector2.Distance(planets[0].LinearVelocity,(Vector2.right*5-(Vector2)planets[0].transform.position).normalized*18),0,"released planet aims from its own position",.001f);
+        Call(planets[1],"Tick",0f); Check(!Get<bool>(planets[1],"launched"),"inner planet waits its launch slot");
+        Set(owner,"aimPosition",new Vector2(-3,2));
+        Set(planets[1],"launchAt",Time.time);
+        Call(planets[1],"Tick",0f);
+        Near(Vector2.Distance(planets[1].LinearVelocity,(new Vector2(-3,2)-(Vector2)planets[1].transform.position).normalized*18),0,"next planet samples updated cursor independently",.001f);
+        Set(planets[0],"launchAt",Time.time-5); Call(planets[0],"Tick",0f);
+        Check(!planets[0].IsSpawned,"released planet lifetime is bounded");
+        Clear(); runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        sun=owner.SolarSystem;
+        var sunFirst=UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsSortMode.None).Where(p=>p.IsSpawned).ToArray();
+        Set(sun,"expiresAt",Time.time-1); Call(sun,"Tick",0f);
+        Check(sunFirst.All(p=>p.IsSpawned && Get<bool>(p,"released")),"sun-first expiry also releases every planet");
+        Clear(); runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        sun=owner.SolarSystem; sun.Cancel();
+        Check(!UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsSortMode.None).Any(p=>p.IsSpawned),"cancellation never launches planets");
+        runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        sun=owner.SolarSystem; sun.AbsorbHit(); sun.AbsorbHit(); sun.AbsorbHit();
+        Check(UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsSortMode.None).Count(p=>p.IsSpawned && Get<bool>(p,"released"))==8,"shield break also releases eight planets");
+        Clear();
+    }
+
+    private static void TestSolarSystem()
+    {
+        Clear();
+        var definition=weapons[13];
+        Check(definition.rarity==WeaponRarity.Legendary,"solar system legendary rarity");
+        Check(upgrades.Count(u=>u.CanApplyTo(definition))==3,"solar system has three upgrades");
+        OpeningDraft solarDraft=null;
+        int solarIndex=-1;
+        for(int seed=0;seed<100 && solarIndex<0;seed++)
+        {
+            solarDraft=new OpeningDraft(weapons,new System.Random(seed),upgrades);
+            solarIndex=solarDraft.Offers.ToList().FindIndex(o=>o.Weapon==definition);
+        }
+        Check(solarIndex>=0,"solar appears in draft offers");
+        solarDraft.Select(solarIndex); solarDraft.Confirm();
+        Check(solarDraft.Acquired.Any(w=>w.Definition==definition) && solarDraft.Offers.Any(o=>o.IsUpgrade),"solar upgrades enter draft after acquisition");
+        var runtime=new WeaponRuntime(definition);
+        runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        var sun=owner.SolarSystem;
+        Check(sun!=null && owner.IsSolarSystemActive && owner.ShieldRemaining==3,"solar cast grants three shields");
+        Check(owner.CaptureNetworkState().Shield==3,"solar shield uses existing network state");
+        var planets=UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsSortMode.None).Where(p=>p.IsSpawned).ToArray();
+        Check(planets.Length==8,"solar has eight planets");
+        float centeredOuterRadius=sun.OuterOrbitRadius;
+        var orderedPlanets=planets.OrderBy(p=>Get<float>(p,"radius")).ToArray();
+        float compactOuter=1.2f+(owner.ArenaHalfSize.y*.9f-1.2f)*7f/6f;
+        for(int i=0;i<orderedPlanets.Length;i++)
+            Near(Get<float>(orderedPlanets[i],"radius"),Mathf.Lerp(1.2f,compactOuter,i/7f)*1.8f,"each orbit expands another 1.2 times");
+        Near(sun.Stats.Radius,.65f,"compact solar core radius");
+        Check(planets.All(p=>p.Stats.Radius>=.13f && p.Stats.Radius<=.26f),"solar preserves small planet hitboxes");
+        Check(sun.GetComponentsInChildren<LineRenderer>().Length==8,"eight pooled orbit guides");
+        Check(planets.Sum(p=>p.GetComponentsInChildren<SpriteRenderer>(true).Length)+sun.GetComponentsInChildren<SpriteRenderer>(true).Length==18,"solar uses eighteen pooled renderers without shield indicators");
+        Vector2 origin=owner.transform.position;
+        Call(owner,"MoveControlled",Vector2.right,6f,1f);
+        owner.ApplyImpact(Vector2.up,3,1,0); Call(owner,"UpdateImpacts",1f);
+        owner.ApplyPulseImpulse(opponent,opponent.transform.position,6,false,false); Call(owner,"UpdatePulseImpulse",1f);
+        Near(Vector2.Distance(owner.transform.position,origin),0,"solar locks movement, recoil and pulse displacement");
+        var other=new WeaponRuntime(weapons[0]);
+        Check(other.Fire(owner,owner.MuzzlePosition,Vector2.right)==null && other.CooldownRemaining==0,"solar blocks other firing without consuming cooldown");
+        for(int i=0;i<planets.Length;i++)
+        {
+            float radius=Get<float>(planets[i],"radius");
+            Set(planets[i],"startedAt",Time.time-.4f); Call(planets[i],"Tick",0f);
+            Near(Vector2.Distance(planets[i].transform.position,origin),radius,"planet remains on its orbit",.001f);
+            Check(!planets[i].IsSmallBullet,"solar planets cannot be intercepted as small bullets");
+        }
+        Reset(opponent,planets[0].transform.position);
+        Call(planets[0],"OnTriggerEnter2D",opponent.GetComponent<CircleCollider2D>());
+        Call(sun,"OnTriggerStay2D",opponent.GetComponent<CircleCollider2D>());
+        Check(opponent.HitsTaken==0,"sun and planets cannot damage during emergence");
+        Set(planets[0],"<SpawnedAt>k__BackingField",Time.time-.5f);
+        Call(planets[0],"UpdateSpawnGrowth");
+        Near(planets[0].transform.localScale.x,planets[0].Stats.Radius,"planet is half size halfway through emergence",.001f);
+        Set(planets[0],"<SpawnedAt>k__BackingField",Time.time-1.01f);
+        Call(planets[0],"UpdateSpawnGrowth");
+        Near(planets[0].transform.localScale.x,planets[0].Stats.Radius*2,"planet reaches full size after one second",.001f);
+        Call(planets[0],"OnTriggerEnter2D",opponent.GetComponent<CircleCollider2D>());
+        Check(opponent.HitsTaken==1 && planets[0].IsSpawned,"planet deals damage without disappearing");
+        Reset(opponent,new Vector2(-6,-3));
+        if(SystemInfo.graphicsDeviceType!=UnityEngine.Rendering.GraphicsDeviceType.Null)
+        {
+            Call(sun,"LateUpdate"); foreach(var planet in planets) Call(planet,"LateUpdate");
+            bool asyncShaders=ShaderUtil.allowAsyncCompilation;
+            ShaderUtil.allowAsyncCompilation=false;
+            var camera=new GameObject("Solar validation camera",typeof(Camera)).GetComponent<Camera>();
+            camera.orthographic=true; camera.orthographicSize=5.2f; camera.transform.position=new Vector3(0,0,-10);
+            camera.clearFlags=CameraClearFlags.SolidColor; camera.backgroundColor=new Color(.025f,.008f,.055f);
+            var target=new RenderTexture(512,512,24); var texture=new Texture2D(512,512,TextureFormat.RGB24,false);
+            var previous=RenderTexture.active; camera.targetTexture=target; camera.Render(); RenderTexture.active=target;
+            texture.ReadPixels(new Rect(0,0,512,512),0,0); texture.Apply();
+            Directory.CreateDirectory("ValidationOutput"); File.WriteAllBytes("ValidationOutput/solar-system.png",texture.EncodeToPNG());
+            RenderTexture.active=previous; camera.targetTexture=null;
+            UnityEngine.Object.DestroyImmediate(texture); UnityEngine.Object.DestroyImmediate(target); UnityEngine.Object.DestroyImmediate(camera.gameObject);
+            ShaderUtil.allowAsyncCompilation=asyncShaders;
+        }
+        for(int i=0;i<3;i++)
+        {
+            Set(owner,"invulnerableUntil",Time.time-1); owner.ReceiveHit(opponent);
+            Check(owner.ShieldRemaining==2-i && owner.HitsTaken==0,"solar shield absorbs hit without health spill");
+        }
+        Check(!owner.IsSolarSystemActive && sun.IsDisappearing && planets.All(p=>p.IsDisappearing),"third hit ends gameplay and fades solar without release");
+        VerifyDisappear(sun);
+        Check(planets.All(p=>!p.IsSpawned),"sun fade completion cleans planets");
+        Call(owner,"MoveControlled",Vector2.right,1f,1f);
+        Check(owner.transform.position.x>origin.x,"movement resumes after shield break");
+        Clear(); runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        Check(owner.SolarSystem==sun && sun.ShieldRemaining==3,"pooled solar resets shields");
+        Check(UnityEngine.Object.FindObjectsByType<SolarPlanet>(FindObjectsInactive.Include,FindObjectsSortMode.None).Length==8,"solar recasts reuse eight planets");
+        Near(Get<float>(sun,"expiresAt")-Time.time,6,"solar has one second emergence plus five active seconds",.001f);
+        Near(sun.RemainingLifetime,6,"base projectile timer also excludes emergence from active duration",.001f);
+        Set(sun,"expiresAt",Time.time-1); Call(sun,"Tick",0f);
+        Check(!owner.IsSolarSystemActive && owner.ShieldRemaining==0 && planets.All(p=>p.IsDisappearing),"timeout removes shield and starts planet fade");
+        VerifyDisappear(sun);
+        owner.transform.position=owner.ArenaHalfSize;
+        runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+        Near(owner.SolarSystem.OuterOrbitRadius,centeredOuterRadius,"corner cast preserves compact orbit radius");
+        owner.ResetCombatant(Vector2.zero);
+        Check(owner.SolarSystem==null && planets.All(p=>!p.IsSpawned),"reset cancels solar and releases movement lock");
+        Clear();
+    }
+
+    private static void TestFourAxis()
+    {
+        Clear();
+        var definition=weapons[12];
+        Check(definition.rarity==WeaponRarity.Epic,"4-axis epic rarity");
+        var catalog=AssetDatabase.LoadAssetAtPath<DeckCatalog>("Assets/Settings/Deck Catalog.asset");
+        Check(catalog.cards.Any(c=>c.id=="four-axis" && c.weapon==definition),"4-axis catalog entry");
+        var runtime=FullyUpgraded(12);
+        Near(runtime.Stats.Lifetime,7.5f,"four axis lifetime display matches compiled lifetime");
+        int warmedCount=0;
+        for(int cycle=0;cycle<2;cycle++)
+        {
+            runtime.ResetCooldown(); runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+            var orbs=UnityEngine.Object.FindObjectsByType<OrbitOrb>(FindObjectsSortMode.None).Where(o=>o.IsSpawned).OrderBy(o=>Get<int>(o,"axisDepth")).ToArray();
+            Check(orbs.Length==4,"4-axis emits exactly four orbs");
+            for(int i=0;i<4;i++)
+            {
+                Near(orbs[i].Stats.Radius,.2f,"range upgrade preserves orb body size");
+                Near(orbs[i].Stats.Lifetime,7.5f,"all four lifetime upgrades");
+                Check(!Get<bool>(orbs[i],"sharedCenter"),"chain reuse clears dual mode");
+                Check(Get<OrbitOrb>(orbs[i],"orbitParent")== (i==0 ? null : orbs[i-1]),"four linked rotation centers");
+                Check(orbs[i].transform.position.x<owner.transform.position.x,"four axis begins clustered to the left");
+                Call(orbs[i],"OnTriggerEnter2D",opponent.GetComponent<Collider2D>());
+                Check(opponent.HitsTaken==0,"four axis emergence cannot hit");
+                Set(orbs[i],"<SpawnedAt>k__BackingField",Time.time-1.1f);
+                Set(orbs[i],"startedAt",Time.time-1.1f);
+                Set(orbs[i],"updatedFrame",-1);
+            }
+            owner.transform.position=new Vector2(3,0);
+            Call(orbs[3],"UpdateOrbit",1f/60);
+            Vector2 rootCenter=Get<Vector2>(orbs[0],"orbitCenter");
+            for(int i=0;i<4;i++)
+            {
+                Vector2 center=i==0 ? rootCenter : (Vector2)orbs[i-1].transform.position;
+                Vector2 offset=(Vector2)orbs[i].transform.position-center;
+                Near(offset.magnitude,1.8f,"every axis range increases 50 percent",.001f);
+                float angle=(18f*(i+1)+(i%2==0?180:0))*Mathf.Deg2Rad;
+                Near(Vector2.Distance(offset,new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*1.8f),0,"independent axis angular speed",.001f);
+                Check(Get<int>(orbs[i],"updatedFrame")==Time.frameCount,"each axis updates once per frame");
+                Check(orbs[i].GetComponentsInChildren<SpriteRenderer>(true).Length==14,"bounded visual load: body, glow and twelve pooled ghosts");
+            }
+            int count=UnityEngine.Object.FindObjectsByType<OrbitOrb>(FindObjectsInactive.Include,FindObjectsSortMode.None).Length;
+            if(cycle==0) warmedCount=count;
+            else Check(count==warmedCount,"second cast reuses four pooled orbs without growing pool");
+            Call(orbs[0],"Despawn");
+            Check(orbs.All(o=>!o.IsSpawned),"root cleanup recursively removes all axes");
+            Clear();
+        }
+        TestFourAxisReflection();
+        TestFourAxisExpiry();
+    }
+
+    private static void TestFourAxisExpiry()
+    {
+        foreach(bool upgraded in new[]{false,true})
+        {
+            Clear();
+            var runtime=upgraded ? FullyUpgraded(12) : new WeaponRuntime(weapons[12]);
+            runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
+            var orbs=UnityEngine.Object.FindObjectsByType<OrbitOrb>(FindObjectsSortMode.None).Where(o=>o.IsSpawned).ToArray();
+            float duration=upgraded ? 7.5f : 5f;
+            foreach(var orb in orbs)
+            {
+                Near(orb.RemainingLifetime,duration+1,"four axis grants full lifetime after emergence",.01f);
+                Set(orb,"despawnAt",Time.time+duration+1-5.1f);
+            }
+            foreach(var orb in orbs) if(orb.IsSpawned) Call(orb,"Update");
+            Check(orbs.All(o=>o.IsSpawned),"both four axis variants survive five seconds after casting");
+            foreach(var orb in orbs) Set(orb,"despawnAt",Time.time+duration+1-6.1f);
+            foreach(var orb in orbs) if(orb.IsSpawned) Call(orb,"Update");
+            Check(orbs.All(o=>o.IsDisappearing!=upgraded),"only upgraded four axis remains active beyond six seconds");
+            foreach(var orb in orbs) if(orb.IsSpawned) Set(orb,"despawnAt",Time.time-.01f);
+            foreach(var orb in orbs) if(orb.IsSpawned) Call(orb,"Update");
+            Check(orbs.All(o=>o.IsDisappearing),"all axes fade after their actual deadline");
+            var primary=orbs.Single(o=>Get<OrbitOrb>(o,"orbitParent")==null);
+            VerifyDisappear(primary);
+            Check(orbs.All(o=>!o.IsSpawned),"faded chain returns to pool");
+        }
+        Clear();
+    }
+
+    private static void VerifyDisappear(ProjectileBase projectile)
+    {
+        Check(projectile.IsSpawned && projectile.IsDisappearing,"fade keeps visual alive");
+        Vector3 scale=projectile.transform.localScale;
+        Set(projectile,"disappearAt",Time.time-.2f);
+        Call(projectile,"Update");
+        Near(projectile.transform.localScale.x,scale.x*.5f,"halfway fade shrinks smoothly",.001f);
+        int hits=opponent.HitsTaken;
+        Call(projectile,"TryHit",opponent.GetComponent<Collider2D>(),0f,1f,0f,true);
+        Check(opponent.HitsTaken==hits,"disappearing projectile cannot damage");
+        Set(projectile,"disappearAt",Time.time-.41f);
+        Call(projectile,"Update");
+        Check(!projectile.IsSpawned,"fade returns projectile to pool in 0.4 seconds");
+    }
+
+    private static void TestFourAxisReflection()
+    {
+        var stats = new WeaponStats(1, 8, 5, .2f, 4, Color.cyan);
+        var orb = ProjectileBase.SpawnBuiltin<OrbitOrb>(owner, Vector2.zero, Vector2.right, stats);
+        var plain = ProjectileBase.SpawnBuiltin<BulletProjectile>(opponent, Vector2.zero, Vector2.right, stats);
+        Call(orb, "OnTriggerEnter2D", plain.GetComponent<Collider2D>());
+        Check(plain.Owner == opponent, "reflection requires upgrade");
+        Call(orb, "Despawn");
+        orb = ProjectileBase.SpawnBuiltin<OrbitOrb>(owner, Vector2.zero, Vector2.right, stats, WeaponEffects.FourAxisReflection);
+        Near(orb.transform.position.x, 1.2f, "pooled range upgrade resets");
+        VerifyReflection(orb, plain);
+        VerifyReflection(orb, ProjectileBase.SpawnBuiltin<Bouncer>(opponent, Vector2.zero, Vector2.right, stats));
+        VerifyReflection(orb, ProjectileBase.SpawnBuiltin<GravityFragment>(opponent, Vector2.zero, Vector2.right, stats));
+        VerifyReflection(orb, ProjectileBase.SpawnBuiltin<Boomerang>(opponent, Vector2.zero, Vector2.right, stats));
+        var octo = ProjectileBase.SpawnBuiltin<OctoShot>(opponent, Vector2.zero, Vector2.right, stats, WeaponEffects.OctoCurve | WeaponEffects.OctoSplit);
+        Call(octo, "Tick", .2f);
+        VerifyReflection(orb, octo);
+        Vector2 octoPosition = octo.transform.position;
+        Call(octo, "Tick", 0f);
+        Near(Vector2.Distance(octoPosition, octo.transform.position), 0, "reflected curve has no position jump");
+        var prism = ProjectileBase.SpawnBuiltin<PrismPellet>(opponent, Vector2.zero, Vector2.right, stats, WeaponEffects.PrismExplosion);
+        prism.Configure(4, Vector2.zero, Vector2.zero, Vector2.right, Time.time - 1);
+        prism.transform.position = prism.PositionAt(Time.time);
+        VerifyReflection(orb, prism);
+        Near(Vector2.Distance(prism.transform.position, prism.PositionAt(Time.time)), 0, "reflected prism has no position jump", .001f);
+        VerifyReflection(orb, ProjectileBase.SpawnBuiltin<SolarComet>(opponent, Vector2.zero, Vector2.right, stats));
+        var enemyOrb = ProjectileBase.SpawnBuiltin<OrbitOrb>(opponent, Vector2.zero, Vector2.right, stats);
+        Call(orb, "OnTriggerEnter2D", enemyOrb.GetComponent<Collider2D>());
+        Check(enemyOrb.Owner == opponent, "orbiting constructs cannot be reflected");
+        int bodies = UnityEngine.Object.FindObjectsByType<BulletProjectile>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
+        int ownerHits = owner.HitsTaken, opponentHits = opponent.HitsTaken;
+        Call(plain, "OnTriggerEnter2D", owner.GetComponent<Collider2D>());
+        Check(plain.IsSpawned && owner.HitsTaken == ownerHits, "reflected bullet cannot damage reflector");
+        Call(plain, "OnTriggerEnter2D", opponent.GetComponent<Collider2D>());
+        Check(!plain.IsSpawned && opponent.HitsTaken == opponentHits + 1, "reflected bullet damages original shooter");
+        Call(plain, "Despawn");
+        plain = ProjectileBase.SpawnBuiltin<BulletProjectile>(opponent, Vector2.zero, Vector2.right, stats);
+        Check(plain.Owner == opponent && plain.LinearVelocity.x > 0 &&
+            UnityEngine.Object.FindObjectsByType<BulletProjectile>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length == bodies,
+            "reflection resets on pooled respawn without allocations");
+        Clear();
+    }
+
+    private static void VerifyReflection(OrbitOrb orb, Bullet bullet)
+    {
+        Vector2 velocity = bullet.LinearVelocity;
+        float lifetime = bullet.RemainingLifetime;
+        var effects = bullet.Effects;
+        int count = ProjectileBase.ActiveProjectiles.Count();
+        Call(orb, "OnTriggerEnter2D", bullet.GetComponent<Collider2D>());
+        Check(bullet.IsSpawned && bullet.Owner == owner, bullet.GetType().Name + " transfers ownership in place");
+        Near(Vector2.Distance(bullet.LinearVelocity, -velocity), 0, "reverse incoming velocity", .03f);
+        Near(bullet.RemainingLifetime, lifetime, "reflection preserves remaining lifetime", .01f);
+        Check(bullet.Effects == effects && ProjectileBase.ActiveProjectiles.Count() == count, "reflection retains effects without spawning objects");
+        Call(orb, "OnTriggerStay2D", bullet.GetComponent<Collider2D>());
+        Near(Vector2.Distance(bullet.LinearVelocity, -velocity), 0, "friendly overlap does not reflect twice", .03f);
+    }
+
     private static void TestOrbAndBounce()
     {
         Clear();
         var runtime=FullyUpgraded(7);
         runtime.Fire(owner,owner.MuzzlePosition,Vector2.right);
-        var orbs=UnityEngine.Object.FindObjectsByType<OrbitOrb>(FindObjectsSortMode.None).Where(o=>o.IsSpawned).OrderByDescending(o=>o.Stats.Radius).ToArray();
+        var orbs=UnityEngine.Object.FindObjectsByType<OrbitOrb>(FindObjectsSortMode.None).Where(o=>o.IsSpawned).OrderBy(o=>Get<OrbitOrb>(o,"orbitParent")!=null).ToArray();
         Check(orbs.Length==2,"two axis orbs");
-        Near(orbs[1].Stats.Radius,orbs[0].Stats.Radius*.5f,"secondary orb half size");
+        Near(orbs[1].Stats.Radius,orbs[0].Stats.Radius,"dual rotation uses equal orb size");
         Near(orbs[0].Stats.Lifetime,7.5f,"orb lifetime snapshot");
         Check(Get<OrbitOrb>(orbs[1], "orbitParent") == orbs[0], "second axis is centered on first orb");
-        Near(Vector2.Distance(orbs[0].transform.position,orbs[1].transform.position),1.2f,"secondary orbital radius");
+        Check(Get<bool>(orbs[1],"sharedCenter"),"dual orbs share player orbit center");
+        Near(Vector2.Distance(orbs[0].transform.position,orbs[1].transform.position),2.4f,"dual orbs oppose across same radius");
         Check(!orbs[1].IsSmallBullet,"small secondary orb is not interceptable bullet");
         Set(orbs[0],"startedAt",Time.time-1f); Call(orbs[0],"FollowOwner");
         Near(orbs[0].transform.position.y,-1.2f,"orb rotates 270 degrees per second",.001f);
         Set(orbs[1], "startedAt", Time.time - 1f); Call(orbs[1], "FollowOwner");
         Vector2 secondaryOffset = orbs[1].transform.position - orbs[0].transform.position;
-        Near(secondaryOffset.x, -1.2f, "second axis rotates 540 degrees around first orb", .001f);
-        Near(secondaryOffset.y, 0, "second axis independent phase", .001f);
+        Near(secondaryOffset.x, 0, "dual rotation shares angular speed", .001f);
+        Near(secondaryOffset.y, 2.4f, "dual rotation remains opposite", .001f);
         owner.transform.position = new Vector2(3, 0);
         Set(orbs[0], "updatedFrame", -1); Set(orbs[1], "updatedFrame", -1);
         Call(orbs[1], "UpdateOrbit", 1f / 60);
         Vector2 center = Get<Vector2>(orbs[0], "orbitCenter");
         Check(Vector2.Distance(center, owner.transform.position) > 2.8f, "dash leaves orbit center behind without leash snap");
-        Near(Vector2.Distance(orbs[0].transform.position, orbs[1].transform.position), 1.2f, "child-first update keeps secondary centered");
+        Near(Vector2.Distance(orbs[0].transform.position, orbs[1].transform.position), 2.4f, "child-first update keeps dual orbit centered");
         Call(orbs[0], "UpdateOrbit", 1f / 60);
         Check(Get<Vector2>(orbs[0], "orbitCenter") == center, "primary integrates once per frame");
         Set(orbs[0], "updatedFrame", -1); Set(orbs[1], "updatedFrame", -1);
@@ -396,7 +711,7 @@ public static class CombatUpgradeChecks
     {
         Clear();
         var definition = AssetDatabase.LoadAssetAtPath<WeaponDefinition>("Assets/Settings/Meteor Dive.asset");
-        Check(definition != null && definition.rarity == WeaponRarity.Unique,"meteor is unique");
+        Check(definition != null && definition.rarity == WeaponRarity.Epic,"meteor is epic");
         Near(definition.cooldown,10,"meteor cooldown");
         var catalog = AssetDatabase.LoadAssetAtPath<DeckCatalog>("Assets/Settings/Deck Catalog.asset");
         Check(catalog.cards.Any(c => c.weapon == definition),"meteor available in catalog");
@@ -714,7 +1029,8 @@ public static class CombatUpgradeChecks
         Check(definition!=null && definition.rarity==WeaponRarity.Rare,"prism rare rarity");
         Near(definition.cooldown,5,"prism five second cooldown");
         Check(definition.displayName=="Prism Shot","prism final name");
-        Check(definition.icon!=null && AssetDatabase.GetAssetPath(definition.icon)=="Assets/UI/BarrageIcons/PrismShot.png","prism orbital PNG icon");
+        Check(definition.icon!=null && AssetDatabase.GetAssetPath(definition.icon)==WeaponIconAuthoring.AtlasPath &&
+            definition.icon.name=="Prism Shot" && definition.icon.rect.width==WeaponIconAuthoring.CellSize,"dedicated full-canvas prism icon");
         Near(definition.projectileRadius,.1f,"prism reduced size");
         Near(PrismShot.FormationTime,.8f,"prism earlier formation");
         var catalog=AssetDatabase.LoadAssetAtPath<DeckCatalog>("Assets/Settings/Deck Catalog.asset");
@@ -828,7 +1144,7 @@ public static class CombatUpgradeChecks
         Call(blast,"LateUpdate");
         foreach(var renderer in blast.GetComponentsInChildren<SpriteRenderer>(true))
         {
-            Check(renderer.sharedMaterial.shader.name=="GlowGlow/ArenaClippedSprite","blast, flash and glow use world clipping");
+            Check(renderer.sharedMaterial.HasProperty("_ClipRect"),"blast, flash and glow support world clipping");
             var properties=new MaterialPropertyBlock(); renderer.GetPropertyBlock(properties);
             Near(properties.GetVector("_ClipRect").z,8.7f,"clip aligns with visible wall");
         }

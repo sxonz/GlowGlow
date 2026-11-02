@@ -163,7 +163,7 @@ public sealed class BotMatchSmokeRunner : MonoBehaviour
         weapon.ResetCooldown();
         weapon.Fire(match.PlayerTwo, match.PlayerTwo.MuzzlePosition, Vector2.left);
         Check(weapon.Fire(match.PlayerTwo, match.PlayerTwo.MuzzlePosition, Vector2.left) == null, "Bot respects weapon cooldown");
-        while (player.HitsTaken < 3)
+        while (player.Health > 0)
         {
             Set(player, "invulnerableUntil", Time.time - 1); player.ReceiveHit(match.PlayerTwo);
         }

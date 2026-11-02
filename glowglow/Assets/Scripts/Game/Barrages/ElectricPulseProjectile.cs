@@ -66,13 +66,19 @@ public sealed class ElectricPulseProjectile : ProjectileBase
     private void Hit(Collider2D other)
     {
         if (step == null) return;
+        if (((Vector2)(other.transform.position - transform.position)).sqrMagnitude <= pulseRange * pulseRange &&
+            TryRegisterMineContact(other, out var mine, false))
+        {
+            mine.ApplyPulse(transform.position, pulseRange, pull, empowered);
+            return;
+        }
         var candidate = other.GetComponent<PlayerCombatant>();
         if (candidate == null || Vector2.Distance(candidate.transform.position, transform.position) > pulseRange) return;
-        if (!TryRegisterHit(other, out var target)) return;
+        if (!TryRegisterHit(other, out var target, step.dealsDamage)) return;
         // Range is measured from the target center, not from its collider's nearest edge.
         target.ApplyPulseImpulse(Owner, transform.position, pulseRange, pull, empowered);
         target.ApplyImpact(Vector2.zero, 0, step.slowMultiplier, step.slowDuration);
-        if (step.dealsDamage) target.ReceiveHit(Owner);
+        if (step.dealsDamage) target.ReceiveHit(Owner, Damage);
     }
     protected override void OnDespawn() { step = null; hitArea.enabled = false; }
 }

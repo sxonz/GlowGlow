@@ -15,6 +15,12 @@ public sealed class Boomerang : Bullet
     private readonly RaycastHit2D[] hits = new RaycastHit2D[32];
     public bool IsReturning => returning;
     public override Vector2 LinearVelocity => velocity;
+    protected override void OnReflected(Vector2 reflectedVelocity)
+    {
+        velocity = reflectedVelocity;
+        returning = true;
+        firingWeapon = null;
+    }
     public override bool IsSmallBullet => false;
     protected override bool DespawnOnHit => false;
     protected override bool AllowRepeatedHits => true;

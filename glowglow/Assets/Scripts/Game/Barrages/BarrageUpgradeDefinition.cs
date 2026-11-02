@@ -28,6 +28,7 @@ public sealed class BarrageUpgradeDefinition : WeaponUpgradeDefinition
         if (effects.Has(WeaponEffects.BoomerangSize)) radius *= 1.15f;
         if (effects.Has(WeaponEffects.BasicCooldown | WeaponEffects.BouncerCooldown)) cooldown *= .9f;
         if (effects.Has(WeaponEffects.LaserCooldown | WeaponEffects.PulseCooldown | WeaponEffects.PrismCooldown)) cooldown *= .85f;
-        return new WeaponStats(cooldown, speed, stats.Lifetime, radius, stats.Range, stats.Color);
+        float lifetime = stats.Lifetime * (effects.Has(WeaponEffects.OrbLifetime) ? 1.5f : 1f);
+        return new WeaponStats(cooldown, speed, lifetime, radius, stats.Range, stats.Color, stats.Damage);
     }
 }

@@ -8,6 +8,12 @@ public sealed class OctoShot : Bullet
     private Vector2 origin;
     private float AngularSpeed => Effects.Has(WeaponEffects.OctoCurve) ? CurveDegreesPerSecond*Mathf.Deg2Rad : 0;
     public override Vector2 LinearVelocity => new Vector2(Mathf.Cos(initialAngle+AngularSpeed*age),Mathf.Sin(initialAngle+AngularSpeed*age))*Stats.Speed;
+    protected override void OnReflected(Vector2 velocity)
+    {
+        initialAngle += Mathf.PI;
+        // Rebase the same analytic curve without resetting its age or split timer.
+        origin = (Vector2)transform.position * 2f - origin;
+    }
 
     protected override void OnSpawn()
     {
@@ -35,7 +41,7 @@ public sealed class OctoShot : Bullet
     {
         if(!Effects.Has(WeaponEffects.OctoSplit)) return;
         Tick(Mathf.Max(0,Stats.Lifetime-age));
-        var stats=new WeaponStats(Stats.Cooldown,Stats.Speed,.45f,Stats.Radius*.5f,Stats.Range,Stats.Color);
+        var stats=new WeaponStats(Stats.Cooldown,Stats.Speed,.45f,Stats.Radius*.5f,Stats.Range,Stats.Color,BarrageDamage.OctoSplit);
         foreach(float angle in new[]{-20f,20f})
             SpawnBuiltin<OctoShot>(Owner,transform.position,Quaternion.Euler(0,0,angle)*LinearVelocity.normalized,
                 stats,Effects & ~WeaponEffects.OctoSplit);

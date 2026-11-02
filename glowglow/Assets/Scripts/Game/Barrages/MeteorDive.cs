@@ -93,7 +93,7 @@ public sealed class MeteorDive : ProjectileBase
             for (int i = 0; i < 2; i++)
             {
                 Vector2 destination = Owner.ClampToArena(target + Vector2.right * (i == 0 ? -1.5f : 1.5f));
-                var stats = new WeaponStats(Stats.Cooldown,0,DiveDuration+.1f,Owner.BodyRadius*.5f,Stats.Range,Stats.Color);
+                var stats = new WeaponStats(Stats.Cooldown,0,DiveDuration+.1f,Owner.BodyRadius*.5f,Stats.Range,Stats.Color,BarrageDamage.MiniMeteor);
                 miniTanks[i] = SpawnBuiltin<MeteorMiniTank>(Owner,new Vector2(destination.x,Top),Vector2.down,stats);
                 miniTanks[i].Configure(destination);
             }
@@ -155,7 +155,7 @@ public sealed class MeteorDive : ProjectileBase
 
     public static void EmitEruption(PlayerCombatant owner,Vector2 position,WeaponStats source,float scale)
     {
-        var blastStats = new WeaponStats(source.Cooldown, 0, .45f, ExplosionRadius*scale, source.Range, source.Color);
+        var blastStats = new WeaponStats(source.Cooldown, 0, .45f, ExplosionRadius*scale, source.Range, source.Color, scale < 1f ? BarrageDamage.MiniMeteorBlast : BarrageDamage.MeteorBlast);
         var explosion = SpawnBuiltin<BarrageShapeProjectile>(owner, position, Vector2.up, blastStats);
         explosion.Configure(new BarrageStep
         {
@@ -171,7 +171,7 @@ public sealed class MeteorDive : ProjectileBase
             Vector2 launchVelocity = direction * Random.Range(5.5f, 9f);
             launchVelocity.y *= FragmentUpwardSpeedMultiplier;
             var stats = new WeaponStats(source.Cooldown, launchVelocity.magnitude, 2.5f,
-                Random.Range(.065f, .1f)*scale, source.Range, source.Color);
+                Random.Range(.065f, .1f)*scale, source.Range, source.Color, scale < 1f ? BarrageDamage.MiniMeteorFragment : BarrageDamage.MeteorFragment);
             SpawnBuiltin<GravityFragment>(owner, position + Vector2.up * .1f, launchVelocity, stats);
         }
     }

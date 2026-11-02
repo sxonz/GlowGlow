@@ -16,7 +16,7 @@ public sealed class StatWeaponUpgrade : WeaponUpgradeDefinition
             return weapon.projectilePrefab == null || weapon.projectilePrefab is Bullet;
         foreach (var step in weapon.steps)
             if (step != null && (step.shape == BarrageShape.Bullet || step.shape == BarrageShape.Bouncer ||
-                step.shape == BarrageShape.OrbitOrb || step.shape == BarrageShape.Circle)) return true;
+                step.shape == BarrageShape.OrbitOrb || step.shape == BarrageShape.FourAxis || step.shape == BarrageShape.Circle)) return true;
         return false;
     }
 
@@ -27,6 +27,6 @@ public sealed class StatWeaponUpgrade : WeaponUpgradeDefinition
         return new WeaponStats(stat == WeaponUpgradeStat.Cooldown ? stats.Cooldown * Mathf.Pow(1f - amount, level) : stats.Cooldown,
             stats.Speed, stats.Lifetime,
             stat == WeaponUpgradeStat.Size ? stats.Radius * (1f + amount * level) : stats.Radius,
-            stats.Range, stats.Color);
+            stats.Range, stats.Color, stats.Damage);
     }
 }

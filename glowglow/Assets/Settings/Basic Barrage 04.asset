@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 04
   m_EditorClassIdentifier: 
   displayName: Bomb
+  damage: 30
   rarity: 0
   steps:
   - shape: 2
@@ -53,6 +54,7 @@ MonoBehaviour:
     speedMultiplier: {x: 0.8, y: 1.2}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 1
@@ -68,6 +70,7 @@ MonoBehaviour:
     speedMultiplier: {x: 0.8, y: 1.2}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 1
@@ -83,6 +86,7 @@ MonoBehaviour:
     speedMultiplier: {x: 0.8, y: 1.2}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 1
@@ -98,6 +102,7 @@ MonoBehaviour:
     speedMultiplier: {x: 0.8, y: 1.2}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 1
@@ -106,7 +111,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 0
-  icon: {fileID: -1483665779731714255, guid: adac89784e25bd541867ea04b2ad7110, type: 3}
+  icon: {fileID: 542597459, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 3
   projectileSpeed: 12

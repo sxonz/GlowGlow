@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 07
   m_EditorClassIdentifier: 
   displayName: Bouncer
+  damage: 10
   rarity: 0
   steps:
   - shape: 6
@@ -30,7 +31,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 0
-  icon: {fileID: 21300000, guid: 5af0c84625a7b0e44878274afb9d5863, type: 3}
+  icon: {fileID: 700273178, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 1.2
   projectileSpeed: 15

@@ -19,38 +19,55 @@ MonoBehaviour:
       \uAE30\uBCF8 \uD0C4\uC18D 11, \uBC1C\uC0AC \uAC04\uACA9 0.26\uCD08."
   - id: basic-barrage-02
     weapon: {fileID: 11400000, guid: 1ca4afb87a554be2870c173d6bfe85dc, type: 2}
-    description: "총구를 따라가는 예고선 1초 후 레이저를 0.5초간 발사하며 뒤로 반동을 받습니다. 예고와 발사 중 감속하고 초당 최대 30도로 조준합니다. 종료 후 커서로 빠르게 회전합니다. 쿨타임 2초."
+    description: "짧은 예고 이후 레이저를 발사합니다. 쿨타임 2초."
   - id: basic-barrage-03
     weapon: {fileID: 11400000, guid: 3bf8005000c04658bf13bd9b2c00737a, type: 2}
-    description: "\uC815\uBA74 1\uBC1C\uACFC \xB110\uB3C4\xB7\xB120\uB3C4\uC758 \uC791\uC740
-      \uD0C4\uD658\uC744 0.1\uCD08 \uAC04\uACA9\uC73C\uB85C \uBC1C\uC0AC\uD569\uB2C8\uB2E4.
-      \uCD1D 5\uBC1C, \uCFE8\uD0C0\uC784 2\uCD08."
+    description: "총 5발의 탄환을 흩뿌립니다., 쿨타임 2초."
   - id: basic-barrage-04
     weapon: {fileID: 11400000, guid: d6668f2d4fd74a42ba397da914fc94f3, type: 2}
-    description: "\uC9C0\uC815 \uC704\uCE58\uB97C 1\uCD08\uAC04 \uC608\uACE0\uD55C
-      \uB4A4 \uC0AC\uAC01 \uD3ED\uBC1C\uACFC 4\uBC29\uD5A5 \uBB34\uC791\uC704 \uD30C\uD3B8\uC744
-      \uC0DD\uC131\uD569\uB2C8\uB2E4. \uCFE8\uD0C0\uC784 3\uCD08."
+    description: "지정 위치가 1초 뒤 폭발하고 파편이 튑니다. 쿨타임 3초."
   - id: basic-barrage-05
     weapon: {fileID: 11400000, guid: fce757dca8014d9d9a7c53783055e252, type: 2}
-    description: "주변 적을 펄스 범위 끝까지 밀어내며 밀려난 거리에 따른 관성을 적용합니다. 기본 피해는 없으며 0.3초 동안 이동 속도를 75%로 낮춥니다. 범위 3, 쿨타임 2초."
+    description: "펄스를 발사해 주변 적을 밀어내고 느리게 합니다. 범위 3, 쿨타임 2초."
   - id: basic-barrage-06
     weapon: {fileID: 11400000, guid: e7a01bda95444dcb8b10e1ba0e435226, type: 2}
-    description: "최대 5초간 직선 이동을 유지할수록 가속하고 관성이 커집니다. 보호막 3과 회전 가시를 얻으며 보호막 소진 또는 시간 종료 시 해제됩니다. 쿨타임 10초."
+    description: "이동 속도가 빨라지고 보호막 3과 회전 가시를 얻으며 적에게 부딪히면 피해를 입힙니다. 보호막 소진 또는 시간 종료 시 해제됩니다. 쿨타임 10초."
   - id: basic-barrage-07
     weapon: {fileID: 11400000, guid: 8cc1524f12eb4f9d866688222a076809, type: 2}
-    description: "벽에서 반사되는 탄환입니다. 탄속 15에서 12.75까지 서서히 감속하며 3초간 유지됩니다. 마지막 0.4초 동안 페이드아웃합니다. 쿨타임 1.2초. 적에게 명중하면 사라집니다."
+    description: "벽에서 반사되는 탄환입니다. 수명 3초, 탄속 15, 쿨타임 1.2초."
   - id: basic-barrage-08
     weapon: {fileID: 11400000, guid: 9ebdcc554267445f9d495b61e97b908f, type: 2}
-    description: "잔상을 남기는 오브 1개가 플레이어 주변을 5초간 공전하며 접촉한 적을 공격합니다. 쿨타임 10초."
+    description: "플레이어 주변을 공전하는 오브가 접촉한 적을 공격합니다. 수명 5초, 쿨타임 10초."
   - id: meteor-dive
     weapon: {fileID: 11400000, guid: 89a15340c27a436e9bc29670acbd9a0e, type: 2}
-    description: "2초간 사라져 세로 예고선을 커서 방향으로 가로 이동시킵니다. 추적 속도는 기본 이속의 90%입니다. 다시 클릭하면 즉시 낙하합니다. 위에서 바닥까지 내리꽂으며 경로의 적을 공격하고, 착지 폭발과 중력 파편도 피해를 줍니다. 쿨타임 10초."
+    description: "사용 시 전장에서 벗어나고 다시 클릭하거나 2초가 지날 시 마우스 위치로 낙하합니다. 폭발과 함께 파편이 튑니다. 쿨타임 10초."
   - id: octo-shot
     weapon: {fileID: 11400000, guid: e16de90357044eb3956205144ac80a53, type: 2}
-    description: "주변 8방향으로 탄속 6의 탄환을 동시에 발사합니다. 수명 0.8초, 쿨타임 1.4초."
+    description: "주변 8방향에 탄환을 동시에 발사합니다. 탄속 6, 수명 0.8초, 쿨타임 1.4초."
   - id: boomerang
     weapon: {fileID: 11400000, guid: 0cbb3444a42c4e7c8771227f8e48d25c, type: 2}
-    description: "발사 방향으로 빠르게 날아가며 점차 감속하고, 거의 멈추면 그 순간의 플레이어 위치를 향해 빠르게 돌아오는 부메랑입니다. 적을 관통하며, 회수 시 남은 쿨타임이 2초 감소합니다. 받지 못하면 그대로 지나갑니다. 쿨타임 8초."
+    description: "다시 돌아오는 부메랑을 발사합니다. 부메랑을 받을 시 쿨타임이 2초 감소합니다. 쿨타임 8초."
   - id: prism-shot
     weapon: {fileID: 11400000, guid: 8f1b991bf16b4e8d9076c533e6588f0a, type: 2}
-    description: "7발을 1·7, 3·4·5, 2·6 순서로 발사합니다. 직선·이중나선·공전 탄환이 0.8초 후 거리 5에서 부채꼴을 형성한 뒤에도 각 궤적을 유지하며 퍼집니다. 수명 제한 없이 이동하며 적이나 벽에 닿으면 소멸합니다. 쿨타임 5초."
+    description: "7발의 각기 다른 탄환을 발사합니다. 쿨타임 5초."
+  - id: four-axis
+    weapon: {fileID: 11400000, guid: 034d54eef0b547a58155a4a78a08477b, type: 2}
+    description: "4개의 오브가 4단 공전합니다. 수명 5초. 쿨타임 10초."
+  - id: solar-system
+    weapon: {fileID: 11400000, guid: eeb9cdacca1a426a8e00cc1962817ee9, type: 2}
+    description: "이동 불가 상태가 되며 태양계를 소환합니다. 방어막 3개를 얻으며 방어막 소진 또는 5초 후 종료됩니다. 쿨타임 15초."
+  - id: mine
+    weapon: {fileID: 11400000, guid: a7c6d9e04683456d83d89ab5a48fcf31, type: 2}
+    description: "발밑에 지뢰를 설치합니다. 상대가 밟거나 20초가 지나면 폭발하며, 공격을 3번 맞아도 폭발합니다. Electric Pulse로 밀 수 있습니다. 쿨타임 4초."
+  - id: firefly-convergence
+    weapon: {fileID: 11400000, guid: 27969cba708315842b8e414bc092ff3a, type: 2}
+    description: '화면 밖에서 반딧불이 9마리가 일렁이며 자신을 향해 날아와 닿으면 흡수됩니다. 이동 경로의 적에게 피해를 입힙니다. 쿨타임 8.5초.'
+  - id: twin-satellites
+    weapon: {fileID: 11400000, guid: bba12fb70988dae4791bc6e57e5e6a71, type: 2}
+    description: '지정 위치에 서로 마주 보는 두 위성을 소환합니다. 일정한 속도로 원을 그리며 각각 부채꼴 탄막을 6번 발사합니다. 쿨타임 8초.'
+  - id: blossom-burst
+    weapon: {fileID: 11400000, guid: 05665ce81db917240af579910c6e94b7, type: 2}
+    description: '꽃봉오리 3개를 발사합니다. 봉오리는 서서히 멈춘 뒤 피어나며 각각 8방향으로 꽃잎 탄환을 퍼뜨립니다. 쿨타임 5초.'
+  - id: constellation-ignition
+    weapon: {fileID: 11400000, guid: 919a329bcc5d326459679ce2282b13cb, type: 2}
+    description: '총구에서 빛이 출발해 바다뱀자리, 에리다누스자리, 용자리 중 하나를 순서대로 그립니다. 바로 다음 구간만 예고하며, 완성된 형상의 외곽선도 피해를 입힌 뒤 별빛과 함께 사라집니다. 쿨타임 6초.'

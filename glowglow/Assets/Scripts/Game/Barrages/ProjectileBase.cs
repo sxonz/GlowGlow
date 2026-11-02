@@ -9,19 +9,63 @@ public abstract class ProjectileBase : MonoBehaviour
     private static readonly HashSet<ProjectileBase> Active = new();
     public static IEnumerable<ProjectileBase> ActiveProjectiles => Active;
     private readonly HashSet<PlayerCombatant> hitTargets = new();
+    private HashSet<ulong> mineContacts;
+    private static ulong nextSpawnId;
+    internal ulong SpawnId { get; private set; }
+    private readonly List<Transform> layerTransforms = new(8);
+    private readonly List<Renderer> visibilityRenderers = new(8);
     private object poolKey;
     private float despawnAt;
+    private float disappearAt;
+    private Vector3 disappearScale;
+    private Color disappearColor;
+    public bool IsDisappearing { get; private set; }
+    protected virtual bool FadeOnLifetimeEnd => false;
+    protected float SpawnedAt { get; private set; }
+    protected virtual float ArmingDuration => 0f;
+    protected bool AttackReady => !IsDisappearing && Time.time - SpawnedAt >= ArmingDuration;
+    internal void BeginDisappear()
+    {
+        if (!spawned || IsDisappearing) return;
+        IsDisappearing = true;
+        disappearAt = Time.time;
+        disappearScale = transform.localScale;
+        disappearColor = glowSource != null ? glowSource.color : Stats.Color;
+        OnBeginDisappear();
+    }
+    protected virtual void OnBeginDisappear() { }
+    protected virtual void OnDisappearVisual(float remaining) { }
+    protected void UpdateSpawnGrowth()
+    {
+        float growth = ArmingDuration > 0 ? Mathf.SmoothStep(0, 1, Mathf.Clamp01((Time.time - SpawnedAt) / ArmingDuration)) : 1;
+        transform.localScale = Vector3.one * (Stats.Radius * 2f * Mathf.Max(.001f, growth));
+    }
     private bool spawned;
     private SpriteRenderer glowSource;
     private SpriteRenderer glow;
+    private Sprite glowSprite;
+    private Color glowColor;
+    private Vector3 glowScale;
+    private int glowOrder, glowLayer;
     public PlayerCombatant Owner { get; private set; }
     public WeaponStats Stats { get; private set; }
+    public virtual int Damage => Stats.Damage;
     public WeaponEffects Effects { get; private set; }
     public float RemainingLifetime => Mathf.Max(0, despawnAt - Time.time);
     protected void ExtendLifetime(float seconds) => despawnAt += Mathf.Max(0, seconds);
     public bool IsSpawned => spawned;
     internal void RemoveProjectile() => Despawn();
     protected Vector2 Direction { get; private set; }
+
+    protected void Redirect(PlayerCombatant owner, Vector2 direction)
+    {
+        Owner = owner;
+        Direction = direction.normalized;
+        hitTargets.Clear();
+        mineContacts?.Clear();
+        gameObject.layer = owner.gameObject.layer;
+        foreach (var renderer in visibilityRenderers) BarrageVisibility.ApplyOwner(renderer, BarrageVisibility.OwnerTag(owner));
+    }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetPools()
@@ -59,14 +103,22 @@ public abstract class ProjectileBase : MonoBehaviour
         if (owner != null && projectile.gameObject.scene != owner.gameObject.scene)
             SceneManager.MoveGameObjectToScene(projectile.gameObject, owner.gameObject.scene);
         projectile.hitTargets.Clear();
+        projectile.mineContacts?.Clear();
+        projectile.SpawnId = ++nextSpawnId;
         projectile.despawnAt = Time.time + stats.Lifetime;
+        projectile.SpawnedAt = Time.time;
         projectile.spawned = true;
+        projectile.IsDisappearing = false;
         Active.Add(projectile);
         projectile.OnSpawn();
         if (projectile.glow == null && projectile.TryGetComponent<SpriteRenderer>(out projectile.glowSource))
             projectile.glow = RuntimeShapes.CreateGlow(projectile.glowSource);
-        foreach (var child in projectile.GetComponentsInChildren<Transform>(true))
+        projectile.GetComponentsInChildren(true, projectile.layerTransforms);
+        foreach (var child in projectile.layerTransforms)
             child.gameObject.layer = owner != null ? owner.gameObject.layer : 0;
+        projectile.GetComponentsInChildren(true, projectile.visibilityRenderers);
+        foreach (var renderer in projectile.visibilityRenderers)
+            BarrageVisibility.ApplyOwner(renderer, BarrageVisibility.OwnerTag(owner));
         projectile.gameObject.SetActive(true);
         return projectile;
     }
@@ -88,7 +140,25 @@ public abstract class ProjectileBase : MonoBehaviour
     {
         if (!spawned) return;
         if (Owner == null || !Owner.CanSelectWeapon) { Despawn(); return; }
-        if (Time.time >= despawnAt) { OnLifetimeExpired(); Despawn(); return; }
+        if (IsDisappearing)
+        {
+            float remaining = 1f - Mathf.SmoothStep(0, 1, Mathf.Clamp01((Time.time - disappearAt) / .4f));
+            if (remaining <= 0) { Despawn(); return; }
+            transform.localScale = disappearScale * remaining;
+            if (glowSource != null)
+            {
+                var color = disappearColor; color.a *= remaining; glowSource.color = color;
+            }
+            OnDisappearVisual(remaining);
+            return;
+        }
+        if (Time.time >= despawnAt)
+        {
+            OnLifetimeExpired();
+            if (!spawned || IsDisappearing) return;
+            if (FadeOnLifetimeEnd) BeginDisappear(); else Despawn();
+            return;
+        }
         Tick(Time.deltaTime);
     }
 
@@ -98,7 +168,15 @@ public abstract class ProjectileBase : MonoBehaviour
     {
         if (glow == null) return;
         if (!GlowEnabled) { glow.enabled = false; return; }
+        var sprite = glowSource.sprite;
+        var scale = glowSource.transform.lossyScale;
+        var color = glowSource.color;
+        bool visible = glowSource.enabled && sprite != null;
+        if (glow.enabled == visible && glowSprite == sprite && glowScale == scale && glowColor == color
+            && glowOrder == glowSource.sortingOrder && glowLayer == glowSource.sortingLayerID) return;
         RuntimeShapes.SyncGlow(glowSource, glow, .42f, .42f);
+        glowSprite = sprite; glowScale = scale; glowColor = color;
+        glowOrder = glowSource.sortingOrder; glowLayer = glowSource.sortingLayerID;
     }
 
     protected abstract void Tick(float deltaTime);
@@ -109,11 +187,31 @@ public abstract class ProjectileBase : MonoBehaviour
 
     protected void TryHit(Collider2D other, float knockback = 0, float speedMultiplier = 1, float slowDuration = 0, bool dealsDamage = true)
     {
-        if (!TryRegisterHit(other, out var target)) return;
+        if (dealsDamage && TryHitMine(other)) return;
+        if (!TryRegisterHit(other, out var target, dealsDamage)) return;
         Vector2 away = (Vector2)(target.transform.position - transform.position);
         target.ApplyImpact(away.sqrMagnitude > .0001f ? away : Direction, knockback, speedMultiplier, slowDuration);
-        if (dealsDamage) target.ReceiveHit(Owner);
+        if (dealsDamage) target.ReceiveHit(Owner, Damage);
         if (DespawnOnHit) Despawn();
+    }
+
+    // Each attack can affect a particular mine spawn only once, including persistent beams.
+    // Spawn IDs distinguish a reused pooled mine from its previous deployment.
+    protected bool TryRegisterMineContact(Collider2D other, out MineProjectile mine, bool enemyOnly = true)
+    {
+        mine = null;
+        if (!spawned || !AttackReady || !other.TryGetComponent(out mine) || !mine.IsSpawned ||
+            mine == this || enemyOnly && mine.Owner == Owner) return false;
+        mineContacts ??= new HashSet<ulong>();
+        return mineContacts.Add(mine.SpawnId);
+    }
+
+    protected bool TryHitMine(Collider2D other, bool consumeOnHit = true)
+    {
+        if (!TryRegisterMineContact(other, out var mine)) return false;
+        mine.ReceiveAttack();
+        if (consumeOnHit && DespawnOnHit) Despawn();
+        return true;
     }
 
     protected void Despawn()
@@ -127,10 +225,11 @@ public abstract class ProjectileBase : MonoBehaviour
         Pools[poolKey].Enqueue(this);
     }
 
-    protected bool TryRegisterHit(Collider2D other, out PlayerCombatant target)
+    protected bool TryRegisterHit(Collider2D other, out PlayerCombatant target, bool dealsDamage = true)
     {
         target = other.GetComponent<PlayerCombatant>();
-        return spawned && target != null && target != Owner && target.CanBeHit &&
+        return spawned && AttackReady && target != null && target != Owner &&
+            (dealsDamage ? target.CanReceiveDamage(Damage) : target.CanBeHit) &&
             (AllowRepeatedHits || hitTargets.Add(target));
     }
 

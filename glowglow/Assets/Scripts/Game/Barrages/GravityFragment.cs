@@ -8,6 +8,7 @@ public sealed class GravityFragment : Bullet
     private Vector2 velocity;
     private readonly RaycastHit2D[] hits = new RaycastHit2D[32];
     public override Vector2 LinearVelocity => velocity;
+    protected override void OnReflected(Vector2 reflectedVelocity) => velocity = reflectedVelocity;
 
     protected override void OnSpawn()
     {

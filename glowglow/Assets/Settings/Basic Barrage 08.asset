@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 08
   m_EditorClassIdentifier: 
   displayName: Orbit Orb
+  damage: 16
   rarity: 0
   steps:
   - shape: 7
@@ -30,7 +31,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 0
-  icon: {fileID: 21300000, guid: 5af0c84625a7b0e44878274afb9d5863, type: 3}
+  icon: {fileID: -2053010635, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 10
   projectileSpeed: 12

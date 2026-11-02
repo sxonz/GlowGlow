@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Pulse Shot
   m_EditorClassIdentifier: 
   displayName: Basic Shot
+  damage: 6
   rarity: 0
   steps:
   - shape: 0
@@ -30,7 +31,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 0
-  icon: {fileID: 877530560435636459, guid: d1c8aa6700fad0449a7e4b50fce4e005, type: 3}
+  icon: {fileID: -1370362169, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 0.26
   projectileSpeed: 11

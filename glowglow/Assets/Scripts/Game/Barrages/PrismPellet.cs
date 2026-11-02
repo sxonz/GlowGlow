@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
 
 /// <summary>Straight, double-helix or mutually orbiting paths that continue through the shared fan.</summary>
 public sealed class PrismPellet : Bullet
@@ -12,10 +13,22 @@ public sealed class PrismPellet : Bullet
     private Vector2 centerLaunch;
     private Rect arenaRect;
     private TrailRenderer trail;
-    private static Material trailMaterial;
+    private static readonly HashSet<PrismPellet> ribbonOwners = new();
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRibbons() => ribbonOwners.Clear();
     private readonly RaycastHit2D[] hits = new RaycastHit2D[32];
     public override Vector2 LinearVelocity => configured
         ? (PositionAt(Time.time+.001f)-PositionAt(Time.time))/.001f : base.LinearVelocity;
+    protected override void OnReflected(Vector2 velocity)
+    {
+        Vector2 pivot = (Vector2)transform.position * 2f;
+        anchor = pivot - anchor;
+        launch = pivot - launch;
+        endpoint = pivot - endpoint;
+        centerLaunch = pivot - centerLaunch;
+        axis = -axis;
+        lateral = -lateral;
+    }
 
     protected override void OnSpawn()
     {
@@ -24,33 +37,36 @@ public sealed class PrismPellet : Bullet
         hasCenter=false;
         Vector2 half=Owner.ArenaHalfSize;
         arenaRect=new Rect(-half,half*2);
-        foreach(var root in gameObject.scene.GetRootGameObjects())
-        foreach(var line in root.GetComponentsInChildren<LineRenderer>())
+        if (ArenaVisuals.TryGet(gameObject.scene, out var arena)) arenaRect = arena.Bounds;
+        else
         {
-            if(line.name!="Arena Border" || line.positionCount<4) continue;
-            Vector2 min=Vector2.positiveInfinity, max=Vector2.negativeInfinity;
-            for(int i=0;i<line.positionCount;i++)
+            // Preview and isolated test scenes can have custom bounds. Live matches use the cached rectangle above.
+            foreach (var root in gameObject.scene.GetRootGameObjects())
+            foreach (var line in root.GetComponentsInChildren<LineRenderer>())
             {
-                Vector2 point=line.useWorldSpace ? line.GetPosition(i) : line.transform.TransformPoint(line.GetPosition(i));
-                min=Vector2.Min(min,point); max=Vector2.Max(max,point);
+                if (line.name != "Arena Border" || line.positionCount < 4) continue;
+                Vector2 min = Vector2.positiveInfinity, max = Vector2.negativeInfinity;
+                for (int i = 0; i < line.positionCount; i++)
+                {
+                    Vector2 point = line.useWorldSpace ? line.GetPosition(i) : line.transform.TransformPoint(line.GetPosition(i));
+                    min = Vector2.Min(min, point); max = Vector2.Max(max, point);
+                }
+                arenaRect = Rect.MinMaxRect(min.x, min.y, max.x, max.y);
             }
-            arenaRect=Rect.MinMaxRect(min.x,min.y,max.x,max.y);
         }
-        if(trail==null)
+        GetComponent<SpriteRenderer>().sharedMaterial = NeonVisualStyle.Get(NeonVisualStyle.PrismMode);
+        bool showRibbon = ribbonOwners.Count < NeonVisualStyle.MaxPrismTrails;
+        if (showRibbon) ribbonOwners.Add(this);
+        if(trail==null && showRibbon)
         {
             trail=gameObject.AddComponent<TrailRenderer>();
-            if(trailMaterial==null) trailMaterial=new Material(Shader.Find("Sprites/Default"));
-            trail.sharedMaterial=trailMaterial;
-            trail.time=.16f;
-            trail.minVertexDistance=.025f;
-            trail.sortingOrder=3;
-            trail.endWidth=0;
         }
-        trail.Clear();
-        trail.startWidth=Stats.Radius;
-        trail.startColor=new Color(Stats.Color.r,Stats.Color.g,Stats.Color.b,.45f);
-        trail.endColor=new Color(Stats.Color.r,Stats.Color.g,Stats.Color.b,0);
-        trail.emitting=true;
+        if (trail != null)
+        {
+            trail.Clear();
+            if (showRibbon) NeonVisualStyle.ConfigureTrail(trail, Stats.Color, Stats.Radius * 2, 0, 4);
+            trail.enabled = trail.emitting = showRibbon;
+        }
     }
 
     public void Configure(int slot,Vector2 formationAnchor,Vector2 origin,Vector2 direction,float startTime)
@@ -141,9 +157,10 @@ public sealed class PrismPellet : Bullet
     private void Impact(Collider2D other,Vector2 point)
     {
         if(!IsSpawned) return;
+        if (TryHitMine(other, false)) { Explode(point); Despawn(); return; }
         if(TryRegisterHit(other,out var target))
         {
-            target.ReceiveHit(Owner);
+            target.ReceiveHit(Owner, Damage);
             if(!IsSpawned) return;
             Explode(point);
             Despawn();
@@ -157,8 +174,9 @@ public sealed class PrismPellet : Bullet
 
     private void Explode(Vector2 position)
     {
+        CombatVfx.Burst(gameObject.scene, position, Stats.Color, Effects.Has(WeaponEffects.PrismExplosion) ? 1 : .55f, BarrageVisibility.OwnerTag(Owner));
         if(!Effects.Has(WeaponEffects.PrismExplosion)) return;
-        var stats=new WeaponStats(Stats.Cooldown,0,.25f,.6f,Stats.Range,Stats.Color);
+        var stats=new WeaponStats(Stats.Cooldown,0,.25f,.6f,Stats.Range,Stats.Color,BarrageDamage.PrismBlast);
         var explosion=SpawnBuiltin<BarrageShapeProjectile>(Owner,position,Direction,stats);
         explosion.Configure(new BarrageStep
         {
@@ -172,7 +190,8 @@ public sealed class PrismPellet : Bullet
     protected override void OnDespawn()
     {
         configured=false;
-        trail.emitting=false;
-        trail.Clear();
+        ribbonOwners.Remove(this);
+        if (trail != null) { trail.emitting = false; trail.Clear(); }
     }
+    protected override void OnDestroy() { ribbonOwners.Remove(this); base.OnDestroy(); }
 }

@@ -45,7 +45,8 @@ public sealed class MatchController : MonoBehaviour
 
     private void Start()
     {
-        RuntimeShapes.AddArenaGlow(gameObject.scene);
+        BarrageVisibility.SetLocalOwner(playerOne.PlayerIndex);
+        ArenaVisuals.Install(this);
         playerOne.AttachMatch(this);
         playerTwo.AttachMatch(this);
         IsTraining = trainingRequested;
@@ -103,7 +104,7 @@ public sealed class MatchController : MonoBehaviour
     public void ReportHit(PlayerCombatant victim, PlayerCombatant attacker)
     {
         StateChanged?.Invoke();
-        if (!IsTraining && victim.HitsTaken >= 3) Finish(victim == playerOne ? playerTwo : playerOne);
+        if (!IsTraining && victim.Health <= 0) Finish(victim == playerOne ? playerTwo : playerOne);
     }
 
     public void RestartMatch()
@@ -118,6 +119,7 @@ public sealed class MatchController : MonoBehaviour
             return;
         }
         ProjectileBase.DespawnAll();
+        GetComponent<CombatVfx>()?.Clear();
         elapsed = 0f;
         Winner = null;
         playerOne.ResetCombatant(new Vector2(-5.8f, 0));
@@ -163,6 +165,7 @@ public sealed class MatchController : MonoBehaviour
         Winner = null;
         elapsed = 0;
         ProjectileBase.DespawnAll();
+        GetComponent<CombatVfx>()?.Clear();
         playerOne.ResetCombatant(new Vector2(-5.8f, 0));
         playerTwo.ResetCombatant(new Vector2(5.8f, 0));
         if (draftScreen == null) draftScreen = gameObject.AddComponent<OpeningDraftScreen>();
@@ -197,13 +200,14 @@ public sealed class MatchController : MonoBehaviour
         if (playerOne != null) playerOne.StopAllCoroutines();
         if (playerTwo != null) playerTwo.StopAllCoroutines();
         ProjectileBase.DespawnAll();
+        GetComponent<CombatVfx>()?.Clear();
         StateChanged?.Invoke();
     }
 
     private void FinishByTime()
     {
-        if (playerOne.HitsTaken == playerTwo.HitsTaken) Finish(null);
-        else Finish(playerOne.HitsTaken < playerTwo.HitsTaken ? playerOne : playerTwo);
+        if (playerOne.Health == playerTwo.Health) Finish(null);
+        else Finish(playerOne.Health > playerTwo.Health ? playerOne : playerTwo);
     }
 
     private void Finish(PlayerCombatant winner)

@@ -41,7 +41,7 @@ public sealed class PrismShot : ProjectileBase
             foreach(int slot in groups[group])
             {
                 var stats=new WeaponStats(Stats.Cooldown,Stats.Speed,
-                    float.PositiveInfinity,Stats.Radius,Stats.Range,Stats.Color);
+                    float.PositiveInfinity,Stats.Radius,Stats.Range,Stats.Color, Stats.Damage);
                 var pellet=SpawnBuiltin<PrismPellet>(Owner,launch,Direction,stats,Effects);
                 pellet.Configure(slot,pathAnchor,launch,Direction,startedAt+shift);
                 if(slot==3 || slot==5) pellet.BindCenter(launch,Owner,startedAt+shift);

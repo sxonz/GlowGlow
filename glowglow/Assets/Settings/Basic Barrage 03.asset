@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 03
   m_EditorClassIdentifier: 
   displayName: Spread Shot
+  damage: 10
   rarity: 0
   steps:
   - shape: 0
@@ -23,6 +24,7 @@ MonoBehaviour:
     speedMultiplier: {x: 1, y: 1}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 10
     opacity: 1
     duration: 0
     startSize: 1
@@ -39,6 +41,7 @@ MonoBehaviour:
     speedMultiplier: {x: 1, y: 1}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 8
     opacity: 1
     duration: 0
     startSize: 0.8
@@ -55,6 +58,7 @@ MonoBehaviour:
     speedMultiplier: {x: 1, y: 1}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 8
     opacity: 1
     duration: 0
     startSize: 0.8
@@ -71,6 +75,7 @@ MonoBehaviour:
     speedMultiplier: {x: 1, y: 1}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 0.5
@@ -87,6 +92,7 @@ MonoBehaviour:
     speedMultiplier: {x: 1, y: 1}
     dimensions: {x: 1, y: 1}
     dealsDamage: 1
+    damage: 6
     opacity: 1
     duration: 0
     startSize: 0.5
@@ -95,7 +101,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 0
-  icon: {fileID: 7187127840186576811, guid: 36f88c25301d3e045847e1a1b1ba447e, type: 3}
+  icon: {fileID: 1000023795, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 2
   projectileSpeed: 12

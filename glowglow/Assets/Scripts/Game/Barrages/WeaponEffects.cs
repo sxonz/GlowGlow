@@ -15,7 +15,9 @@ public enum WeaponEffects : long
     MeteorMiniTanks = 1L << 24, MeteorTracking = 1L << 25, MeteorShield = 1L << 26,
     OctoRapid = 1L << 27, OctoCurve = 1L << 28, OctoSplit = 1L << 29,
     BoomerangRefund = 1L << 30, BoomerangSize = 1L << 31, BoomerangBounce = 1L << 32,
-    PrismCooldown = 1L << 33, PrismTail = 1L << 34, PrismExplosion = 1L << 35
+    PrismCooldown = 1L << 33, PrismTail = 1L << 34, PrismExplosion = 1L << 35,
+    SolarFlare = 1L << 36, SolarRelease = 1L << 37, SolarComets = 1L << 38,
+    FourAxisRange = 1L << 39, FourAxisReflection = 1L << 40
 }
 
 public static class WeaponEffectExtensions

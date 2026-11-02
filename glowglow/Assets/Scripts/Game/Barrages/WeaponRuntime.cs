@@ -30,7 +30,7 @@ public sealed class WeaponRuntime
 
     public ProjectileBase Fire(PlayerCombatant owner, Vector2 position, Vector2 direction, Vector2 aimPosition)
     {
-        if (CooldownRemaining > 0 || owner != null && (owner.IsOverdriving || owner.IsMeteorDiving)) return null;
+        if (CooldownRemaining > 0 || owner != null && (owner.IsOverdriving || owner.IsMeteorDiving || owner.IsSolarSystemActive)) return null;
         var stats = Stats;
         var effects = Upgrades.Effects;
         var projectile = Definition.steps != null && Definition.steps.Length > 0

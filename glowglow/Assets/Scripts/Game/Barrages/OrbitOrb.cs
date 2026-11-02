@@ -10,6 +10,8 @@ public sealed class OrbitOrb : Bullet
     private Vector2 centerVelocity;
     private OrbitOrb orbitParent;
     private OrbitOrb satellite;
+    private bool sharedCenter;
+    private int axisDepth;
     private int updatedFrame = -1;
     private const int GhostCount = 12;
     private const float GhostInterval = .025f;
@@ -21,14 +23,25 @@ public sealed class OrbitOrb : Bullet
     private float nextGhostAt;
     private float startedAt;
     private float startAngle;
+    private bool fourAxis;
+    protected override float ArmingDuration => fourAxis ? 1f : 0f;
     protected override bool DespawnOnHit => false;
     protected override bool AllowRepeatedHits => true;
     public override bool IsSmallBullet => false;
+    protected override bool CanReflect => false;
+    protected override bool FadeOnLifetimeEnd => true;
+    protected override void OnBeginDisappear()
+    {
+        if (satellite != null) satellite.BeginDisappear();
+    }
 
     protected override void OnSpawn()
     {
         base.OnSpawn();
+        fourAxis = false;
         orbitParent = satellite = null;
+        sharedCenter = false;
+        axisDepth = 0;
         updatedFrame = -1;
         startedAt = Time.time;
         orbitCenter = Owner.transform.position;
@@ -63,23 +76,54 @@ public sealed class OrbitOrb : Bullet
     {
         orbitParent = primary;
         primary.satellite = this;
+        axisDepth = primary.axisDepth + 1;
+        startedAt = primary.startedAt;
+        FollowOwner();
+    }
+
+    public void ConfigureFourAxis()
+    {
+        if (!fourAxis) ExtendLifetime(1f);
+        fourAxis = true;
+        startAngle = axisDepth % 2 == 0 ? 180f : 0f;
+        FollowOwner();
+    }
+
+    public void ShareOrbit(OrbitOrb primary)
+    {
+        orbitParent = primary;
+        primary.satellite = this;
+        sharedCenter = true;
+        startedAt = primary.startedAt;
+        startAngle = primary.startAngle + 180f;
         FollowOwner();
     }
 
     private void FollowOwner()
     {
-        if (Owner == null) return;
-        Vector2 center = orbitParent != null ? (Vector2)orbitParent.transform.position : orbitCenter;
-        transform.position = center +
-            OrbitOffset(startAngle + (Time.time - startedAt) * degreesPerSecond *
-                (Effects.Has(WeaponEffects.OrbSpeed) ? 1.5f : 1f) * (orbitParent != null ? 2f : 1f), orbitRadius);
+        if (Owner == null || IsDisappearing) return;
+        if (fourAxis) UpdateSpawnGrowth();
+        Vector2 center = orbitParent != null
+            ? sharedCenter ? orbitParent.orbitCenter : (Vector2)orbitParent.transform.position
+            : orbitCenter;
+        float elapsed = Mathf.Max(0, Time.time - startedAt - (fourAxis ? 1f : 0f));
+        Vector2 position = center +
+            OrbitOffset(startAngle + elapsed * degreesPerSecond *
+                (Effects.Has(WeaponEffects.OrbSpeed) ? 1.5f : 1f) * (axisDepth + 1),
+                orbitRadius * (Effects.Has(WeaponEffects.FourAxisRange) ? 1.5f : 1f));
+        if (fourAxis && !AttackReady)
+        {
+            Vector2 cluster = (Vector2)Owner.transform.position + Vector2.left * .8f + Vector2.up * ((axisDepth - 1.5f) * .12f);
+            position = Vector2.Lerp(cluster, position, Mathf.SmoothStep(0, 1, Mathf.Clamp01(Time.time - startedAt)));
+        }
+        transform.position = position;
     }
 
     protected override void Tick(float deltaTime) => FollowOwner();
 
     private void UpdateOrbit(float deltaTime)
     {
-        if (updatedFrame == Time.frameCount || Owner == null) return;
+        if (updatedFrame == Time.frameCount || Owner == null || IsDisappearing) return;
         updatedFrame = Time.frameCount;
         if (orbitParent != null)
         {
@@ -101,7 +145,7 @@ public sealed class OrbitOrb : Bullet
     {
         UpdateOrbit(Time.deltaTime);
         if (!IsSpawned) return;
-        if (Time.time >= nextGhostAt)
+        if (!IsDisappearing && Time.time >= nextGhostAt)
         {
             ghostPositions[nextGhost] = transform.position;
             ghostTimes[nextGhost] = Time.time;
@@ -121,7 +165,19 @@ public sealed class OrbitOrb : Bullet
         base.LateUpdate();
     }
 
-    private void OnTriggerStay2D(Collider2D other) => TryHit(other);
+    protected override void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!TryReflect(other)) base.OnTriggerEnter2D(other);
+    }
+    private bool TryReflect(Collider2D other)
+    {
+        return IsSpawned && AttackReady && Effects.Has(WeaponEffects.FourAxisReflection) &&
+            other.TryGetComponent<Bullet>(out var bullet) && bullet.Reflect(Owner);
+    }
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (!TryReflect(other)) TryHit(other);
+    }
     protected override void OnDespawn()
     {
         if (satellite != null) satellite.Despawn();

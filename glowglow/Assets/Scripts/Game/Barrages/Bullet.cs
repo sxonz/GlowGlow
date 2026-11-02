@@ -6,12 +6,25 @@ public class Bullet : ProjectileBase
     private int interceptions;
     public virtual Vector2 LinearVelocity => Direction * Stats.Speed;
     public virtual bool IsSmallBullet => Stats.Radius <= .16f;
+    protected virtual bool CanReflect => true;
+    internal bool Reflect(PlayerCombatant owner)
+    {
+        if (!IsSpawned || owner == null || Owner == owner || !CanReflect) return false;
+        Vector2 velocity = -LinearVelocity;
+        if (velocity.sqrMagnitude < .0001f) return false;
+        Redirect(owner, velocity);
+        interceptions = 0;
+        OnReflected(velocity);
+        return true;
+    }
+    protected virtual void OnReflected(Vector2 velocity) { }
     public void SetInterception(int count) => interceptions = Mathf.Max(0, count);
     protected override void OnSpawn()
     {
         interceptions = 0;
         var renderer = GetComponent<SpriteRenderer>();
         if (renderer.sprite == null) renderer.sprite = RuntimeShapes.Circle;
+        renderer.sharedMaterial = NeonVisualStyle.Get(NeonVisualStyle.BulletMode);
         renderer.color = Stats.Color;
         renderer.sortingOrder = 4;
         transform.localScale = Vector3.one * Stats.Radius * 2f;

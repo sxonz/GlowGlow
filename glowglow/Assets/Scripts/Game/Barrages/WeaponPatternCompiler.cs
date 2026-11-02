@@ -34,6 +34,7 @@ public static class WeaponPatternCompiler
                 {
                     var extra = template.Snapshot();
                     extra.delay = .3f;
+                    extra.damage = BarrageDamage.SpreadOuter;
                     extra.offsetDegrees = new Vector2(angle, angle);
                     extra.interceptsBullet = false;
                     steps.Add(extra);
@@ -72,7 +73,7 @@ public static class WeaponPatternCompiler
             }
         }
         if (effects.Has(WeaponEffects.OrbLifetime))
-            foreach (var step in steps) if (step.shape == BarrageShape.OrbitOrb) step.duration *= 1.5f;
+            foreach (var step in steps) if (step.shape == BarrageShape.OrbitOrb || step.shape == BarrageShape.FourAxis) step.duration *= 1.5f;
         return steps.ToArray();
     }
 }

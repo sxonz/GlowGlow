@@ -47,7 +47,7 @@ public sealed class PrismShotSmokeRunner : MonoBehaviour
         view.clearFlags=CameraClearFlags.SolidColor; view.backgroundColor=new Color(.025f,.012f,.07f);
         var definition=AssetDatabase.LoadAssetAtPath<WeaponDefinition>("Assets/Settings/Prism Shot.asset");
         var icon=new GameObject("Prism card icon").AddComponent<SpriteRenderer>();
-        icon.sprite=definition.icon; icon.color=new Color(.25f,.65f,1);
+        icon.sprite=definition.icon; icon.color=Color.white;
         icon.transform.position=new Vector3(-4,2,0);
         icon.transform.localScale=Vector3.one*1.5f;
         var owner=new GameObject("Caster").AddComponent<PlayerCombatant>();

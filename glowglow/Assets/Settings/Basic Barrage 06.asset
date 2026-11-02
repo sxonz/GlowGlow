@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 06
   m_EditorClassIdentifier: 
   displayName: Overdrive
+  damage: 20
   rarity: 0
   steps:
   - shape: 5
@@ -34,7 +35,7 @@ MonoBehaviour:
     knockbackDistance: 0
     slowMultiplier: 1
     slowDuration: 0
-  icon: {fileID: 3252410277113614999, guid: c719fa7fc244b6e42be49c21db314d9a, type: 3}
+  icon: {fileID: -2086847103, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 10
   projectileSpeed: 12

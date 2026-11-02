@@ -33,6 +33,7 @@ public sealed class BotPlayerInput : MonoBehaviour, IPlayerInputSource
     private PlayerCommand command;
     private readonly Collider2D[] nearby = new Collider2D[64];
     private readonly List<BarrageShapeProjectile> visibleAttacks = new();
+    private readonly List<ConstellationIgnition> visibleConstellations = new(4);
     private readonly List<BulletProjectile> incomingBullets = new();
     private Vector2 escapeDirection;
     private float escapeUntil, movementPace = 1f, radialFeint;
@@ -136,6 +137,7 @@ public sealed class BotPlayerInput : MonoBehaviour, IPlayerInputSource
     private bool TryAvoidAttacks(Vector2 position, Vector2 preferred, out Vector2 movement, out bool urgent)
     {
         visibleAttacks.Clear();
+        visibleConstellations.Clear();
         incomingBullets.Clear();
         urgent = false;
         movement = preferred;
@@ -153,6 +155,15 @@ public sealed class BotPlayerInput : MonoBehaviour, IPlayerInputSource
                 float bulletClearance = BulletClearance(bullet, position, Vector2.ClampMagnitude(preferred, 1) * speed, margin, predictionHorizon);
                 threatened |= bulletClearance < .15f;
                 urgent |= BulletClearance(bullet, position, Vector2.zero, margin, Mathf.Min(.15f, predictionHorizon)) < 0;
+            }
+            if (projectile is ConstellationIgnition constellation)
+            {
+                float outlineClearance = constellation.DangerClearance(position, margin);
+                if (float.IsPositiveInfinity(outlineClearance)) continue;
+                visibleConstellations.Add(constellation);
+                threatened |= outlineClearance < .35f ||
+                    constellation.DangerClearance(self.ClampToArena(position + preferred * speed * .3f), margin) < 0;
+                urgent |= constellation.FigureDealsDamage && outlineClearance < 0;
             }
             if (projectile is not BarrageShapeProjectile attack) continue;
             visibleAttacks.Add(attack);
@@ -198,6 +209,12 @@ public sealed class BotPlayerInput : MonoBehaviour, IPlayerInputSource
                     score += Mathf.Clamp(clearance, -4, 1f) * weight * sample;
                     if (clearance < 0) score -= 3f * weight;
                 }
+                foreach (var constellation in visibleConstellations)
+                {
+                    float clearance = constellation.DangerClearance(predicted, margin);
+                    score += Mathf.Clamp(clearance, -4, 1f) * 1.5f * sample;
+                    if (clearance < 0) score -= 4.5f;
+                }
             }
             if (score > bestScore) { bestScore = score; best = direction; }
         }
@@ -242,7 +259,10 @@ public sealed class BotPlayerInput : MonoBehaviour, IPlayerInputSource
                 if (step == null) continue;
                 if (step.shape == BarrageShape.Overdrive) return 1f;
                 if (step.shape == BarrageShape.ElectricPulse) return 2f;
+                if (step.shape == BarrageShape.Mine) return 1.8f;
                 if (step.shape == BarrageShape.OrbitOrb) return 1.5f;
+                if (step.shape == BarrageShape.FourAxis) return 4.8f;
+                if (step.shape == BarrageShape.SolarSystem) return 0f;
                 if (step.followMuzzle) return 6f;
             }
         return 4.5f;

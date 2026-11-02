@@ -10,6 +10,9 @@ public sealed class Bouncer : Bullet
     private SpriteRenderer visual;
     private float spawnedAt, previousAge;
     private readonly RaycastHit2D[] terrainHits = new RaycastHit2D[32];
+    public override Vector2 LinearVelocity => heading * Stats.Speed * Mathf.Lerp(1f, finalSpeedMultiplier,
+        Mathf.Clamp01((Time.time - spawnedAt) / Mathf.Max(.01f, Stats.Lifetime)));
+    protected override void OnReflected(Vector2 velocity) => heading = velocity.normalized;
 
     protected override void OnSpawn()
     {

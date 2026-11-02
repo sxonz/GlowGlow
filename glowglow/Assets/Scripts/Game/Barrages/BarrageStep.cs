@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive, Bouncer, OrbitOrb, MeteorDive, OctoShot, Boomerang, PrismShot }
+public enum BarrageShape { Bullet, Line, Circle, Box, ElectricPulse, Overdrive, Bouncer, OrbitOrb, MeteorDive, OctoShot, Boomerang, PrismShot, FourAxis, SolarSystem, Mine, FireflyConvergence, TwinSatellites, BlossomBurst, ConstellationIgnition }
 public enum BarragePosition { Gun, Cursor, Player }
 
 /// <summary>One event on a firing timeline. Values are copied when firing.</summary>
@@ -19,6 +19,8 @@ public sealed class BarrageStep
     public Vector2 speedMultiplier = Vector2.one;
     public Vector2 dimensions = Vector2.one;
     public bool dealsDamage = true;
+    [Tooltip("-1 inherits weapon damage. Zero is harmless.")]
+    [Min(-1)] public int damage = -1;
     [Range(0, 1)] public float opacity = 1;
     [Tooltip("Zero: bullets last until off screen. Stationary shapes need a duration.")]
     [Min(0)] public float duration;

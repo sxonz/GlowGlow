@@ -8,7 +8,13 @@ public sealed partial class PlayerCombatant : MonoBehaviour
     public event Action<PlayerCombatant> Hit;
     public int PlayerIndex => playerIndex;
     public int HitsTaken { get; private set; }
-    public int HitsRemaining => Mathf.Max(0, 3 - HitsTaken);
+    public const int MaxHealth = 100;
+    public int Health { get; private set; } = MaxHealth;
+    public int DamageTaken { get; private set; }
+    private int damageFrame = -1, frameDamage;
+    // A stronger contact in the same frame replaces the first damage, without another hit or shield charge.
+    internal bool CanReceiveDamage(int damage) => CanBeHit ||
+        (damage > frameDamage && damageFrame == Time.frameCount && CanSelectWeapon && !IsMeteorDiving);
     public bool CanBeHit => CanSelectWeapon && !IsMeteorDiving && Time.time >= invulnerableUntil;
     public MeteorDive MeteorDive { get; private set; }
     public bool IsMeteorDiving => MeteorDive != null;
@@ -22,7 +28,9 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         (Time.time < laserSlowUntil ? .65f : 1f) * PulseControlMultiplier;
     public OverdriveProjectile Overdrive { get; private set; }
     public bool IsOverdriving => Overdrive != null && Overdrive.IsRunning;
-    public int ShieldRemaining => NetworkReplica ? networkShield : landingShield + (IsOverdriving ? Overdrive.ShieldRemaining : 0);
+    public SolarSystemProjectile SolarSystem { get; private set; }
+    public bool IsSolarSystemActive => SolarSystem != null && SolarSystem.IsRunning;
+    public int ShieldRemaining => NetworkReplica ? networkShield : landingShield + (IsOverdriving ? Overdrive.ShieldRemaining : 0) + (IsSolarSystemActive ? SolarSystem.ShieldRemaining : 0);
     private int landingShield;
     private LineRenderer landingShieldVisual;
     private static Material landingShieldMaterial;
@@ -215,11 +223,12 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         if (empowered && !pull) pulseRemaining *= 3f;
         pulseTotal = pulseRemaining;
         pulseDecay = (.12f + Mathf.Min(.28f, pulseTotal * .045f)) / (empowered ? 3f : 1f);
-        if (pull && empowered && distance <= BodyRadius + source.BodyRadius + .001f) ReceiveHit(source);
+        if (pull && empowered && distance <= BodyRadius + source.BodyRadius + .001f) ReceiveHit(source, BarrageDamage.PulseCollision);
     }
 
     private void UpdatePulseImpulse(float deltaTime)
     {
+        if (IsSolarSystemActive) return;
         if (pulseRemaining <= .001f) return;
         if (pulseSource == null || !pulseSource.CanSelectWeapon) { pulseRemaining = 0; return; }
         float distance = pulseRemaining * (1f - Mathf.Exp(-deltaTime / Mathf.Max(.02f, pulseDecay)));
@@ -242,7 +251,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         pulseRemaining = Mathf.Max(0, pulseRemaining - distance);
         if (wall || reachedSource)
         {
-            if (pulseCollisionDamage && (pulsePull ? reachedSource : wall)) ReceiveHit(pulseSource);
+            if (pulseCollisionDamage && (pulsePull ? reachedSource : wall)) ReceiveHit(pulseSource, BarrageDamage.PulseCollision);
             pulseRemaining = 0;
             pulseCollisionDamage = false;
         }
@@ -304,6 +313,26 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         inertiaVelocity = Vector2.zero;
         straightCharge = 0f;
         previousDriveDirection = Vector2.zero;
+        UpdateBarrel();
+    }
+
+    public void BeginSolarSystem(SolarSystemProjectile effect)
+    {
+        if(SolarSystem!=null && SolarSystem!=effect) SolarSystem.Cancel();
+        if(Overdrive!=null) Overdrive.Cancel();
+        SolarSystem=effect;
+        dashing=false;
+        inertiaVelocity=knockbackRemaining=laserRecoilRemaining=Vector2.zero;
+        pulseRemaining=0;
+        ClearAfterimages();
+        UpdateBarrel();
+    }
+    public void EndSolarSystem(SolarSystemProjectile effect)
+    {
+        if(SolarSystem!=effect) return;
+        SolarSystem=null;
+        inertiaVelocity=knockbackRemaining=laserRecoilRemaining=Vector2.zero;
+        pulseRemaining=0;
         UpdateBarrel();
     }
 
@@ -376,6 +405,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         input = GetComponent<LocalPlayerInput>();
         visuals = GetComponent<SpriteRenderer>();
         if (visuals.sprite == null) visuals.sprite = RuntimeShapes.Circle;
+        visuals.sharedMaterial = NeonVisualStyle.Get(2);
         bodyGlow = RuntimeShapes.CreateGlow(visuals);
         var ring = transform.Find("Aim Ring");
         if (ring != null && ring.TryGetComponent<SpriteRenderer>(out var ringRenderer) && ringRenderer.sprite == null)
@@ -479,6 +509,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
 
     private void OnDisable()
     {
+        if (SolarSystem != null) SolarSystem.Cancel();
         if (MeteorDive != null) MeteorDive.Cancel();
         ClearAfterimages();
     }
@@ -493,7 +524,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         barrelPivot.right = aim;
         barrelVisuals.sortingLayerID = visuals.sortingLayerID;
         barrelVisuals.sortingOrder = visuals.sortingOrder - 1;
-        barrelVisuals.enabled = visuals.enabled && !IsOverdriving && !IsMeteorDiving;
+        barrelVisuals.enabled = visuals.enabled && !IsOverdriving && !IsMeteorDiving && !IsSolarSystemActive;
     }
 
     private void Update()
@@ -503,6 +534,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         {
             if (MeteorDive != null) MeteorDive.Cancel();
             if (Overdrive != null) Overdrive.Cancel();
+            if (SolarSystem != null) SolarSystem.Cancel();
             pulseRemaining = 0;
             return;
         }
@@ -513,6 +545,16 @@ public sealed partial class PlayerCombatant : MonoBehaviour
                 var diveCommand = (inputOverride ?? input).ReadCommand(transform.position);
                 aimPosition = ClampToArena(diveCommand.AimPosition);
                 if (diveCommand.FirePressed) MeteorDive.RequestDive();
+            }
+            return;
+        }
+        if (IsSolarSystemActive)
+        {
+            if(!IsPreview)
+            {
+                var solarCommand=(inputOverride ?? input).ReadCommand(transform.position);
+                aimPosition=ClampToArena(solarCommand.AimPosition);
+                if(solarCommand.Aim.sqrMagnitude>.01f) aim=solarCommand.Aim.normalized;
             }
             return;
         }
@@ -555,6 +597,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
 
     private void Move(Vector2 direction, float distance)
     {
+        if (IsSolarSystemActive) return;
         Vector2 next = (Vector2)transform.position + direction * distance;
         next.x = Mathf.Clamp(next.x, -arenaExtents.x, arenaExtents.x);
         next.y = Mathf.Clamp(next.y, -arenaExtents.y, arenaExtents.y);
@@ -614,7 +657,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         float duration = Mathf.Max(.01f, dashDuration);
         dashEndsAt = Time.time + duration;
         float elapsed = 0;
-        while (elapsed < duration && CanSelectWeapon)
+        while (elapsed < duration && CanSelectWeapon && !IsSolarSystemActive)
         {
             float previous = elapsed / duration;
             elapsed = Mathf.Min(duration, elapsed + Time.deltaTime);
@@ -633,16 +676,32 @@ public sealed partial class PlayerCombatant : MonoBehaviour
 
     private void Fire()
     {
-        if (CurrentWeapon == null || IsOverdriving || IsMeteorDiving) return;
+        if (CurrentWeapon == null || IsOverdriving || IsMeteorDiving || IsSolarSystemActive) return;
         UpdateBarrel();
         Vector2 origin = barrelPivot.TransformPoint(Vector3.right * MuzzleOffset);
         CurrentWeapon.Fire(this, origin, aim, aimPosition);
     }
 
-    public void ReceiveHit(PlayerCombatant attacker)
+    public void ReceiveHit(PlayerCombatant attacker, int damage = BarrageDamage.Basic)
     {
-        if (NetworkReplica) return;
-        if (!CanBeHit) return;
+        if (NetworkReplica || damage <= 0 || !CanReceiveDamage(damage)) return;
+        if (!CanBeHit)
+        {
+            int extra = damage - frameDamage;
+            frameDamage = damage;
+            Health = Mathf.Max(0, Health - extra);
+            DamageTaken += extra;
+            Hit?.Invoke(this);
+            if (!IsPreview) match.ReportHit(this, attacker);
+            return;
+        }
+        CombatVfx.Burst(gameObject.scene, transform.position, visuals.color, 1.25f);
+        if (IsSolarSystemActive && SolarSystem.AbsorbHit())
+        {
+            invulnerableUntil = Time.time + hitInvulnerability;
+            Hit?.Invoke(this);
+            return;
+        }
         if (landingShield > 0)
         {
             landingShield = 0;
@@ -658,6 +717,10 @@ public sealed partial class PlayerCombatant : MonoBehaviour
             return;
         }
         HitsTaken++;
+        damageFrame = Time.frameCount;
+        frameDamage = damage;
+        Health = Mathf.Max(0, Health - damage);
+        DamageTaken += damage;
         invulnerableUntil = Time.time + hitInvulnerability;
         if (!IsPreview) StartCoroutine(HitFlash());
         Hit?.Invoke(this);
@@ -666,6 +729,7 @@ public sealed partial class PlayerCombatant : MonoBehaviour
 
     public void ResetCombatant(Vector2 position)
     {
+        if (SolarSystem != null) SolarSystem.Cancel();
         landingShield = 0;
         UpdateLandingShield();
         if (MeteorDive != null) MeteorDive.Cancel();
@@ -692,6 +756,10 @@ public sealed partial class PlayerCombatant : MonoBehaviour
         ClearAfterimages();
         transform.position = position;
         HitsTaken = 0;
+        Health = MaxHealth;
+        DamageTaken = 0;
+        damageFrame = -1;
+        frameDamage = 0;
         invulnerableUntil = Time.time + .5f;
         nextDashAt = 0f;
         dashing = false;

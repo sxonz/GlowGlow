@@ -20,10 +20,11 @@ public sealed class WeaponDefinition : ScriptableObject
     [Min(.02f)] public float projectileRadius = .13f;
     public Color color = new Color(1f, .15f, .8f, 1f);
     [Min(.1f)] public float range = 12f;
+    [Min(0)] public int damage = BarrageDamage.Basic;
 
     public WeaponStats ResolveStats(WeaponUpgradeState upgrades)
     {
-        var stats = new WeaponStats(cooldown, projectileSpeed, unlimitedLifetime ? float.PositiveInfinity : projectileLifetime, projectileRadius, range, color);
+        var stats = new WeaponStats(cooldown, projectileSpeed, unlimitedLifetime ? float.PositiveInfinity : projectileLifetime, projectileRadius, range, color, damage);
         return upgrades != null ? upgrades.Apply(stats) : stats;
     }
 }

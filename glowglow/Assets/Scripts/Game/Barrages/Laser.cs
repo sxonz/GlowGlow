@@ -5,6 +5,9 @@ using UnityEngine;
 public class Laser : ProjectileBase
 {
     private static Sprite beamSprite;
+    private SpriteRenderer visual;
+    private float startedAt;
+    protected override bool GlowEnabled => false;
     protected override bool DespawnOnHit => false;
 
     protected override void OnSpawn()
@@ -14,8 +17,11 @@ public class Laser : ProjectileBase
         if (beamSprite == null)
             beamSprite = RuntimeShapes.Square;
         var renderer = GetComponent<SpriteRenderer>();
+        visual = renderer;
+        startedAt = Time.time;
+        renderer.sharedMaterial = NeonBeamStyle.Material;
         renderer.sprite = beamSprite;
-        renderer.color = Stats.Color;
+        renderer.color = NeonBeamStyle.BodyColor(Stats.Color, 0, RemainingLifetime);
         renderer.sortingOrder = 4;
         transform.position += (Vector3)(Direction * Stats.Range * .5f);
         transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(Direction.y, Direction.x) * Mathf.Rad2Deg);
@@ -30,7 +36,11 @@ public class Laser : ProjectileBase
         FollowMuzzle();
     }
 
-    protected override void Tick(float deltaTime) => FollowMuzzle();
+    protected override void Tick(float deltaTime)
+    {
+        FollowMuzzle();
+        visual.color = NeonBeamStyle.BodyColor(Stats.Color, Time.time - startedAt, RemainingLifetime);
+    }
     protected override void LateUpdate()
     {
         FollowMuzzle();

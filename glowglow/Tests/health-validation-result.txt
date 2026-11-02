@@ -1,0 +1,116 @@
+PASS: All 19 damage profiles are covered
+PASS: Saved base damage: Basic Shot
+PASS: Upgrades retain base damage: Basic Shot
+PASS: Firing snapshot: Basic Shot
+PASS: Saved base damage: Laser Shot
+PASS: Upgrades retain base damage: Laser Shot
+PASS: Firing snapshot: Laser Shot
+PASS: Saved base damage: Spread Shot
+PASS: Upgrades retain base damage: Spread Shot
+PASS: Firing snapshot: Spread Shot
+PASS: Saved base damage: Bomb
+PASS: Upgrades retain base damage: Bomb
+PASS: Firing snapshot: Bomb
+PASS: Saved base damage: Electric Pulse
+PASS: Upgrades retain base damage: Electric Pulse
+PASS: Firing snapshot: Electric Pulse
+PASS: Saved base damage: Overdrive
+PASS: Upgrades retain base damage: Overdrive
+PASS: Firing snapshot: Overdrive
+PASS: Saved base damage: Bouncer
+PASS: Upgrades retain base damage: Bouncer
+PASS: Firing snapshot: Bouncer
+PASS: Saved base damage: Orbit Orb
+PASS: Upgrades retain base damage: Orbit Orb
+PASS: Firing snapshot: Orbit Orb
+PASS: Saved base damage: Meteor Dive
+PASS: Upgrades retain base damage: Meteor Dive
+PASS: Firing snapshot: Meteor Dive
+PASS: Saved base damage: Octo Shot
+PASS: Upgrades retain base damage: Octo Shot
+PASS: Firing snapshot: Octo Shot
+PASS: Saved base damage: Boomerang
+PASS: Upgrades retain base damage: Boomerang
+PASS: Firing snapshot: Boomerang
+PASS: Saved base damage: Prism Shot
+PASS: Upgrades retain base damage: Prism Shot
+PASS: Firing snapshot: Prism Shot
+PASS: Saved base damage: 4-axis
+PASS: Upgrades retain base damage: 4-axis
+PASS: Firing snapshot: 4-axis
+PASS: Saved base damage: Solar System
+PASS: Upgrades retain base damage: Solar System
+PASS: Firing snapshot: Solar System
+PASS: Saved base damage: Mine
+PASS: Upgrades retain base damage: Mine
+PASS: Firing snapshot: Mine
+PASS: Saved base damage: Firefly Convergence
+PASS: Upgrades retain base damage: Firefly Convergence
+PASS: Firing snapshot: Firefly Convergence
+PASS: Saved base damage: Twin Satellites
+PASS: Upgrades retain base damage: Twin Satellites
+PASS: Firing snapshot: Twin Satellites
+PASS: Saved base damage: Blossom Burst
+PASS: Upgrades retain base damage: Blossom Burst
+PASS: Firing snapshot: Blossom Burst
+PASS: Saved base damage: Constellation Ignition
+PASS: Upgrades retain base damage: Constellation Ignition
+PASS: Firing snapshot: Constellation Ignition
+PASS: Spread central, inner and outer damage
+PASS: Extra spread spokes use outer damage
+PASS: Bomb fragments are distinct from 30-damage explosion
+PASS: Both upgraded bomb waves retain fragment damage
+PASS: Real Physics2D bullet subtracts 6 HP and despawns
+PASS: Larger attack on later frame respects 0.8-second immunity
+PASS: Existing hit immunity duration retained
+PASS: Same-frame 6/32/20 overlap applies maximum 32 once
+PASS: Maximum damage is independent of collision order
+PASS: Landing shield absorbs one full overlapping hit without spill
+PASS: Overdrive consumes only one shield for overlap
+PASS: Solar shield absorbs full damage once
+PASS: Zero/negative damage cannot consume immunity or health
+PASS: 100 HP survives 16 basic hits and reaches zero on hit 17
+PASS: Reset clears health, damage and hit telemetry
+PASS: Meteor blast 20 and 12 fragments at 4 each
+PASS: Full meteor fragment count retained
+PASS: Mini meteor blast 10 and fragments 2
+PASS: Mini meteor direct-hit damage 16
+PASS: Octo secondary spokes deal 4
+PASS: Prism direct 10 and blast 8
+PASS: Mine explosion inherits 32
+PASS: Satellites 12 and emitted fan bullets 5
+PASS: Harmless buds emit 24 petals with 6 damage
+PASS: Eight orbiting planets deal 12
+PASS: Solar comet damage 8
+PASS: Released planets deal 16
+PASS: Constellation outline 24 and tracing segments 14
+PASS: Delayed beam retains 22 after asset/loadout changes
+PASS: Reflection preserves source damage
+PASS: Reflected damage hits original caster
+PASS: Pooled projectile receives fresh damage on reuse
+PASS: FishNet player-state serializer round-trips HP
+PASS: Player-state payload retains legacy 21 bytes with an empty hand
+PASS: HP value does not increase packet size: 0
+PASS: HP value does not increase packet size: 1
+PASS: HP value does not increase packet size: 63
+PASS: HP value does not increase packet size: 64
+PASS: HP value does not increase packet size: 78
+PASS: HP value does not increase packet size: 100
+PASS: Guest applies authoritative HP
+PASS: Guest cannot apply local damage
+PASS: Guest clamps malformed high HP
+PASS: Guest applies zero HP
+PASS: Warmed overlapping-damage resolution allocates zero bytes across 10,000 contacts
+PASS: Real Arena scene loads
+PASS: Match survives three total contacts with health remaining
+PASS: Time limit uses remaining HP rather than fewer hits
+PASS: Zero HP ends real match and selects winner
+PASS: HUD displays actual HP for both players
+PASS: HP/damage label fits: P1  HP 88/100
+PASS: HP/damage label fits: HP 0/100  P2
+PASS: Training mode remains active
+PASS: Training permits unlimited hits and accumulates damage past zero HP
+PASS: Training displays accumulated damage
+PASS: HP/damage label fits: 표적 HP <color=#8FE6FF>0/100</color> · 명중 020 누적 피해 200
+PASS: Training reset restores both combatants
+PASS: 115 health/damage checks.

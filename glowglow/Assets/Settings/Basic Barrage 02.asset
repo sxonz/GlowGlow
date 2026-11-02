@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Basic Barrage 02
   m_EditorClassIdentifier: 
   displayName: Laser Shot
+  damage: 22
   rarity: 0
   steps:
   - shape: 1
@@ -47,7 +48,7 @@ MonoBehaviour:
     growTime: 0
     shrinkTime: 0
     flash: 1
-  icon: {fileID: 2291270967926626937, guid: 9988dd917fdf84b408edbb0b6dcf90f8, type: 3}
+  icon: {fileID: 1969951799, guid: 862d3545fe8487c48af0055eb073c6a3, type: 3}
   projectilePrefab: {fileID: 0}
   cooldown: 2
   projectileSpeed: 12
